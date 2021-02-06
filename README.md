@@ -1,2 +1,1 @@
-# cs261-group-project
-Group project for CS261
+# CS261 Software Engineering - Group Project
