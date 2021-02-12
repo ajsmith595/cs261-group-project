@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import EventsView from './views/EventsView.jsx';
 import CreateEventView from './views/CreateEventView.jsx';
 import FeedbackView from './views/FeedbackView.jsx';
@@ -12,15 +11,18 @@ import {
     Route,
     Link
 } from "react-router-dom";
-import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Jumbotron } from 'react-bootstrap';
 
 function App() {
     return (
-        <Jumbotron>
-            <Container className="border border bg-white rounded">
+        <Jumbotron className="py-1 my-0">
+            <div className="border border bg-white rounded container-fluid">
                 <Router>
+
+                    <div>
+                        <Link to="/event/host">Host View</Link>
+                    </div>
                     <Switch>
                         <Route path="/events">
                             <EventsView />
@@ -33,7 +35,7 @@ function App() {
                         </Route>
                     </Switch>
                 </Router>
-            </Container>
+            </div>
         </Jumbotron>
     );
 }

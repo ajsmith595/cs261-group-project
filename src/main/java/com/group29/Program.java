@@ -112,6 +112,13 @@ public class Program {
         path("/api", APIController.routes);
         path("/", IndexController.routes);
 
+        Timer t = new Timer();
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                WebSocketController.SendDataToAll();
+            }
+        }, 0, 5000);
         asyncInject();
 
     }
