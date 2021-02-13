@@ -16,19 +16,42 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Jumbotron } from 'react-bootstrap';
 
+// TODO Seems to be error with pages not changing when URL does until refreshed
 function App() {
     return (
-        <Jumbotron>
-            <Container className="border border bg-white rounded">
+        <Jumbotron className="pt-4">
+            <Router>
+                <div>
+                    <Switch>
+                        <Route exact path="/">
+                            <Link to="/event/new" className="btn btn-dark">+ New Event</Link>
+                            <Link to="/events" className="btn btn-primary">My Events</Link>
+                        </Route>
+
+                        <Route path={["/event"]}>
+                            <Link to="/" className="btn btn-primary">Back</Link>
+                        </Route>
+                    </Switch>
+                    <Link to="/logout" className="btn btn-dark float-right">Logout</Link>
+                </div>
+            </Router>
+
+            <Container className="border border bg-white rounded container-fluid  mt-2">
                 <Router>
                     <Switch>
-                        <Route path="/events">
+                        <Route exact path="/">
+                            <HomeView />
+                        </Route>
+                        <Route exact path="/events">
                             <EventsView />
                         </Route>
-                        <Route path="/event/host">
+                        <Route exact path="/event/new">
+                            <CreateEventView />
+                        </Route>
+                        <Route exact path="/event/host">
                             <HostView />
                         </Route>
-                        <Route path="/event/attendee">
+                        <Route exact path="/event/attendee">
                             <FeedbackView />
                         </Route>
                     </Switch>
