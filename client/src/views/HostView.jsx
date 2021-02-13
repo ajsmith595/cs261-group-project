@@ -252,7 +252,7 @@ export default class HostView extends React.Component {
                                 <div className="h-100 p-1 border mt-1 mt-sm-0 d-flex flex-column">
                                     <h4>Trends</h4>
                                     <hr className="w-100" />
-                                    <Row className="flex-grow-1">
+                                    <Row className="flex-grow-1" style={{ overflowX: 'hidden' }}>
                                         {trends}
                                     </Row>
                                 </div>
