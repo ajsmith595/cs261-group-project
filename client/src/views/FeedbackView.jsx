@@ -4,6 +4,7 @@ import { Form, Col, Row, Button } from "react-bootstrap";
 export default class FeedbackView extends React.Component {
     constructor(props) {
         super(props);
+        this.sendStateToServer = this.sendStateToServer.bind(this);
 
 
         /* 
@@ -42,6 +43,31 @@ export default class FeedbackView extends React.Component {
         };
     }
 
+    /*componentDidMount() {
+        fetch('/api/event/:id')
+          .then((response) => response.json())
+          .then((data) => this.setState({questions: data, loading: false}));
+    }*/
+
+    sendStateToServer() {
+        fetch('/api/event/:id/feedback',
+        {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(this.state),
+        }
+        ).then(response => {
+            if (response.status >= 400) {
+                throw new Error("Bad response from server");
+            }
+            response.json().then(data => {
+              console.log("success");
+            })
+        })
+    }
 
     render() {
         if (this.state.loading) {
@@ -69,7 +95,7 @@ export default class FeedbackView extends React.Component {
             <div className="text-center py-2">
                 <h1>Feedback</h1>
                 <hr />
-                <Form method="POST" id="feedback" action="/test/eventForm">
+                <Form method="POST" id="feedback" action="/event/attendee">
                     {questions}
                     <Form.Check type="checkbox" id="anonymous_check" >
                         <Form.Check.Input type="checkbox" checked={this.state.anonymous} onChange={(e) => this.setState({ anonymous: e.target.checked })} />
@@ -80,7 +106,7 @@ export default class FeedbackView extends React.Component {
 
                         <Col xs={0} sm={1} md={3}></Col>
                         <Col xs={12} sm={10} md={6}>
-                            <Button className="w-100" type="button" variant="primary">Submit</Button>
+                            <Button className="w-100" type="button" variant="primary" onClick={this.sendStateToServer}>Submit</Button>
                         </Col>
                         <Col xs={0} sm={1} md={3}></Col>
                     </Row>
@@ -151,5 +177,7 @@ export default class FeedbackView extends React.Component {
                 </Row>
             </Form.Group>
         )
+
+        
     }
 }
