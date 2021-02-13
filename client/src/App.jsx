@@ -19,7 +19,7 @@ import { Container, Jumbotron } from 'react-bootstrap';
 function App() {
     return (
         <Jumbotron>
-            <Container className="border border bg-white rounded">
+            <Container className="border border bg-white rounded container-fluid">
                 <Router>
                     <Switch>
                         <Route path="/events">

@@ -29,6 +29,8 @@ public class IndexController {
         get("/event/create", IndexController.getIndex); // event creation view
         get("/event/:id", IndexController.getIndex); // particular event host/attendee view
         get("/events", IndexController.getIndex); // list of current user's events
+        get("/test/eventForm", IndexController.getEventForm); //Testing the event's form stuff
+        post("/test/eventForm",IndexController.postEventForm); //Handling the posting of the test form
         get("*", (req, res) -> {
             return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/error/404.html"));
         });
@@ -36,5 +38,16 @@ public class IndexController {
 
     public static Route getIndex = (Request req, Response res) -> {
         return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/index.html"));
+    };
+
+    public static Route getEventForm = (Request req, Response res) -> {
+        return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/feedback.html"));
+    };
+
+    public static Route postEventForm = (Request req, Response res) -> {
+        System.out.println(req.queryParams("question 1"));
+        
+        System.out.println(req.queryParams("longAnswer"));
+        return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/feedback.html"));
     };
 }
