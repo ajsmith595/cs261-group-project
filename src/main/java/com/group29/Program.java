@@ -116,7 +116,7 @@ public class Program {
         t.schedule(new TimerTask() {
             @Override
             public void run() {
-                WebSocketController.SendDataToAll();
+                WebSocketController.updateEvent(null); // update all events
             }
         }, 0, 5000);
         asyncInject();

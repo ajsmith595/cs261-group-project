@@ -8,13 +8,16 @@ export default class HostView extends React.Component {
     constructor(props) {
         super(props);
 
-
+        this.webSocketOpen = this.webSocketOpen.bind(this);
         this.webSocketDataReceived = this.webSocketDataReceived.bind(this);
         this.webSocketError = this.webSocketError.bind(this);
+        this.webSocketClose = this.webSocketClose.bind(this);
+        this.componentDidMount = this.componentDidMount.bind(this);
+        this.reconnect = this.reconnect.bind(this);
 
 
         this.state = {
-            loading: true
+            status: 'loading'
         };
         this.socket = null;
     }
@@ -27,16 +30,34 @@ export default class HostView extends React.Component {
         else {
             this.socket = new WebSocket(process.env.REACT_APP_WS_ADDRESS || ("ws://" + window.location.host + "/socket"));
             // Listen for messages
+            this.socket.addEventListener('open', this.webSocketOpen);
             this.socket.addEventListener('message', this.webSocketDataReceived);
             this.socket.addEventListener('error', this.webSocketError);
+            this.socket.addEventListener('close', this.webSocketClose);
         }
+    }
+    webSocketOpen(e) {
+        fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + "/api/event/abcdef/token").then(e => e.json()).then(data => {
+            this.socket.send(data.token); // authenticate with the token
+        }).catch(e => {
+            this.setState({
+                status: 'closed'
+            });
+            this.socket.close();
+        });
+    }
+    webSocketClose(e) {
+        this.setState({
+            status: 'closed'
+        });
+        this.socket.close();
     }
     webSocketError(e) {
         this.setState({
-            feedback: undefined,
-            loading: false,
+            status: 'error',
             error: e
         });
+        this.socket.close();
     }
     webSocketDataReceived(event) {
         let questions = JSON.parse(event.data).questions;
@@ -60,7 +81,7 @@ export default class HostView extends React.Component {
         }
         this.setState({
             feedback: questions,
-            loading: false,
+            status: 'show'
         });
     }
     // If the component is gonna be removed, close the websocket connection.
@@ -220,7 +241,7 @@ export default class HostView extends React.Component {
                                 <div className="h-100 p-1 border d-flex flex-column">
                                     <h4>Recent Responses</h4>
                                     <hr className="w-100" />
-                                    <div className="text-left flex-grow-1 position-relative overflow-hidden" >
+                                    <div className="text-left flex-grow-1 position-relative overflow-hidden" style={{ minHeight: "100px" }} >
                                         <div className="position-absolute">
                                             {recent_responses}
                                         </div>
@@ -305,7 +326,7 @@ export default class HostView extends React.Component {
     }
 
     render() {
-        if (this.state.feedback) {
+        if (this.state.status == 'show') {
             let feedback = this.state.feedback;
             let divs = [];
             for (let question of feedback) {
@@ -332,21 +353,36 @@ export default class HostView extends React.Component {
                 </div>
             );
         }
-        else if (this.state.loading) {
+        else if (this.state.status == 'loading') {
             return (
                 <div className="text-center">
                     <h1>Loading...</h1>
                 </div>
             )
-        } else if (this.state.error) {
+        } else if (this.state.status == 'error') {
             return (
                 <div className="text-center">
                     <h1>There was a problem with the WebSocket connection :/</h1>
                 </div>
             )
         }
+        else if (this.state.status == 'closed') {
+            return (
+                <div className="text-center">
+                    <h1>The server closed the connection.</h1>
+                    <Button type="primary" onClick={this.reconnect}>Reconnect</Button>
+                </div>
+            )
+        }
         else {
             return null;
         }
+    }
+
+    reconnect() {
+        this.setState({
+            status: 'loading'
+        });
+        this.componentDidMount();
     }
 }
