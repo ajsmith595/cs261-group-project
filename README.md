@@ -29,9 +29,17 @@ Event POST request (using curl)
 ```
 curl -X POST "http://localhost:4567/api/events" -H "Content-Type: application/json" -d '{"hostID":"0","templateID":"0","title":"Example Event","startTime":1613148624671,"duration":30}'
 ```
+Response:
+```
+{"status":"success","data":{"eventCode":"1LK15"}}
+```
 
 Event GET request (using curl)
 ```
 curl -X GET "http://localhost:4567/api/event/1LK15" -H "Content-Type: application/json" -H "Accept-Type: application/json"
 ```
 (note: you will need to change `1Lk15` to whatever event code was given from the POST request).
+Response:
+```
+{"status":"success","data":{"id":"6027ace31f001d3cbf4fab1d","hostID":"0","templateID":"0","title":"Example Event","startTime":"Feb 12, 2021, 4:50:24 PM","duration":30,"eventCode":"1LK15"}}
+```
