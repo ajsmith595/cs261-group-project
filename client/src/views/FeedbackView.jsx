@@ -124,6 +124,7 @@ export default class FeedbackView extends React.Component {
                     <Col xs={0} sm={1} md={3}></Col>
                     <Col xs={12} sm={10} md={6}>
                         <Form.Control className="mx-auto" value={question.value} onChange={this.changeQuestion(question.id)} type="range" min={question.min} max={question.max} step="1"></Form.Control>
+                        <small class="text-center text-muted">{question.value}</small>
                     </Col>
                     <Col xs={0} sm={1} md={3}></Col>
                 </Row>
