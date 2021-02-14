@@ -18,9 +18,15 @@ public class APIController {
          * classes to JSON. Will keep all fields (private/public/protected) but will
          * discard functions.
          */
+        post("/event/:id/feedback", "application/json", APIController.checkData);
     };
 
     public static Route getSession = (Request req, Response res) -> {
         return new Event("ID test", "Event Code Test");
+    };
+
+    public static Route checkData = (Request req, Response res) -> {
+        System.out.println(req.body());
+        return "success";
     };
 }

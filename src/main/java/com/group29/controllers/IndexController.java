@@ -35,14 +35,5 @@ public class IndexController {
         return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/index.html"));
     };
 
-    public static Route getEventForm = (Request req, Response res) -> {
-        return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/feedback.html"));
-    };
-
-    public static Route postEventForm = (Request req, Response res) -> {
-        System.out.println(req.queryParams("question 1"));
-        
-        System.out.println(req.queryParams("longAnswer"));
-        return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/feedback.html"));
-    };
+    
 }
