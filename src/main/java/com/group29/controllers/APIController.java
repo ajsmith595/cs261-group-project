@@ -73,17 +73,15 @@ public class APIController {
         }
     }
 
-    private static Route getSession = (Request req, Response res) -> {
-        return new Event("ID test", "Event Code Test");
     public static Route getSession = (Request req, Response res) -> {
-        //return new Event("0", "Event Code Test");
-        
+        // return new Event("0", "Event Code Test");
+
         String eventCode = req.params(":id");
         Event event = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
 
         if (event != null)
             return APIResponse.success(event);
-        
+
         return APIResponse.error("Could not match event code");
     };
 
@@ -93,12 +91,16 @@ public class APIController {
         res.type("application/json");
         // Catches parsing errors
         try {
-            // Creates a GSON parser that can parse dates and excludes id and eventcode fields
+            // Creates a GSON parser that can parse dates and excludes id and eventcode
+            // fields
             Gson gson = new GsonBuilder()
-                .registerTypeAdapter(Date.class, (JsonDeserializer<Date>) (json, typeOfT, context) -> new Date(json.getAsJsonPrimitive().getAsLong()))
-                .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (date, type, jsonSerializationContext) -> new JsonPrimitive(date.getTime()))
-                .excludeFieldsWithoutExposeAnnotation()
-                .create();
+                    .registerTypeAdapter(Date.class,
+                            (JsonDeserializer<Date>) (json, typeOfT,
+                                    context) -> new Date(json.getAsJsonPrimitive().getAsLong()))
+                    .registerTypeAdapter(Date.class,
+                            (JsonSerializer<Date>) (date, type,
+                                    jsonSerializationContext) -> new JsonPrimitive(date.getTime()))
+                    .excludeFieldsWithoutExposeAnnotation().create();
 
             // TODO: add more security, e.g. someone can create an event with a custom code
             // Attempts to parse event
