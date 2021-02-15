@@ -1,6 +1,9 @@
 package com.group29.models;
 
+import com.group29.models.questions.*;
+
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.lang.StringBuilder;
 
