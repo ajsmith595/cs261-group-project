@@ -34,10 +34,8 @@ function App() {
                     </Switch>
                     <Link to="/logout" className="btn btn-dark float-right m-1">Logout</Link>
                 </div>
-            </Router>
 
-            <Container className="border border bg-white rounded container-fluid  mt-2">
-                <Router>
+                <Container className="border border bg-white rounded container-fluid  mt-2">
                     <Switch>
                         <Route exact path="/">
                             <HomeView />
@@ -55,8 +53,8 @@ function App() {
                             <FeedbackView />
                         </Route>
                     </Switch>
-                </Router>
-            </Container>
+                </Container>
+            </Router>
         </Jumbotron>
     );
 }
