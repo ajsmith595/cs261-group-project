@@ -1,5 +1,6 @@
 import React from "react";
 import { Form, Col, Row, Button } from "react-bootstrap";
+import Multiselect from "react-multi-select-component";
 // import '../feedback.css';
 export default class FeedbackView extends React.Component {
     constructor(props) {
@@ -38,6 +39,13 @@ export default class FeedbackView extends React.Component {
                     title: 'Choose a colour',
                     choices: ["Red", "Yellow", "Green", "Blue"],
                     value: -1
+                },
+                "3": {
+                    id: "3",
+                    type: "multi-choice",
+                    title: "choose all colours",
+                    choices: ["Red", "Yellow", "Blue", "Orange", "Marshmellow"],
+                    value: []
                 }
             }
         };
@@ -86,6 +94,9 @@ export default class FeedbackView extends React.Component {
                     questions.push(this.renderRangeQuestion(question));
                     break;
                 case 'choice':
+                    questions.push(this.renderChoiceQuestion(question));
+                    break;
+                case 'multi-choice':
                     questions.push(this.renderMultipleChoiceQuestion(question));
                     break;
             }
@@ -125,6 +136,17 @@ export default class FeedbackView extends React.Component {
         };
         return func.bind(this);
     }
+    
+    changeMultiQuestion(id) {
+        let func = (e) => {
+            let questions = this.state.questions;
+            questions[id].value = e;
+            this.setState({
+                questions: questions
+            });
+        };
+        return func.bind(this);
+    }
 
     renderLongQuestion(question) {
         return (
@@ -158,7 +180,7 @@ export default class FeedbackView extends React.Component {
         )
     }
 
-    renderMultipleChoiceQuestion(question) {
+    renderChoiceQuestion(question) {
         let options = [];
         for (let choice in question.choices) {
             options.push(<option value={choice}>{question.choices[choice]}</option>);
@@ -178,7 +200,25 @@ export default class FeedbackView extends React.Component {
                 </Row>
             </Form.Group>
         )
-
-        
     }
+
+    renderMultipleChoiceQuestion(question) {
+        let options = [];
+        for (let choice in question.choices) {
+            options.push({label: question.choices[choice], value: question.choices[choice]});
+        }
+        return (
+            <Form.Group controlId={"formQuestion_" + question.id}>
+                <Form.Label>{question.title}</Form.Label>
+                <Row>
+                    <Col xs={0} sm={1} md={3}></Col>
+                    <Col xs={12} sm={10} md={6}>
+                        <Multiselect options={options} value={this.state.questions[question.id].value} onChange={this.changeMultiQuestion(question.id)} />
+                    </Col>
+                    <Col xs={0} sm={1} md={3}></Col>
+                </Row>
+            </Form.Group>
+        )
+    }
+
 }
