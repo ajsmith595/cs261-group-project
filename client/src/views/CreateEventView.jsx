@@ -5,10 +5,13 @@ export default class CreateEventView extends React.Component{
     constructor(props) {
         super(props);
 
-        // Currently copy and paste from feedback
+        // When changing questions are added, need to remove value field
         this.state = {
-            loading: false,
-            anonymous: false,
+            title: "",
+            date: "",
+            time: "",
+            description: "",
+
             questions: {
                 "0": {
                     id: "0", // this needs to be the same as the index, so the questions can directly access their own state
@@ -28,7 +31,7 @@ export default class CreateEventView extends React.Component{
         };
     }
 
-    // Template of
+    // Template
     defaultQuestion = {
         id: "0",
         type: 'open',
@@ -37,15 +40,17 @@ export default class CreateEventView extends React.Component{
     }
 
     // Adds a question to the list when add question button pressed
-    // TODO Pretty sure this is the wrong way to update a dict in setState, but couldn't find better way immediately
     addQuestion = (e) => {
         e.preventDefault();
         this.setState(state => {
+            // Get index of the new question
             const index = (Object.keys(state.questions).length + 1).toString();
-            var question = {}
+            let question = {}
+            // Copy and modify the template question
             Object.assign(question, this.defaultQuestion);
             question.id = index;
-            const questions = state.questions;
+            // Copy and modify the questions list (must return a separate object, as these events could theoretically be ran asynchronously)
+            const questions = {...state.questions};
             questions[index] = question;
             return {questions}
         });
@@ -54,30 +59,63 @@ export default class CreateEventView extends React.Component{
 
     render() {
         return (
-            <div className="text-center align-middle">
-                <h1>CREATE EVENT</h1>
-                <Form>
-                    <div className="float-right">
-                        <Form.Label>Time</Form.Label>
-                        <Form.Control className="form-control" type="text" name="time" placeholder="[PH] Time here"/>
-                    </div>
+            <div className="text-center align-middle pt-2">
+                <h1>Create Event</h1>
+                <hr />
+                <Form method="POST" id="event_create" action="/test/eventCreate">
+                <Row>
+                    <Col/>
+                    <Col xs={12} sm={10} md={6}>
+                        {/* Title */}
+                        <Form.Group className="m-2">
+                            <Form.Label className="">Title</Form.Label>
+                            <Form.Control type="text" name="title" placeholder="Event" onChange={(e) => (this.setState({title: e.target.value}))}/>
+                        </Form.Group>
 
-                    <Form.Label className="w-75">Title</Form.Label>
-                    <Form.Control className="form-control w-75" type="text" name="title" placeholder="Event"/>
+                        {/* Date and Time */}
+                        <Form.Row>
+                            <Col className="m-2">
+                                <Form.Label>Date</Form.Label>
+                                <Form.Control type="date" name="date" placeholder="Date" onChange={(e) => (this.setState({date: e.target.value}))}/>
+                            </Col>
+                            <Col className="m-2">
+                                <Form.Label>Time</Form.Label>
+                                <Form.Control type="time" name="time" placeholder="Time" onChange={(e) => (this.setState({time: e.target.value}))}/>
+                            </Col>
+                        </Form.Row>
 
+                        {/* Description */}
+                        <Form.Label className="pt-2 m-2">Description</Form.Label>
+                        <Form.Control as="textarea" name="description" placeholder="Enter event description here" onChange={(e) => (this.setState({description: e.target.value}))}/>
+                        <hr />
 
-                    <Form.Label className="pt-2">Description</Form.Label>
-                    <textarea className="form-control " name="description" placeholder="Enter event description here"/>
+                        {/* Buttons */}
+                        <Button className="m-2" type="button" variant="primary" onClick={this.addQuestion}>Add Question</Button>
+                        <Button className="m-2" type="submit" variant="primary" >CREATE</Button>
 
-                    <hr />
-                    <input className="btn btn-primary m-2" type="button" value="Add Question" onClick={this.addQuestion}/>
-                    <input className="btn btn-primary m-2" type="submit" value="CREATE" />
+                        {/* Temporary question render */}
+                        {this.renderQuestions()}
+                    </Col>
+                    <Col/>
+                </Row>
 
-                    {this.renderQuestions()}
                 </Form>
             </div>
         );
     }
+
+    submit(e) {
+        e.preventDefault();
+        fetch(this.props.formAction, {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({description: this.state.description})
+        });
+    }
+
+    // TODO Temporary rendering of questions
 
     renderQuestions() {
         let questions = [];
@@ -122,13 +160,7 @@ export default class CreateEventView extends React.Component{
         return (
             <Form.Group controlId={"formQuestion_" + question.id}>
                 <Form.Label>{question.title}</Form.Label>
-                <Row>
-                    <Col xs={0} sm={1} md={3}></Col>
-                    <Col xs={12} sm={10} md={6}>
-                        <Form.Control className="mx-auto" onChange={this.changeQuestion(question.id)} value={question.value} placeholder="Enter answer here" as="textarea" rows={4}></Form.Control>
-                    </Col>
-                    <Col xs={0} sm={1} md={3}></Col>
-                </Row>
+                    <Form.Control className="mx-auto" onChange={this.changeQuestion(question.id)} value={question.value} placeholder="Enter answer here" as="textarea" rows={4}/>
             </Form.Group >
         );
     }
@@ -137,14 +169,7 @@ export default class CreateEventView extends React.Component{
         return (
             <Form.Group controlId={"formQuestion_" + question.id}>
                 <Form.Label>{question.title}</Form.Label>
-
-                <Row>
-                    <Col xs={0} sm={1} md={3}></Col>
-                    <Col xs={12} sm={10} md={6}>
-                        <Form.Control className="mx-auto" value={question.value} onChange={this.changeQuestion(question.id)} type="range" min={question.min} max={question.max} step="1"></Form.Control>
-                    </Col>
-                    <Col xs={0} sm={1} md={3}></Col>
-                </Row>
+                <Form.Control className="mx-auto" value={question.value} onChange={this.changeQuestion(question.id)} type="range" min={question.min} max={question.max} step="1"/>
             </Form.Group >
         )
     }
@@ -157,16 +182,10 @@ export default class CreateEventView extends React.Component{
         return (
             <Form.Group controlId={"formQuestion_" + question.id}>
                 <Form.Label>{question.title}</Form.Label>
-                <Row>
-                    <Col xs={0} sm={1} md={3}></Col>
-                    <Col xs={12} sm={10} md={6}>
-                        <Form.Control className="mx-auto" as="select" value={question.value} onChange={this.changeQuestion(question.id)}>
-                            <option disabled selected value={-1}>Choose an option...</option>
-                            {options}
-                        </Form.Control>
-                    </Col>
-                    <Col xs={0} sm={1} md={3}></Col>
-                </Row>
+                <Form.Control className="mx-auto" as="select" value={question.value} onChange={this.changeQuestion(question.id)}>
+                    <option disabled selected value={-1}>Choose an option...</option>
+                    {options}
+                </Form.Control>
             </Form.Group>
         )
     }

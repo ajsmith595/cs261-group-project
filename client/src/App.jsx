@@ -24,15 +24,15 @@ function App() {
                 <div>
                     <Switch>
                         <Route exact path="/">
-                            <Link to="/event/new" className="btn btn-dark">+ New Event</Link>
-                            <Link to="/events" className="btn btn-primary">My Events</Link>
+                            <Link to="/event/new" className="btn btn-dark m-1">+ New Event</Link>
+                            <Link to="/events" className="btn btn-primary m-1">My Events</Link>
                         </Route>
 
                         <Route path={["/event"]}>
-                            <Link to="/" className="btn btn-primary">Back</Link>
+                            <Link to="/" className="btn btn-primary m-1">Back</Link>
                         </Route>
                     </Switch>
-                    <Link to="/logout" className="btn btn-dark float-right">Logout</Link>
+                    <Link to="/logout" className="btn btn-dark float-right m-1">Logout</Link>
                 </div>
             </Router>
 
