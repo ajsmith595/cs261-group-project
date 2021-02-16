@@ -37,6 +37,7 @@ public class APIController {
          */
         get("/event/:id", APIController.getSession, new JSONTransformer());
         post("/events", APIController.postEvent, new JSONTransformer());
+        post("/event/:id/feedback", "application/json", APIController.checkData);
     };
 
     private static HashMap<String, String> webSocketTokens = new HashMap<>();
@@ -108,7 +109,6 @@ public class APIController {
 
             // Generates a new code for the event
             event.generateEventCode();
-            event.generateEventCode();
 
             // Adds it to the database and returns the event code
             DatabaseManager.getDatabaseManager().addEvent(event);
@@ -119,5 +119,10 @@ public class APIController {
         }
         // Returns an error response
         return APIResponse.error("Could not create the event.");
+    };
+
+    public static Route checkData = (Request req, Response res) -> {
+        System.out.println(req.body());
+        return "success";
     };
 }

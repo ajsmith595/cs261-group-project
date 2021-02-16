@@ -9,20 +9,23 @@ import {
     BrowserRouter as Router,
     Switch,
     Route,
-    Link
+    Link,
+    NavLink
 } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Jumbotron } from 'react-bootstrap';
+import { Container, Jumbotron, Navbar } from 'react-bootstrap';
 
 function App() {
     return (
-        <Jumbotron className="py-1 my-0">
-            <div className="border border bg-white rounded container-fluid">
-                <Router>
-
-                    <div>
-                        <Link to="/event/host">Host View</Link>
-                    </div>
+        <Jumbotron className="pt-4">
+            <Router>
+                <div>
+                    <Route path="/event/">
+                        <Link to="/" className="btn btn-primary">Back</Link>
+                        <Link to="/logout" className="btn btn-dark float-right">Logout</Link>
+                    </Route>
+                </div>
+                <Container className="border border bg-white rounded container-fluid  mt-2">
                     <Switch>
                         <Route path="/events">
                             <EventsView />
@@ -34,8 +37,8 @@ function App() {
                             <FeedbackView />
                         </Route>
                     </Switch>
-                </Router>
-            </div>
+                </Container>
+            </Router>
         </Jumbotron>
     );
 }
