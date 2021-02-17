@@ -9,7 +9,6 @@ import static spark.Spark.*;
 
 import com.group29.JSONTransformer;
 import com.group29.models.Event;
-import com.group29.models.Template;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -34,8 +33,6 @@ public class APIController {
          */
         get("/event/:id", APIController.getSession, new JSONTransformer());
         post("/events", APIController.postEvent, new JSONTransformer());
-
-        post("/templates/", APIController.postTemplate, new JSONTransformer());
     };
 
     public static Route getSession = (Request req, Response res) -> {
@@ -63,10 +60,12 @@ public class APIController {
                 .excludeFieldsWithoutExposeAnnotation()
                 .create();
 
+            // TODO: add more security, e.g. someone can create an event with a custom code
             // Attempts to parse event
             Event event = gson.fromJson(req.body(), Event.class);
 
             // Generates a new code for the event
+            event.generateEventCode();
             event.generateEventCode();
 
             // Adds it to the database and returns the event code
@@ -78,28 +77,5 @@ public class APIController {
         }
         // Returns an error response
         return APIResponse.error("Could not create the event.");
-    };
-
-    // Creates a template
-    public static Route postTemplate = (Request req, Response res) -> {
-        // Sets the return type to json
-        res.type("application/json");
-        // Catches parsing errors
-        try {
-            // Creates a GSON parser that can parse dates and excludes id and eventcode fields
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .create();
-
-            // Attempts to parse event
-            Template template = gson.fromJson(req.body(), Template.class);
-
-            return APIResponse.success(new Gson().toJSON(template));
-        } catch (Exception e) {
-            // Prints the error to console
-            e.printStackTrace();
-        }
-        // Returns an error response
-        return APIResponse.error("Could not create the template.");
     };
 }
