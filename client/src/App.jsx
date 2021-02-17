@@ -5,6 +5,7 @@ import FeedbackView from './views/FeedbackView.jsx';
 import HomeView from './views/HomeView.jsx';
 import HostView from './views/HostView.jsx';
 import RegisterView from './views/RegisterView.jsx';
+import LoginView from './views/LoginView.jsx';
 import {
     BrowserRouter as Router,
     Switch,
@@ -35,6 +36,12 @@ function App() {
                         </Route>
                         <Route path="/event/attendee">
                             <FeedbackView />
+                        </Route>
+                        <Route path="/register">
+                            <RegisterView />
+                        </Route>
+                        <Route path="/">
+                            <LoginView />
                         </Route>
                     </Switch>
                 </Container>

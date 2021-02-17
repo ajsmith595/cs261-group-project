@@ -6,7 +6,6 @@ export default class RegisterView extends React.Component{
         //this.sendStateToServer = this.sendStateToServer.bind(this);
 
         this.state = {
-            acceptTerms: false,
             email: "",
             username: ""
         };
@@ -15,20 +14,11 @@ export default class RegisterView extends React.Component{
     render(){
         return (
             <div className="text-center py-2">
-                <h1>Register</h1>
+                <h1>Login</h1>
                 <hr />
-                <p>
-                    Please register your email. This will only be used for identification purposes. If you choose 
-                    to be anonymous when providing feedback, your username will not be visable to the host or any
-                    attendees. Your email will not be visable to any other users.
-                </p>
-                <Form method="POST" id="feedback" action="/register">
+                <Form method="POST" id="feedback" action="/">
                     {this.renderEmail()}
                     {this.renderUsername()}
-                    <Form.Check type="checkbox" id="agree_check" >
-                        <Form.Check.Input type="checkbox" checked={this.state.anonymous} onChange={(e) => this.setState({ acceptTerms: e.target.checked })} />
-                        <Form.Check.Label>I agree to the terms.</Form.Check.Label>
-                    </Form.Check>
                     <hr />
                     <Row>
                         <Col xs={0} sm={1} md={3}></Col>
