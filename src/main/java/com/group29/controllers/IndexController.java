@@ -29,9 +29,6 @@ public class IndexController {
         get("/event/create", IndexController.getIndex); // event creation view
         get("/event/:id", IndexController.getIndex); // particular event host/attendee view
         get("/events", IndexController.getIndex); // list of current user's events
-        get("*", (req, res) -> {
-            return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/error/404.html"));
-        });
     };
 
     public static Route getIndex = (Request req, Response res) -> {
