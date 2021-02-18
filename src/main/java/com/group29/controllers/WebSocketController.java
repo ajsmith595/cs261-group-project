@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import com.group29.JSONTransformer;
+import com.group29.models.DatabaseManager;
 import com.group29.models.Event;
 import com.group29.models.temp.*;
 
@@ -50,7 +51,13 @@ public class WebSocketController {
                 session.close();
             } else {
                 if (!webSocketConnections.containsKey(eventCode)) {
-                    //webSocketConnections.put(eventCode, new Event("123", "abcdef")); // TODO: get event data from DB
+                    Event e = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
+                    if (e == null) {
+                        session.close();
+                        return;
+                    } else {
+                        webSocketConnections.put(eventCode, e);
+                    }
                 }
                 webSocketConnections.get(eventCode).addClient(session);
             }

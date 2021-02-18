@@ -39,6 +39,7 @@ public class APIController {
          */
         post("/events", APIController.postEvent, new JSONTransformer());
         post("/users", APIController.postUser, new JSONTransformer());
+        post("/event/:id/feedback", "application/json", APIController.checkData);
     };
 
     private static HashMap<String, String> webSocketTokens = new HashMap<>();
@@ -81,7 +82,7 @@ public class APIController {
 
         if (event != null)
             return APIResponse.success(event);
-        
+
         return APIResponse.error("Could not match event code");
     };
 
@@ -102,12 +103,16 @@ public class APIController {
         res.type("application/json");
         // Catches parsing errors
         try {
-            // Creates a GSON parser that can parse dates and excludes id and eventcode fields
+            // Creates a GSON parser that can parse dates and excludes id and eventcode
+            // fields
             Gson gson = new GsonBuilder()
-                .registerTypeAdapter(Date.class, (JsonDeserializer<Date>) (json, typeOfT, context) -> new Date(json.getAsJsonPrimitive().getAsLong()))
-                .registerTypeAdapter(Date.class, (JsonSerializer<Date>) (date, type, jsonSerializationContext) -> new JsonPrimitive(date.getTime()))
-                .excludeFieldsWithoutExposeAnnotation()
-                .create();
+                    .registerTypeAdapter(Date.class,
+                            (JsonDeserializer<Date>) (json, typeOfT,
+                                    context) -> new Date(json.getAsJsonPrimitive().getAsLong()))
+                    .registerTypeAdapter(Date.class,
+                            (JsonSerializer<Date>) (date, type,
+                                    jsonSerializationContext) -> new JsonPrimitive(date.getTime()))
+                    .excludeFieldsWithoutExposeAnnotation().create();
 
             // Attempts to parse event
             Event event = gson.fromJson(req.body(), Event.class);
@@ -154,5 +159,10 @@ public class APIController {
         }
         // Returns an error response
         return APIResponse.error("Could not create the event.");
+    };
+    
+    public static Route checkData = (Request req, Response res) -> {
+        System.out.println(req.body());
+        return "success";
     };
 }

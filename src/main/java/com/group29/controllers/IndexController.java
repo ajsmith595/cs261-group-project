@@ -34,4 +34,6 @@ public class IndexController {
     public static Route getIndex = (Request req, Response res) -> {
         return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/index.html"));
     };
+
+    
 }
