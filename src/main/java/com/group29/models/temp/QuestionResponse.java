@@ -10,4 +10,16 @@ public class QuestionResponse {
         this.username = username;
         this.id = id;
     }
+
+    public String getMessage() {
+        return this.message;
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getID() {
+        return this.id;
+    }
 }

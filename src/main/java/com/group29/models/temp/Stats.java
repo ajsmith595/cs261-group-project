@@ -10,4 +10,16 @@ public class Stats {
         this.min_value = min_value;
         this.max_value = max_value;
     }
+
+    public float getCurrentValue() {
+        return this.current_value;
+    }
+
+    public int getMinValue() {
+        return this.min_value;
+    }
+
+    public int getMaxValue() {
+        return this.max_value;
+    }
 }

@@ -2,12 +2,14 @@ import React from "react";
 import { Button, Row, Col } from 'react-bootstrap';
 import { Bar, Line } from 'react-chartjs-2';
 import interpolate from 'color-interpolate';
-import { Spring, Trail, Transition } from 'react-spring/renderprops';
+import { Spring, Transition } from 'react-spring/renderprops';
 import 'chartjs-plugin-annotation';
 export default class HostView extends React.Component {
     constructor(props) {
         super(props);
 
+
+        // Bind all the functions so that the value of `this` is correct
         this.webSocketOpen = this.webSocketOpen.bind(this);
         this.webSocketDataReceived = this.webSocketDataReceived.bind(this);
         this.webSocketError = this.webSocketError.bind(this);
@@ -15,7 +17,7 @@ export default class HostView extends React.Component {
         this.componentDidMount = this.componentDidMount.bind(this);
         this.reconnect = this.reconnect.bind(this);
 
-
+        // At first, it'll be loading
         this.state = {
             status: 'loading'
         };
@@ -37,9 +39,11 @@ export default class HostView extends React.Component {
         }
     }
     webSocketOpen(e) {
-        fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + "/api/event/abcdef/token").then(e => e.json()).then(data => {
+        // When the WebSocket first connects, the server expects the client to 'authenticate' with a token. We need to get the token, and then send it to the websocket.
+        fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/event/${this.props.eventID}/token`).then(e => e.json()).then(data => {
             this.socket.send(data.token); // authenticate with the token
         }).catch(e => {
+            // If something failed, we should close the connection - the client can always reload the page/click the reconnect button to reconnect
             this.setState({
                 status: 'closed'
             });
@@ -50,9 +54,10 @@ export default class HostView extends React.Component {
         this.setState({
             status: 'closed'
         });
-        this.socket.close();
+        this.socket.close(); // Make sure it's closed
     }
     webSocketError(e) {
+        // If the WebSocket errors, show the error to the user.
         this.setState({
             status: 'error',
             error: e
@@ -60,10 +65,13 @@ export default class HostView extends React.Component {
         this.socket.close();
     }
     webSocketDataReceived(event) {
+        // When we receive new data, we need to update the display.
+        // The following will take the questions, and assign 'previous' values to the mood (smiley face animation), and trend values (trend word font sizes).
+        // TODO: the trends do not take into account the fact that the actual trend word/phrase could change, so not a nice animation for that.
         let questions = JSON.parse(event.data).questions;
         for (let i in questions) { // Go through the questions, and assign their 'previous' values - this allows for animation.
             let question = questions[i];
-            if (question.type == 'open') {
+            if (question.type === 'open') {
                 question.previous_mood = 0;
                 if (this.state.feedback) {
                     question.previous_mood = this.state.feedback[i].current_mood;
@@ -88,14 +96,17 @@ export default class HostView extends React.Component {
     componentWillUnmount() {
         if (this.socket) {
             this.socket.close();
+            //TODO: unbind all the event handlers
         }
     }
 
+
+    // The view for a particular NUMERIC question e.g. rate the event from 1->10
     numericView(question) {
         let actualData = [];
         for (let point of question.points) {
             actualData.push({
-                t: new Date(point.time * 1000),
+                t: new Date(point.time * 1000), // NOTE: expects the "time" to be a timestamp in SECONDS
                 y: point.value
             });
         }
@@ -103,6 +114,8 @@ export default class HostView extends React.Component {
             t: new Date(question.stats.current_time * 1000),
             y: question.stats.current_value
         });
+
+        //#region Chart JS Configuration
         let data = {
             labels: [question.title],
             datasets: [{
@@ -157,8 +170,11 @@ export default class HostView extends React.Component {
                 ]
             }
         };
+        //#endregion Chart JS Configuration
+
+        // TODO: change the 'TIME LEFT' to something else - we should have event-level stats like "TIME LEFT" and "NO ATTENDEES" at the top of the page, at some point
         return (
-            <Col className="p-3 border" sm={12} lg={6}>
+            <Col className="p-3 border border-secondary" sm={12} lg={6}>
                 <Row>
                     <Col className="d-xs-none" sm={1}></Col>
                     <Col xs={12} sm={2} className="">
@@ -194,6 +210,8 @@ export default class HostView extends React.Component {
             </Col>
         );
     }
+
+    // The view for one particular OPEN question (open textbox e.g. general feedback)
     openView(question) {
         let recent_responses = (
             <Transition
@@ -203,7 +221,7 @@ export default class HostView extends React.Component {
                 enter={{ opacity: 1 }}
                 leave={{ opacity: 0 }}
                 config={{ friction: 100 }}
-            // Fade in each response like a chat message. Height animation is pretty annoying so sticking with just opacity with this one.
+            // Fade in each response like a chat message. Height animation is pretty annoying so sticking with just opacity with this one. Can always do the annoying height animation later
             >
                 {response => props =>
                 (
@@ -217,7 +235,7 @@ export default class HostView extends React.Component {
             trends.push(
                 <div className="w-100" style={{ height: "33%" }}>
                     <Spring from={{ proportion: trend.previous_proportion }} to={{ proportion: trend.proportion }}>
-                        {props => (
+                        {props => ( // Animates the proportion so that the text will animate large <--> small                        
                             <p style={{ transform: "scale(" + Math.min(Math.max(props.proportion / 100 * 5, 0.5), 3) + ")" }}>{trend.phrase}</p>
                         )}
                     </Spring>
@@ -230,7 +248,7 @@ export default class HostView extends React.Component {
                 let mood = props.current_mood
                 let y = 65 - mood * 5; // adjusts the line depending on the mood. Makes it so that the mouth looks somewhat in a normal position
                 let sweep_flag = mood > 0 ? 0 : 1; // Makes the curve go up or down -> happy or sad
-                let radius = Math.abs(24 / (Math.abs(mood) < 0.01 ? 0.01 : mood)); // if the mood is 0, make it realllyyy small instead. prevent /0.
+                let radius = Math.abs(24 / (Math.abs(mood) < 0.01 ? 0.01 : mood)); // if the mood is 0, make it realllyyy small instead - prevent division by 0.
                 let colour_interpolator = interpolate(["#D2222D", "#FFBF00", "#389338"]);
                 let colour = colour_interpolator((mood + 1) / 2); // interpolate between red -> yellow -> green
                 return (
@@ -284,18 +302,26 @@ export default class HostView extends React.Component {
 
 
     }
+
+
+    // The view for a particular CHOICE question (e.g. what's your favourite colour? Red/Green/Blue)
     choiceView(question) {
+
+
+        // Note: pretty much all of this is just chart.js configuration
         let names = [];
         let values = [];
         let colours = [];
-        let allColours = ["red", "blue", "green", "yellow"];
+        let allColours = ["red", "blue", "green", "yellow"]; // Not related to data. These are the colours used by Chart JS for each of the options. 
         let currentColourIndex = 0;
         for (let obj of question.options) {
             names.push(obj.name);
             values.push(obj.number);
             colours.push(allColours[currentColourIndex]);
-            currentColourIndex = (currentColourIndex + 1) % allColours.length; // For now, just use 4 difference colours for the options
+            currentColourIndex = (currentColourIndex + 1) % allColours.length; // For now, just use 4 difference colours for the options. If there's more than 4 data points, it will just go red -> blue -> green -> yellow -> red -> blue -> ...
         }
+
+
         let data = {
             labels: names,
             datasets: [{
@@ -318,7 +344,7 @@ export default class HostView extends React.Component {
         };
 
         return (
-            <Col className="p-3 border" sm={12} lg={6}>
+            <Col className="p-3 border border-secondary" sm={12} lg={6}>
                 <h3>{question.title}</h3>
                 <Bar data={data} options={options} width={100} height={30}></Bar>
             </Col>
@@ -326,7 +352,7 @@ export default class HostView extends React.Component {
     }
 
     render() {
-        if (this.state.status == 'show') {
+        if (this.state.status === 'show') {
             let feedback = this.state.feedback;
             let divs = [];
             for (let question of feedback) {
@@ -344,6 +370,7 @@ export default class HostView extends React.Component {
                         break;
                 }
             }
+            // TODO: change this 'props.event' so it uses the new input data.
             return (
                 <div className="text-center p-3">
                     <h1>{this.props.event?.title || "Unknown Event"}</h1>
@@ -353,20 +380,20 @@ export default class HostView extends React.Component {
                 </div>
             );
         }
-        else if (this.state.status == 'loading') {
+        else if (this.state.status === 'loading') {
             return (
                 <div className="text-center">
                     <h1>Loading...</h1>
                 </div>
             )
-        } else if (this.state.status == 'error') {
+        } else if (this.state.status === 'error') { // TODO: change so that you get a more detailed error
             return (
                 <div className="text-center">
                     <h1>There was a problem with the WebSocket connection :/</h1>
                 </div>
             )
         }
-        else if (this.state.status == 'closed') {
+        else if (this.state.status === 'closed') {
             return (
                 <div className="text-center">
                     <h1>The server closed the connection.</h1>
@@ -383,6 +410,6 @@ export default class HostView extends React.Component {
         this.setState({
             status: 'loading'
         });
-        this.componentDidMount();
+        this.componentDidMount(); // Simulate the component being readded to cause the websocket reconnection
     }
 }
