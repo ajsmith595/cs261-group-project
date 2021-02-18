@@ -125,4 +125,9 @@ public class APIController {
         System.out.println(req.body());
         return "success";
     };
+
+    public static Route checkData = (Request req, Response res) -> {
+        System.out.println(req.body());
+        return "success";
+    };
 }
