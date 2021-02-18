@@ -36,12 +36,13 @@ public class DatabaseManager {
      * Constructor for the database
      */
     private DatabaseManager() {
-        // Gets the default codecs and an instance of the event codec
+        // Gets the default codecs and an instance of the model codecs
         CodecRegistry defaultCodecReg = MongoClient.getDefaultCodecRegistry();
         Event.EventCodec eventCodec = new Event.EventCodec();
+        User.UserCodec userCodec = new User.UserCodec();
 
         // Adds the event codec to the codec registry and saves it in the options
-        CodecRegistry codecReg = CodecRegistries.fromRegistries(CodecRegistries.fromCodecs(eventCodec), defaultCodecReg);
+        CodecRegistry codecReg = CodecRegistries.fromRegistries(CodecRegistries.fromCodecs(eventCodec, userCodec), defaultCodecReg);
         MongoClientOptions options = MongoClientOptions.builder().codecRegistry(codecReg).build();
 
         // Creates a connection to the client with the custom codecs and access the database
@@ -53,10 +54,23 @@ public class DatabaseManager {
      * Adds a user to the database
      * @param email The email of the user
      * @param name The name of the user
-     * @return The id of the user
+     * @return The id of the user or null if the email is taken
      */
-    public String addUser(String email, String name) {
-        return "";
+    public String addUser(User user) {
+        // Returns null if the email is already taken
+        if (checkUser(user.getEmail()))
+            return null;
+
+        // Gets the collection of users and the user as a document
+        MongoCollection users = mongoDB.getCollection("Users");
+        Document obj = user.getUserAsDocument();
+
+        // Inserts the user and updates the users id
+        users.insertOne(obj);
+        user.setID(obj.getObjectId("_id").toHexString());
+
+        // Returns the users id
+        return user.getID();
     }
 
     /**
@@ -65,7 +79,56 @@ public class DatabaseManager {
      * @return True if the user exists
      */
     public boolean checkUser(String email) {
-        return false;
+        // Gets the collection of users and creates a query
+        MongoCollection users = mongoDB.getCollection("Users");
+        Document query = new Document("email", email);
+
+        // Returns whether at least one user with the given email exists
+        return users.countDocuments(query) > 0;
+    }
+
+    /**
+     * Gets the users data from the database
+     * @param email The email of the user
+     * @param username The username of the user
+     * @return The user instance with updated data
+     */
+    public User getUserFromDetails(String email, String username)
+    {
+        // Gets the collection of users and creates a query
+        MongoCollection users = mongoDB.getCollection("Users");
+        Document query = new Document("email", email);
+        query.append("username", username);
+
+        // Loops over users found matching the details, returning the first one
+        for (User user : (FindIterable<User>)users.find(query, User.class)) {
+            return user;
+        }
+
+        // Returns null if none are found
+        return null;
+    }
+
+    /**
+     * Gets the users data from the database
+     * The user passed in is also returned to allow for chaining
+     * While it is not needed, it is done for QoL
+     * @param id The user id to get info from
+     * @return The user instance with updated data
+     */
+    public User getUserFromID(String id)
+    {
+        // Gets the collection of users and creates a query
+        MongoCollection users = mongoDB.getCollection("Users");
+        Document query = new Document("_id", new ObjectId(id));
+
+        // Loops over users found matching the details, returning the first one
+        for (User user : (FindIterable<User>)users.find(query, User.class)) {
+            return user;
+        }
+
+        // Returns null if none are found
+        return null;
     }
 
     /**

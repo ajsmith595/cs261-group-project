@@ -12,6 +12,7 @@ import java.util.HashMap;
 
 import com.group29.JSONTransformer;
 import com.group29.models.Event;
+import com.group29.models.User;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -30,13 +31,14 @@ public class APIController {
     public static RouteGroup routes = () -> {
         get("/event/:id/token", "application/json", APIController.getWebSocketToken, new JSONTransformer());
         get("/event/:id", "application/json", APIController.getSession, new JSONTransformer());
+        get("/user/:id", "application/json", APIController.getUser, new JSONTransformer());
         /*
          * Makes it return in JSON format. Will automatically convert regular Java
          * classes to JSON. Will keep all fields (private/public/protected) but will
          * discard functions.
          */
-        get("/event/:id", APIController.getSession, new JSONTransformer());
         post("/events", APIController.postEvent, new JSONTransformer());
+        post("/users", APIController.postUser, new JSONTransformer());
     };
 
     private static HashMap<String, String> webSocketTokens = new HashMap<>();
@@ -73,11 +75,7 @@ public class APIController {
         }
     }
 
-    private static Route getSession = (Request req, Response res) -> {
-        return new Event("ID test", "Event Code Test");
     public static Route getSession = (Request req, Response res) -> {
-        //return new Event("0", "Event Code Test");
-        
         String eventCode = req.params(":id");
         Event event = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
 
@@ -85,6 +83,17 @@ public class APIController {
             return APIResponse.success(event);
         
         return APIResponse.error("Could not match event code");
+    };
+
+    // Gets the user ID from email and password
+    public static Route getUser = (Request req, Response res) -> {
+        String userId = req.params(":id");
+        User user = DatabaseManager.getDatabaseManager().getUserFromID(userId);
+
+        if (user != null)
+            return APIResponse.success(user);
+        
+        return APIResponse.error("The user requested could not be found");
     };
 
     // Creates a new event
@@ -100,17 +109,45 @@ public class APIController {
                 .excludeFieldsWithoutExposeAnnotation()
                 .create();
 
-            // TODO: add more security, e.g. someone can create an event with a custom code
             // Attempts to parse event
             Event event = gson.fromJson(req.body(), Event.class);
 
             // Generates a new code for the event
             event.generateEventCode();
-            event.generateEventCode();
 
             // Adds it to the database and returns the event code
             DatabaseManager.getDatabaseManager().addEvent(event);
             return APIResponse.success(new Document("eventCode", event.getEventCode()));
+        } catch (Exception e) {
+            // Prints the error to console
+            e.printStackTrace();
+        }
+        // Returns an error response
+        return APIResponse.error("Could not create the event.");
+    };
+
+
+    // Registers a new user
+    public static Route postUser = (Request req, Response res) -> {
+        // Sets the return type to json
+        res.type("application/json");
+        // Catches parsing errors
+        try {
+            // Creates a GSON parser that can parse dates and excludes id and eventcode fields
+            Gson gson = new GsonBuilder()
+                .excludeFieldsWithoutExposeAnnotation()
+                .create();
+
+            // Attempts to parse the user
+            User user = gson.fromJson(req.body(), User.class);
+
+            // Checks if the user already exists
+            if (DatabaseManager.getDatabaseManager().checkUser(user.getEmail()))
+                return APIResponse.error("A user with the given email already exists.");
+            
+            // Adds it to the database and returns the user id
+            String id = DatabaseManager.getDatabaseManager().addUser(user);
+            return APIResponse.success(new Document("id", user.getID()));
         } catch (Exception e) {
             // Prints the error to console
             e.printStackTrace();

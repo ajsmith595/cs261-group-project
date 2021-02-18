@@ -50,7 +50,7 @@ public class WebSocketController {
                 session.close();
             } else {
                 if (!webSocketConnections.containsKey(eventCode)) {
-                    webSocketConnections.put(eventCode, new Event("123", "abcdef")); // TODO: get event data from DB
+                    //webSocketConnections.put(eventCode, new Event("123", "abcdef")); // TODO: get event data from DB
                 }
                 webSocketConnections.get(eventCode).addClient(session);
             }
