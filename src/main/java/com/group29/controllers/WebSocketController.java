@@ -51,8 +51,13 @@ public class WebSocketController {
                 session.close();
             } else {
                 if (!webSocketConnections.containsKey(eventCode)) {
-                    webSocketConnections.put(eventCode,
-                            DatabaseManager.getDatabaseManager().getEventFromCode(eventCode));
+                    Event e = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
+                    if (e == null) {
+                        session.close();
+                        return;
+                    } else {
+                        webSocketConnections.put(eventCode, e);
+                    }
                 }
                 webSocketConnections.get(eventCode).addClient(session);
             }

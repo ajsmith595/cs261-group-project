@@ -21,12 +21,6 @@ function App() {
         <Jumbotron className="pt-4">
             <Router>
                 <div>
-                    <Route path="/event/">
-                        <Link to="/" className="btn btn-primary">Back</Link>
-                        <Link to="/logout" className="btn btn-dark float-right">Logout</Link>
-                    </Route>
-                </div>
-                <Container className="border border bg-white rounded container-fluid  mt-2">
                     <Switch>
                         <Route exact path="/">
                             <Link to="/event/new" className="btn btn-dark m-1">+ New Event</Link>
@@ -40,7 +34,7 @@ function App() {
                     <Link to="/logout" className="btn btn-dark float-right m-1">Logout</Link>
                 </div>
 
-                <Container className="border border bg-white rounded container-fluid  mt-2">
+                <div className="border border bg-white rounded container-fluid  mt-2">
                     <Switch>
                         <Route exact path="/">
                             <HomeView />
@@ -58,9 +52,9 @@ function App() {
                             <FeedbackView />
                         </Route>
                     </Switch>
-                </Container>
+                </div>
             </Router>
-        </Jumbotron>
+        </Jumbotron >
     );
 }
 
