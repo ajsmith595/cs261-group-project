@@ -1,9 +1,6 @@
 import React from "react";
 import { Form, Col, Row, Button } from "react-bootstrap";
-<<<<<<< HEAD
-=======
 import Multiselect from "react-multi-select-component";
->>>>>>> feature/feedback-view
 // import '../feedback.css';
 export default class FeedbackView extends React.Component {
     constructor(props) {
@@ -54,12 +51,16 @@ export default class FeedbackView extends React.Component {
         };
     }
 
+    //When the page has received the form from the server it loads the page
     /*componentDidMount() {
         fetch('/api/event/:id')
           .then((response) => response.json())
           .then((data) => this.setState({questions: data, loading: false}));
     }*/
 
+    /*
+    Sends the state to the server to store and analyse the feedback
+    */
     sendStateToServer() {
         fetch('/api/event/:id/feedback',
         {
@@ -74,19 +75,22 @@ export default class FeedbackView extends React.Component {
             if (response.status >= 400) {
                 throw new Error("Bad response from server");
             }
-            response.json().then(data => {
+            response.json().then(data => { //Tells the user that the feedback was sent
               console.log("success");
             })
         })
     }
 
+    /*
+    Renders the feedback-view
+    */
     render() {
-        if (this.state.loading) {
+        if (this.state.loading) { //Shows the user that the page is still loading
             return (
                 <h1 className="text-center">Loading...</h1>
             );
         }
-        let questions = [];
+        let questions = []; //Goes through each question and adds it to the list, to be added to the form
         for (let id in this.state.questions) {
             let question = this.state.questions[id];
             switch (question.type) {
@@ -97,16 +101,13 @@ export default class FeedbackView extends React.Component {
                     questions.push(this.renderRangeQuestion(question));
                     break;
                 case 'choice':
-<<<<<<< HEAD
-=======
                     questions.push(this.renderChoiceQuestion(question));
                     break;
                 case 'multi-choice':
->>>>>>> feature/feedback-view
                     questions.push(this.renderMultipleChoiceQuestion(question));
                     break;
             }
-            questions.push(<hr />);
+            questions.push(<hr />); //Adds a line after every question
         }
         return (
             <div className="text-center py-2">
@@ -132,31 +133,40 @@ export default class FeedbackView extends React.Component {
         );
     }
 
+    /*
+    Changes the given questions value based on given ID
+    And which element called the function
+    */
     changeQuestion(id) {
         let func = (e) => {
             let questions = this.state.questions;
-            questions[id].value = e.target.value;
+            questions[id].value = e.target.value; //Gets the value of the caller
             this.setState({
                 questions: questions
             });
         };
         return func.bind(this);
     }
-<<<<<<< HEAD
-=======
     
+    /*
+    Changes the given questions value based on given ID
+    for the 'multiple-choice question type'
+    */
     changeMultiQuestion(id) {
         let func = (e) => {
             let questions = this.state.questions;
-            questions[id].value = e;
+            questions[id].value = e; //Requires just e rather than e.target.value
             this.setState({
                 questions: questions
             });
         };
         return func.bind(this);
     }
->>>>>>> feature/feedback-view
 
+    /*
+    Renders the long form text question
+    Includes a 'text-area' to enter the response
+    */
     renderLongQuestion(question) {
         return (
             <Form.Group controlId={"formQuestion_" + question.id}>
@@ -172,6 +182,11 @@ export default class FeedbackView extends React.Component {
         );
     }
 
+    /*
+    Renders the long form text question
+    Includes a range slider to enter the response
+    and shows the value of the response to the user
+    */
     renderRangeQuestion(question) {
         return (
             <Form.Group controlId={"formQuestion_" + question.id}>
@@ -189,11 +204,12 @@ export default class FeedbackView extends React.Component {
         )
     }
 
-<<<<<<< HEAD
-    renderMultipleChoiceQuestion(question) {
-=======
+    /*
+    Renders the long form text question
+    Gives the user a list of options to choose from
+    The user can only choose at most one response
+    */
     renderChoiceQuestion(question) {
->>>>>>> feature/feedback-view
         let options = [];
         for (let choice in question.choices) {
             options.push(<option value={choice}>{question.choices[choice]}</option>);
@@ -213,13 +229,13 @@ export default class FeedbackView extends React.Component {
                 </Row>
             </Form.Group>
         )
-<<<<<<< HEAD
-
-        
-    }
-=======
     }
 
+    /*
+    Renders the long form text question
+    Gives the user a list of options to choose from
+    The user can choose any amount of answers
+    */
     renderMultipleChoiceQuestion(question) {
         let options = [];
         for (let choice in question.choices) {
@@ -239,5 +255,4 @@ export default class FeedbackView extends React.Component {
         )
     }
 
->>>>>>> feature/feedback-view
 }

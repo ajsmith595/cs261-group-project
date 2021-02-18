@@ -121,13 +121,13 @@ public class APIController {
         return APIResponse.error("Could not create the event.");
     };
 
+    /**
+     * Receives the the feedback form from the user to be analysed and then
+     * send this data to the host's view
+     */
     public static Route checkData = (Request req, Response res) -> {
         System.out.println(req.body());
         return "success";
     };
 
-    public static Route checkData = (Request req, Response res) -> {
-        System.out.println(req.body());
-        return "success";
-    };
 }
