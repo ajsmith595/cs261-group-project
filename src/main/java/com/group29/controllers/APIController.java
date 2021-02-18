@@ -128,18 +128,36 @@ public class APIController {
         return "success";
     };
 
+    /**
+     * Handles the registration attempt sent by a user
+     * Returns either an error with a message or success
+     */
     public static Route register = (Request req, Response res) -> {
         System.out.println(req.body());
         // Convert JSON to get Username and email
         // Check and add user if valid
+
+        // If the attempt to register was a success, need to add the user's ID to the session
+        // Do so with the following:
+        //req.session().attribute('uid', value)
+
         // Send success or failure with corresponding body
         return APIResponse.error("Could not create the event.");
     };
 
+    /**
+     * Handles the login attempt sent by a user
+     * Returns either an error with a message or success
+     */
     public static Route login = (Request req, Response res) -> {
         System.out.println(req.body());
         // Convert JSON to get Username and email
         // Check if user exists
+
+        // If the attempt to login was a success, need to add the user's ID to the session
+        // Do so with the following:
+        //req.session().attribute('uid', value)
+
         // Send success or failure with corresponding body
         return APIResponse.error("Could not create the event.");
     };
