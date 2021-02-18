@@ -8,4 +8,8 @@ public class ChoiceQuestion extends Question {
         this.title = title;
         this.options = options;
     }
+
+    public Option[] getOptions() {
+        return this.options;
+    }
 }

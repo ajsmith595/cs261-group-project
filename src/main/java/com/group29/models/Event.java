@@ -103,6 +103,15 @@ public class Event {
         return this.eventCode;
     }
 
+    /**
+     * Gets the host's ID
+     * 
+     * @return
+     */
+    public String getHostID() {
+        return this.hostID;
+    }
+
     public void addClient(Session s) {
         clients.add(s);
         try {
@@ -195,6 +204,69 @@ public class Event {
     }
 
     /**
+     * Gets the Document object to be converted into JSON for the event when
+     * requested by an attendee. Contains all questions with default values, and
+     * mins/maxes for numeric questions, and choices for multiple choice questions.
+     * 
+     * @return The document with the associated values
+     */
+    public Document getAttendeeViewDocument() {
+        Document d = new Document();
+
+        d.append("isHost", false);
+        d.append("hostID", hostID);
+        d.append("title", title);
+        d.append("startTime", startTime.getTime());
+        d.append("duration", duration);
+        Document questionDoc = new Document();
+        Question[] questions = this.data.getQuestions();
+        for (int i = 0; i < questions.length; i++) {
+            Question q = questions[i];
+            Document d2 = new Document();
+            d2.append("title", q.getTitle());
+            d2.append("type", q.getType());
+            d2.append("id", i);
+            switch (q.getType()) {
+                case "open":
+                    d2.append("value", "");
+                    break;
+                case "choice":
+                    ChoiceQuestion cq = (ChoiceQuestion) q;
+                    ArrayList<String> options = new ArrayList<>();
+                    for (Option o : cq.getOptions()) {
+                        options.add(o.getName());
+                    }
+                    d2.append("value", -1);
+                    d2.append("choices", options.toArray());
+                    break;
+                case "numeric":
+                    NumericQuestion nq = (NumericQuestion) q;
+                    d2.append("min", nq.getMinValue());
+                    d2.append("max", nq.getMaxValue());
+                    d2.append("value", (int) Math.round((nq.getMaxValue() + nq.getMinValue()) / 2));
+                    break;
+            }
+            questionDoc.append(Integer.toString(i), d2);
+        }
+        d.append("questions", questionDoc);
+
+        return d;
+    }
+
+    /**
+     * Gets the document object to be converted into JSON for the event when
+     * requested by a host. It only needs the isHost field since all other data is
+     * obtained via WebSockets
+     * 
+     * @return The document with the associated values
+     */
+    public Document getHostViewDocument() {
+        Document d = new Document();
+        d.append("isHost", true);
+        return d;
+    }
+
+    /**
      * Generates an event code for the event If one has already been generated, this
      * does nothing
      * 
@@ -202,8 +274,9 @@ public class Event {
      */
     public boolean generateEventCode() {
         // Checks if the event has a code
-        if (eventCode != null)
+        if (eventCode != null) {
             return false;
+        }
 
         // Creates a new RNG and string builder
         Random random = new Random();

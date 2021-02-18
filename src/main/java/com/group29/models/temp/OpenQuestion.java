@@ -12,4 +12,12 @@ public class OpenQuestion extends Question {
         this.recent_responses = responses;
         this.trends = trends;
     }
+
+    public QuestionResponse[] getRecentResponses() {
+        return this.recent_responses;
+    }
+
+    public Trend[] getTrends() {
+        return this.trends;
+    }
 }

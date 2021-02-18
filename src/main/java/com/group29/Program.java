@@ -39,6 +39,11 @@ import spark.route.Routes;
 import spark.staticfiles.StaticFilesConfiguration;
 
 public class Program {
+    // The below fix was got from
+    // https://gist.github.com/concision/f175bb5dd42c524bedd633af80903b9f
+    // It fixes the 404 not being handled via the notFound method, when both static
+    // files and WebSockets are used.
+    // #region 404 FIX
 
     /**
      * Call {@link Spark#awaitInitialization()} prior to attempting an injection
@@ -98,6 +103,8 @@ public class Program {
         CompletableFuture.runAsync(Program::blockingInject);
     }
 
+    // #endregion 404 FIX
+
     public static void main(String[] args) {
 
         // WebSockets must come before HTTP routes
@@ -116,10 +123,11 @@ public class Program {
         t.schedule(new TimerTask() {
             @Override
             public void run() {
-                WebSocketController.updateEvent(null); // update all events
+                WebSocketController.updateEvent(null); // update all events every 5 seconds
             }
         }, 0, 5000);
-        asyncInject();
+
+        asyncInject(); // 404 fix
 
     }
 }

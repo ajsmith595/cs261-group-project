@@ -4,43 +4,15 @@ import { Form, Col, Row, Button } from "react-bootstrap";
 export default class FeedbackView extends React.Component {
     constructor(props) {
         super(props);
+        console.log(props.data);
         this.sendStateToServer = this.sendStateToServer.bind(this);
-
-
-        /* 
-        TODO: make it so that when the page is accessed, loading is 'true'.
-        Then, in the componentDidMount method (built in React method), do a GET request to the /api/event/:id (by using fetch method, or similar), and populate the 'questions' state (use:
-            this.setState({questions: data, loading: false})
-        ).
-        Then, when the form button is clicked, do a POST request to the /api/event/:id/feedback (not 100% sure on the URL) with the current state.
-        */
         this.state = {
-            loading: false,
+            status: 'show',
             anonymous: false,
-            questions: {
-                "0": {
-                    id: "0", // this needs to be the same as the index, so the questions can directly access their own state
-                    type: 'open',
-                    title: 'Any other comments?',
-                    value: ''
-                },
-                "1": {
-                    id: "1",
-                    type: 'numeric',
-                    title: 'On a scale of 1 to 10, 10 being the best, how would you rate the event?',
-                    min: 1,
-                    max: 10,
-                    value: 5
-                },
-                "2": {
-                    id: "2",
-                    type: 'choice',
-                    title: 'Choose a colour',
-                    choices: ["Red", "Yellow", "Green", "Blue"],
-                    value: -1
-                }
-            }
+            questions: props.data.questions
         };
+
+
     }
 
     /*componentDidMount() {
@@ -49,30 +21,81 @@ export default class FeedbackView extends React.Component {
           .then((data) => this.setState({questions: data, loading: false}));
     }*/
 
+
+    // Send the feedback to the server
     sendStateToServer() {
-        fetch('/api/event/:id/feedback',
-        {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(this.state),
-        }
-        ).then(response => {
-            if (response.status >= 400) {
-                throw new Error("Bad response from server");
+        this.setState({
+            status: 'loading'
+        });
+        fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/event/${this.props.eventID}/feedback`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(this.state),
             }
-            response.json().then(data => {
-              console.log("success");
+        ).then(response => response.json()).then(data => {
+            if (data.status === 'success') {
+                // Reset all the values of all the questions, so if they want to submit again, the question values are not identical
+                for (let i in this.state.questions) {
+                    let question = this.state.questions[i];
+
+                    if (question.type === "open") {
+                        question.value = "";
+                    }
+                    else if (question.type === "choice") {
+                        question.value = -1;
+                    }
+                    else if (question.type === "numeric") {
+                        question.value = Math.round((question.min + question.max) / 2);
+                    }
+                }
+                this.setState({
+                    status: 'success',
+                    questions: this.state.questions
+                });
+            }
+            else {
+                this.setState({
+                    status: 'error'
+                })
+            }
+        }).catch(err => {
+            this.setState({
+                status: 'error'
             })
-        })
+        });
     }
 
     render() {
-        if (this.state.loading) {
+        if (this.state.status === 'loading') {
             return (
                 <h1 className="text-center">Loading...</h1>
+            );
+        }
+        else if (this.state.status === 'success') {
+            return (
+                <Row>
+                    <Col xs={0} sm={1} md={3} />
+                    <Col xs={12} sm={10} md={6}>
+                        <h1 className="text-center">Feedback Successful!</h1>
+                        <Button className="w-100 mx-auto" variant="primary" onClick={() => this.setState({ status: 'show' })}>Give more feedback</Button>
+                    </Col>
+                    <Col xs={0} sm={1} md={3} />
+                </Row>
+            );
+        }
+        else if (this.state.status === 'error') {
+            return (
+                <Row>
+                    <Col xs={0} sm={1} md={3} />
+                    <Col xs={12} sm={10} md={6}>
+                        <h1 className="text-center">An error occurred!</h1>
+                        <Button className="w-100 mx-auto" variant="primary" onClick={() => this.setState({ status: 'show' })}>Try Again?</Button>
+                    </Col>
+                    <Col xs={0} sm={1} md={3} />
+                </Row>
             );
         }
         let questions = [];
@@ -95,7 +118,7 @@ export default class FeedbackView extends React.Component {
             <div className="text-center py-2">
                 <h1>Feedback</h1>
                 <hr />
-                <Form method="POST" id="feedback" action="/event/attendee">
+                <Form onSubmit={this.sendStateToServer}>
                     {questions}
                     <Form.Check type="checkbox" id="anonymous_check" >
                         <Form.Check.Input type="checkbox" checked={this.state.anonymous} onChange={(e) => this.setState({ anonymous: e.target.checked })} />
@@ -103,7 +126,6 @@ export default class FeedbackView extends React.Component {
                     </Form.Check>
                     <hr />
                     <Row>
-
                         <Col xs={0} sm={1} md={3}></Col>
                         <Col xs={12} sm={10} md={6}>
                             <Button className="w-100" type="button" variant="primary" onClick={this.sendStateToServer}>Submit</Button>
@@ -150,7 +172,7 @@ export default class FeedbackView extends React.Component {
                     <Col xs={0} sm={1} md={3}></Col>
                     <Col xs={12} sm={10} md={6}>
                         <Form.Control className="mx-auto" value={question.value} onChange={this.changeQuestion(question.id)} type="range" min={question.min} max={question.max} step="1"></Form.Control>
-                        <small class="text-center text-muted">{question.value}</small>
+                        <small className="text-center text-muted">{question.value}</small>
                     </Col>
                     <Col xs={0} sm={1} md={3}></Col>
                 </Row>
@@ -170,7 +192,7 @@ export default class FeedbackView extends React.Component {
                     <Col xs={0} sm={1} md={3}></Col>
                     <Col xs={12} sm={10} md={6}>
                         <Form.Control className="mx-auto" as="select" value={question.value} onChange={this.changeQuestion(question.id)}>
-                            <option disabled selected value={-1}>Choose an option...</option>
+                            <option disabled value={-1}>Choose an option...</option>
                             {options}
                         </Form.Control>
                     </Col>
@@ -179,6 +201,6 @@ export default class FeedbackView extends React.Component {
             </Form.Group>
         )
 
-        
+
     }
 }

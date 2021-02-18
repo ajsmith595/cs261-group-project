@@ -6,4 +6,8 @@ public class WebSocketData {
     public WebSocketData(Question[] questions) {
         this.questions = questions;
     }
+
+    public Question[] getQuestions() {
+        return this.questions;
+    }
 }
