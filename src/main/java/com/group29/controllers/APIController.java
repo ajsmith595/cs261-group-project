@@ -133,6 +133,7 @@ public class APIController {
      * Returns either an error with a message or success
      */
     public static Route register = (Request req, Response res) -> {
+        //Might need to ensure the user is not logged in already?
         System.out.println(req.body());
         // Convert JSON to get Username and email
         // Check and add user if valid
@@ -150,6 +151,7 @@ public class APIController {
      * Returns either an error with a message or success
      */
     public static Route login = (Request req, Response res) -> {
+        //Might need to ensure the user is not logged in already?
         System.out.println(req.body());
         // Convert JSON to get Username and email
         // Check if user exists
