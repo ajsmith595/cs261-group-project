@@ -25,4 +25,8 @@ public class ChoiceQuestion extends Question {
     public boolean getMultiple() {
         return this.multiple;
     }
+
+    public Option[] getOptions() {
+        return this.options;
+    }
 }

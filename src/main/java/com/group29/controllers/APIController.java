@@ -183,8 +183,9 @@ public class APIController {
     };
 
     /**
-     * Receives the the feedback form from the user to be analysed and then send
-     * this data to the host's view
+     * <<<<<<< HEAD Receives the the feedback form from the user to be analysed and
+     * then send this data to the host's view ======= When feedback is received.
+     * >>>>>>> d94def0978b23c9470a1ff36e0628f19c017738f
      */
     public static Route checkData = (Request req, Response res) -> {
         System.out.println(req.body());
