@@ -1,15 +1,43 @@
 import React from "react";
 import { Form, Col, Row, Button } from "react-bootstrap";
+import { Redirect } from "react-router-dom";
 export default class RegisterView extends React.Component{
     constructor(props) {
         super(props);
-        //this.sendStateToServer = this.sendStateToServer.bind(this);
+        this.sendStateToServer = this.sendStateToServer.bind(this);
 
         this.state = {
             acceptTerms: false,
             email: "",
-            username: ""
+            username: "",
+            error: ""
         };
+    }
+
+    sendStateToServer() {
+        fetch('/api/register',
+        {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(this.state),
+        }
+        ).then(response => {
+            if (response.status >= 400) {
+                throw new Error("Bad response from server");
+            }
+            response.json().then(data => {
+              if(data.status == "error"){
+                  this.setState({
+                    error: data.message
+                  });
+              }else if(data.status == "success"){
+                window.location.replace("/events");
+              }
+            })
+        });
     }
 
     render(){
@@ -17,6 +45,7 @@ export default class RegisterView extends React.Component{
             <div className="text-center py-2">
                 <h1>Register</h1>
                 <hr />
+                <div id="Error message"><p>{this.state.error}</p></div>
                 <p>
                     Please register your email. This will only be used for identification purposes. If you choose 
                     to be anonymous when providing feedback, your username will not be visable to the host or any

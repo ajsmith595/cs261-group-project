@@ -3,7 +3,7 @@ import { Form, Col, Row, Button } from "react-bootstrap";
 export default class RegisterView extends React.Component{
     constructor(props) {
         super(props);
-        //this.sendStateToServer = this.sendStateToServer.bind(this);
+        this.sendStateToServer = this.sendStateToServer.bind(this);
 
         this.state = {
             email: "",
@@ -11,11 +11,38 @@ export default class RegisterView extends React.Component{
         };
     }
 
+    sendStateToServer() {
+        fetch('/api/login',
+        {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(this.state),
+        }
+        ).then(response => {
+            if (response.status >= 400) {
+                throw new Error("Bad response from server");
+            }
+            response.json().then(data => {
+              if(data.status == "error"){
+                  this.setState({
+                    error: data.message
+                  });
+              }else if(data.status == "success"){
+                window.location.replace("/events");
+              }
+            })
+        });
+    }
+
     render(){
         return (
             <div className="text-center py-2">
                 <h1>Login</h1>
                 <hr />
+                <div id="Error message"><p>{this.state.error}</p></div>
                 <Form method="POST" id="feedback" action="/">
                     {this.renderEmail()}
                     {this.renderUsername()}

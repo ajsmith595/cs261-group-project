@@ -38,6 +38,8 @@ public class APIController {
         get("/event/:id", APIController.getSession, new JSONTransformer());
         post("/events", APIController.postEvent, new JSONTransformer());
         post("/event/:id/feedback", "application/json", APIController.checkData);
+        post("/register", APIController.register, new JSONTransformer());
+        post("/login", APIController.login, new JSONTransformer());
     };
 
     private static HashMap<String, String> webSocketTokens = new HashMap<>();
@@ -124,5 +126,21 @@ public class APIController {
     public static Route checkData = (Request req, Response res) -> {
         System.out.println(req.body());
         return "success";
+    };
+
+    public static Route register = (Request req, Response res) -> {
+        System.out.println(req.body());
+        // Convert JSON to get Username and email
+        // Check and add user if valid
+        // Send success or failure with corresponding body
+        return APIResponse.error("Could not create the event.");
+    };
+
+    public static Route login = (Request req, Response res) -> {
+        System.out.println(req.body());
+        // Convert JSON to get Username and email
+        // Check if user exists
+        // Send success or failure with corresponding body
+        return APIResponse.error("Could not create the event.");
     };
 }
