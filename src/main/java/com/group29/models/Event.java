@@ -20,22 +20,13 @@ import org.eclipse.jetty.websocket.api.Session;
 import java.util.Date;
 import java.util.Random;
 import java.lang.StringBuilder;
-
-import javax.lang.model.util.ElementScanner6;
-import javax.xml.crypto.Data;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
-
 import org.bson.Document;
-import org.bson.BsonType;
 import org.bson.BsonWriter;
 import org.bson.BsonReader;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-import org.bson.codecs.ObjectIdCodec;
 import org.bson.types.ObjectId;
 
 import com.google.gson.annotations.Expose;
@@ -46,9 +37,7 @@ public class Event {
     // when a new event is created
 
     private String id; // database ID
-    @Expose
     private String hostID; // event host ID
-    @Expose
     private String templateID; // event template ID
     @Expose
     private String title; // title of event
@@ -112,6 +101,16 @@ public class Event {
         return this.hostID;
     }
 
+    /**
+     * Temporal function to set the host ID. Used so that we can set the host ID on
+     * the server, as opposed to trusting the client to give us the right host ID.
+     * 
+     * @param hostID
+     */
+    public void setHostID(String hostID) {
+        this.hostID = hostID;
+    }
+
     public void addClient(Session s) {
         clients.add(s);
         try {
@@ -121,6 +120,8 @@ public class Event {
         }
     }
 
+    // Temporary - just sample data to loop round for open question chat-like
+    // experience
     private static ArrayList<QuestionResponse> all_responses = new ArrayList<>(
             Arrays.asList(new QuestionResponse[] { new QuestionResponse("Very interesting and intriguing", null, "a"),
                     new QuestionResponse("Something else....", "ajsmith595", "b"),
@@ -128,8 +129,12 @@ public class Event {
                     new QuestionResponse("Clearly well-educated", "KrazyKid69", "d"),
                     new QuestionResponse("Joy is at a low point here", null, "e"),
                     new QuestionResponse("Confusing", null, "f") }));
-    private static int index = 0;
+    private static int index = 0; // again, temporary, used for looking around the all_responses
 
+    /**
+     * Updates the data of the event. Currently randomly generated sample data, but
+     * in the future should be linked to the DB
+     */
     public void updateData() {
         Trend energetic = new Trend("Energetic", 30 + (int) ((Math.random() - 0.5) * 20));
         Trend interesting = new Trend("Interesting", 40 + (int) ((Math.random() - 0.5) * 10));
@@ -173,6 +178,10 @@ public class Event {
         this.data = wsd;
     }
 
+    /**
+     * Send the current event data to every WebSocket client. Should be called after
+     * updating the data
+     */
     public void sendDataToClients() {
 
         String data = (new JSONTransformer()).render(this.data);
@@ -295,7 +304,7 @@ public class Event {
             if (val < 10)
                 sb.append((char) ('0' + val));
             else
-                sb.append((char) ('A' + val));
+                sb.append((char) ('A' + (val - 10)));
         }
         // Puts the event code together and checks if it currently exists
         eventCode = sb.toString();

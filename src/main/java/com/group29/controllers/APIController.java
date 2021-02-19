@@ -168,6 +168,7 @@ public class APIController {
             // Attempts to parse event
             Event event = gson.fromJson(req.body(), Event.class);
 
+            event.setHostID("-1"); // Set it to the current session's ID
             // Generates a new code for the event
             event.generateEventCode();
 
