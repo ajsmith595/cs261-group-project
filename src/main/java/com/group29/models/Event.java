@@ -59,7 +59,8 @@ public class Event {
     @Expose
     private String eventCode; // event code used by clients
     private ArrayList<Session> clients;
-    private WebSocketData data;
+    public WebSocketData data;
+//    private List<>
 
     // Used to reconstruct an already created event
     private Event(String id, String hostID, String templateID, String title, Date startTime, int duration,
