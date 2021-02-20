@@ -152,7 +152,7 @@ public class DatabaseManager {
     public Template getTemplate(String templateID) {
         //TODO Actually remove this mess
         return new Template(templateID, "a", new Question[] {
-                new OpenQuestion("General, Feedback", new QuestionResponse[0], new Trend[0]),
+                new OpenQuestion("General, Feedback", new QuestionResponse[0], new Trend[0], 0),
 
                 new ChoiceQuestion("What is your Favourite colour?", new Option[] {
                         new Option("Red", -1),

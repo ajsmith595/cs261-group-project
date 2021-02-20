@@ -14,4 +14,20 @@ public class Feedback {
         this.anonymous = anonymous;
         this.responses = responses;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public boolean isAnonymous() {
+        return anonymous;
+    }
+
+    public List<Response> getResponses() {
+        return responses;
+    }
 }

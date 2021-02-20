@@ -10,4 +10,16 @@ public class Response {
         this.questionId = questionId;
         this.response = response;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getQuestionId() {
+        return questionId;
+    }
+
+    public String getResponse() {
+        return response;
+    }
 }

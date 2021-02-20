@@ -21,4 +21,32 @@ public class NumericQuestion extends Question {
         this.points = points;
         this.current_time = current_time;
     }
+
+    public Stats getStats() {
+        return stats;
+    }
+
+    public int getMin_value() {
+        return min_value;
+    }
+
+    public int getMax_value() {
+        return max_value;
+    }
+
+    public long getMin_time() {
+        return min_time;
+    }
+
+    public long getMax_time() {
+        return max_time;
+    }
+
+    public Point[] getPoints() {
+        return points;
+    }
+
+    public long getCurrent_time() {
+        return current_time;
+    }
 }

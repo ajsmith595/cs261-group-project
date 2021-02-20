@@ -8,4 +8,12 @@ public class Option {
         this.name = name;
         this.number = number;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getNumber() {
+        return number;
+    }
 }
