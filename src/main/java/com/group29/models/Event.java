@@ -1,5 +1,6 @@
 package com.group29.models;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -47,6 +48,7 @@ public class Event {
     private int duration; // Duration of event in minutes
     @Expose
     private String eventCode; // event code used by clients
+    private ArrayList<Feedback> feedbackList;
     private ArrayList<Session> clients;
     private WebSocketData data;
 
@@ -60,6 +62,7 @@ public class Event {
         this.startTime = startTime;
         this.duration = duration;
         this.eventCode = eventCode;
+        this.feedbackList = new ArrayList<Feedback>();
         this.clients = new ArrayList<Session>();
 
         this.updateData();
@@ -204,6 +207,14 @@ public class Event {
     }
 
     /**
+     * Adds a feedback to the event
+     * @param feedback The feedback to be added
+     */
+    public void addFeedback(Feedback feedback) {
+        feedbackList.add(feedback);
+    }
+
+    /**
      * Gets all feedback for this event TODO: this
      * 
      * @return Object
@@ -340,6 +351,7 @@ public class Event {
         if (eventCode == null)
             generateEventCode();
         doc.append("eventCode", eventCode);
+        doc.append("feedbackList", feedbackList);
 
         // Returns the filled document
         return doc;
@@ -390,6 +402,7 @@ public class Event {
             Date startTime = doc.getDate("startTime");
             int duration = doc.getInteger("duration");
             String eventCode = doc.getString("eventCode");
+            List<Feedback> feedbackList = doc.getList("feedbackList", Feedback.class);
 
             // Returns a new event using the data obtained
             return new Event(id, hostID, templateID, title, startTime, duration, eventCode);
