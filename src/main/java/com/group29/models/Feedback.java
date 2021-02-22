@@ -1,6 +1,8 @@
 package com.group29.models;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import com.google.gson.annotations.Expose;
 
@@ -32,6 +34,18 @@ public class Feedback {
         this.anonymous = anonymous;
         this.responses = responses;
     }
+
+    public static Feedback generateFeedbackFromDocument(Document doc)
+    {
+        // Grabs the information from the document
+        //String id = doc.getObjectId("_id").toHexString();
+        String userID = doc.getString("userID");
+        boolean anonymous = doc.getBoolean("anonymous");
+        List<Response> responses = doc.getList("responses", Document.class).stream().map(x -> Response.generateResponseFromDocument(x)).collect(Collectors.toList());
+
+        // Returns a new event using the data obtained
+        return new Feedback(null, userID, anonymous, responses);
+    }
     
     /**
      * Gets the feedback as a MongoDB Document
@@ -48,7 +62,10 @@ public class Feedback {
             doc.append("_id", new ObjectId(id));
         doc.append("userID", userID);
         doc.append("anonymous", anonymous);
-        doc.append("responses", responses);
+        if (responses != null)
+            doc.append("responses", (List<Document>)(responses.stream().map(x -> x.getResponseAsDocument()).collect(Collectors.toList())));
+        else 
+            doc.append("responses", new ArrayList<Document>());
 
         // Returns the filled document
         return doc;
@@ -92,14 +109,7 @@ public class Feedback {
             // Generates a document from the reader
             Document doc = documentCodec.decode(reader, decoderContext);
 
-            // Grabs the information from the document
-            String id = doc.getObjectId("_id").toHexString();
-            String userID = doc.getString("userID");
-            boolean anonymous = doc.getBoolean("anonymous");
-            List<Response> responses = doc.getList("feedbackList", Response.class);
-
-            // Returns a new event using the data obtained
-            return new Feedback(id, userID, anonymous, responses);
+            return generateFeedbackFromDocument(doc);
         }
 
         /**

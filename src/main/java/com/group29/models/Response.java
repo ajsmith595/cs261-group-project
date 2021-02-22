@@ -47,6 +47,18 @@ public class Response {
         return doc;
     }
 
+    public static Response generateResponseFromDocument(Document doc)
+    {
+        // Grabs the information from the document
+        //String id = doc.getObjectId("_id").toHexString();
+        String questionID = doc.getString("questionID");
+        String response = doc.getString("response");
+
+        // Returns a new event using the data obtained
+        return new Response(null, questionID, response);
+    }
+    
+
     
 
     // Codec class to allow MongoDB to automatically create Response classes
@@ -85,13 +97,7 @@ public class Response {
             // Generates a document from the reader
             Document doc = documentCodec.decode(reader, decoderContext);
 
-            // Grabs the information from the document
-            String id = doc.getObjectId("_id").toHexString();
-            String questionID = doc.getString("questionID");
-            String response = doc.getString("response");
-
-            // Returns a new event using the data obtained
-            return new Response(id, questionID, response);
+            return generateResponseFromDocument(doc);
         }
 
         /**
