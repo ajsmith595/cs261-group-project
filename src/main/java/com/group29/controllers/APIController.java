@@ -13,12 +13,14 @@ import java.util.HashMap;
 import com.group29.JSONTransformer;
 import com.group29.models.Event;
 import com.group29.models.User;
+import com.group29.models.Feedback;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonObject;
 
 import org.bson.Document;
 
@@ -39,6 +41,7 @@ public class APIController {
          */
         post("/events", APIController.postEvent, new JSONTransformer());
         post("/users", APIController.postUser, new JSONTransformer());
+        post("/feedback/:id", APIController.postFeedback, new JSONTransformer());
         post("/event/:id/feedback", "application/json", APIController.checkData);
     };
 
@@ -138,7 +141,7 @@ public class APIController {
         res.type("application/json");
         // Catches parsing errors
         try {
-            // Creates a GSON parser that can parse dates and excludes id and eventcode fields
+            // Creates a GSON parser that can parse dates and excludes id
             Gson gson = new GsonBuilder()
                 .excludeFieldsWithoutExposeAnnotation()
                 .create();
@@ -158,7 +161,40 @@ public class APIController {
             e.printStackTrace();
         }
         // Returns an error response
-        return APIResponse.error("Could not create the event.");
+        return APIResponse.error("Could not create the user.");
+    };
+
+
+    // Posts a new feedback
+    public static Route postFeedback = (Request req, Response res) -> {
+        // Gets the event code from the url
+        String eventCode = req.params(":id");
+        // Sets the return type to json
+        res.type("application/json");
+        // Catches parsing errors
+        try {
+            // Creates a GSON parser that can parse dates and excludes id
+            Gson gson = new GsonBuilder()
+                .excludeFieldsWithoutExposeAnnotation()
+                .create();
+
+            // Attempts to parse the feedback as well as the id of the event
+            Feedback feedback = gson.fromJson(req.body(), Feedback.class);
+
+
+            // Attempts to add the feedback to the database
+            boolean result =  DatabaseManager.getDatabaseManager().addFeedback(eventCode, feedback);
+
+            // Responds with whether it worked
+            if (result)
+                return APIResponse.success(new Document());
+            return APIResponse.error("The feedback could not be added.");
+        } catch (Exception e) {
+            // Prints the error to console
+            e.printStackTrace();
+        }
+        // Returns an error response
+        return APIResponse.error("The feedback could not be added.");
     };
     
     public static Route checkData = (Request req, Response res) -> {

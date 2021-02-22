@@ -40,9 +40,11 @@ public class DatabaseManager {
         CodecRegistry defaultCodecReg = MongoClient.getDefaultCodecRegistry();
         Event.EventCodec eventCodec = new Event.EventCodec();
         User.UserCodec userCodec = new User.UserCodec();
+        Feedback.FeedbackCodec feedbackCodec = new Feedback.FeedbackCodec();
+        Response.ResponseCodec responseCodec = new Response.ResponseCodec();
 
         // Adds the event codec to the codec registry and saves it in the options
-        CodecRegistry codecReg = CodecRegistries.fromRegistries(CodecRegistries.fromCodecs(eventCodec, userCodec), defaultCodecReg);
+        CodecRegistry codecReg = CodecRegistries.fromRegistries(CodecRegistries.fromCodecs(eventCodec, userCodec, feedbackCodec, responseCodec), defaultCodecReg);
         MongoClientOptions options = MongoClientOptions.builder().codecRegistry(codecReg).build();
 
         // Creates a connection to the client with the custom codecs and access the database
@@ -204,13 +206,33 @@ public class DatabaseManager {
     }
 
     // Adds a template to the database
-    public void addTemplate(int eventID, Object questions) {
+    public void addTemplate(String eventID, Object questions) {
 
     }
 
-    // Adds a feedback to the database
-    public void addFeedback(int eventID, int templateID, Feedback feedback) {
+    /**
+     * Adds a feedback to the database
+     * @param eventID The id of the event the feedback was for
+     * @param feedback The feedback to be stored
+     * @return True if the feedback was added successfully
+     */
+    public boolean addFeedback(String eventCode, Feedback feedback) {
+        // Gets the events collection and creates a query string for the event id
+        MongoCollection events = mongoDB.getCollection("Events");
+        Document query = new Document("eventCode", eventCode);
 
+        // Loops over events found matching the id, adding the feedback to the first one found
+        for (Event event : (FindIterable<Event>)events.find(query, Event.class)) {
+            // Adds the feedback to the event
+            event.addFeedback(feedback);
+
+            // Updates the database and returns true as it was inserted
+            events.findOneAndReplace(query, event.getEventAsDocument());
+            return true;
+        }
+
+        // Returns false if an event with the given id was not found
+        return false;
     }
 
     /**
