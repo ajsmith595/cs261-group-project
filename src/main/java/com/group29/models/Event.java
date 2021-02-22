@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.stream.Collectors;
 
 import com.group29.JSONTransformer;
 import com.group29.models.temp.ChoiceQuestion;
@@ -59,13 +60,14 @@ public class Event {
     private int duration; // Duration of event in minutes
     @Expose
     private String eventCode; // event code used by clients
-    private ArrayList<Feedback> feedbackList;
+    @Expose
+    private List<Feedback> feedbackList;
     private ArrayList<Session> clients;
     private WebSocketData data;
 
     // Used to reconstruct an already created event
     private Event(String id, String hostID, String templateID, String title, Date startTime, int duration,
-            String eventCode) {
+            String eventCode, List<Feedback> feedbackList) {
         this.id = id;
         this.hostID = hostID;
         this.templateID = templateID;
@@ -73,7 +75,7 @@ public class Event {
         this.startTime = startTime;
         this.duration = duration;
         this.eventCode = eventCode;
-        this.feedbackList = new ArrayList<Feedback>();
+        this.feedbackList = feedbackList;
         this.clients = new ArrayList<Session>();
 
         this.updateData();
@@ -263,7 +265,10 @@ public class Event {
         if (eventCode == null)
             generateEventCode();
         doc.append("eventCode", eventCode);
-        doc.append("feedbackList", feedbackList);
+        if (feedbackList != null)
+            doc.append("feedbackList", feedbackList);
+        else
+            doc.append("feedbackList", new ArrayList<Feedback>());
 
         // Returns the filled document
         return doc;
@@ -314,10 +319,16 @@ public class Event {
             Date startTime = doc.getDate("startTime");
             int duration = doc.getInteger("duration");
             String eventCode = doc.getString("eventCode");
-            List<Feedback> feedbackList = doc.getList("feedbackList", Feedback.class);
+            List<Feedback> feedbackList = doc.getList("feedbackList", Document.class).stream().map(x -> Feedback.generateFeedbackFromDocument(x)).collect(Collectors.toList());
+            System.out.println("~~~~~FEEDBACK~~~~~");
+            System.out.println(feedbackList);
+            if (feedbackList != null)
+            {
+            System.out.println(feedbackList.size());
+            }
 
             // Returns a new event using the data obtained
-            return new Event(id, hostID, templateID, title, startTime, duration, eventCode);
+            return new Event(id, hostID, templateID, title, startTime, duration, eventCode, feedbackList);
         }
 
         /**
