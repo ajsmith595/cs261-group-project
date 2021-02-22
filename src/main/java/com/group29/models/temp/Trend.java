@@ -8,4 +8,12 @@ public class Trend {
         this.phrase = phrase;
         this.proportion = proportion;
     }
+
+    public String getPhrase() {
+        return this.phrase;
+    }
+
+    public int getProportion() {
+        return this.proportion;
+    }
 }

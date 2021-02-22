@@ -20,22 +20,13 @@ import org.eclipse.jetty.websocket.api.Session;
 import java.util.Date;
 import java.util.Random;
 import java.lang.StringBuilder;
-
-import javax.lang.model.util.ElementScanner6;
-import javax.xml.crypto.Data;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
-
 import org.bson.Document;
-import org.bson.BsonType;
 import org.bson.BsonWriter;
 import org.bson.BsonReader;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-import org.bson.codecs.ObjectIdCodec;
 import org.bson.types.ObjectId;
 
 import com.google.gson.annotations.Expose;
@@ -46,9 +37,7 @@ public class Event {
     // when a new event is created
 
     private String id; // database ID
-    @Expose
     private String hostID; // event host ID
-    @Expose
     private String templateID; // event template ID
     @Expose
     private String title; // title of event
@@ -103,6 +92,25 @@ public class Event {
         return this.eventCode;
     }
 
+    /**
+     * Gets the host's ID
+     * 
+     * @return
+     */
+    public String getHostID() {
+        return this.hostID;
+    }
+
+    /**
+     * Temporal function to set the host ID. Used so that we can set the host ID on
+     * the server, as opposed to trusting the client to give us the right host ID.
+     * 
+     * @param hostID
+     */
+    public void setHostID(String hostID) {
+        this.hostID = hostID;
+    }
+
     public void addClient(Session s) {
         clients.add(s);
         try {
@@ -112,6 +120,8 @@ public class Event {
         }
     }
 
+    // Temporary - just sample data to loop round for open question chat-like
+    // experience
     private static ArrayList<QuestionResponse> all_responses = new ArrayList<>(
             Arrays.asList(new QuestionResponse[] { new QuestionResponse("Very interesting and intriguing", null, "a"),
                     new QuestionResponse("Something else....", "ajsmith595", "b"),
@@ -119,8 +129,12 @@ public class Event {
                     new QuestionResponse("Clearly well-educated", "KrazyKid69", "d"),
                     new QuestionResponse("Joy is at a low point here", null, "e"),
                     new QuestionResponse("Confusing", null, "f") }));
-    private static int index = 0;
+    private static int index = 0; // again, temporary, used for looking around the all_responses
 
+    /**
+     * Updates the data of the event. Currently randomly generated sample data, but
+     * in the future should be linked to the DB
+     */
     public void updateData() {
         Trend energetic = new Trend("Energetic", 30 + (int) ((Math.random() - 0.5) * 20));
         Trend interesting = new Trend("Interesting", 40 + (int) ((Math.random() - 0.5) * 10));
@@ -137,7 +151,8 @@ public class Event {
         ChoiceQuestion cq1 = new ChoiceQuestion("What is your favourite colour?",
                 new Option[] { new Option("Red", (int) Math.floor(100 * Math.random())),
                         new Option("Yellow", (int) Math.floor(100 * Math.random())),
-                        new Option("Green", (int) Math.floor(100 * Math.random())) });
+                        new Option("Green", (int) Math.floor(100 * Math.random())) },
+                true);
         ChoiceQuestion cq2 = new ChoiceQuestion("What age group are you in?",
                 new Option[] { new Option("18-24", (int) Math.floor(100 * Math.random())),
                         new Option("25-39", (int) Math.floor(100 * Math.random())),
@@ -163,6 +178,10 @@ public class Event {
         this.data = wsd;
     }
 
+    /**
+     * Send the current event data to every WebSocket client. Should be called after
+     * updating the data
+     */
     public void sendDataToClients() {
 
         String data = (new JSONTransformer()).render(this.data);
@@ -195,6 +214,74 @@ public class Event {
     }
 
     /**
+     * Gets the Document object to be converted into JSON for the event when
+     * requested by an attendee. Contains all questions with default values, and
+     * mins/maxes for numeric questions, and choices for multiple choice questions.
+     * 
+     * @return The document with the associated values
+     */
+    public Document getAttendeeViewDocument() {
+        Document d = new Document();
+
+        d.append("isHost", false);
+        d.append("hostID", hostID);
+        d.append("title", title);
+        d.append("startTime", startTime.getTime());
+        d.append("duration", duration);
+        Document questionDoc = new Document();
+        Question[] questions = this.data.getQuestions();
+        for (int i = 0; i < questions.length; i++) {
+            Question q = questions[i];
+            Document d2 = new Document();
+            d2.append("title", q.getTitle());
+            d2.append("type", q.getType());
+            d2.append("id", i);
+            switch (q.getType()) {
+                case "open":
+                    d2.append("value", "");
+                    break;
+                case "choice":
+                    ChoiceQuestion cq = (ChoiceQuestion) q;
+                    ArrayList<String> options = new ArrayList<>();
+                    for (Option o : cq.getOptions()) {
+                        options.add(o.getName());
+                    }
+                    d2.append("multiple", cq.getMultiple());
+                    if (cq.getMultiple()) {
+                        d2.append("value", new int[0]);
+                    } else {
+                        d2.append("value", -1);
+                    }
+                    d2.append("choices", options.toArray());
+                    break;
+                case "numeric":
+                    NumericQuestion nq = (NumericQuestion) q;
+                    d2.append("min", nq.getMinValue());
+                    d2.append("max", nq.getMaxValue());
+                    d2.append("value", (int) Math.round((nq.getMaxValue() + nq.getMinValue()) / 2));
+                    break;
+            }
+            questionDoc.append(Integer.toString(i), d2);
+        }
+        d.append("questions", questionDoc);
+
+        return d;
+    }
+
+    /**
+     * Gets the document object to be converted into JSON for the event when
+     * requested by a host. It only needs the isHost field since all other data is
+     * obtained via WebSockets
+     * 
+     * @return The document with the associated values
+     */
+    public Document getHostViewDocument() {
+        Document d = new Document();
+        d.append("isHost", true);
+        return d;
+    }
+
+    /**
      * Generates an event code for the event If one has already been generated, this
      * does nothing
      * 
@@ -202,8 +289,9 @@ public class Event {
      */
     public boolean generateEventCode() {
         // Checks if the event has a code
-        if (eventCode != null)
+        if (eventCode != null) {
             return false;
+        }
 
         // Creates a new RNG and string builder
         Random random = new Random();
@@ -216,7 +304,7 @@ public class Event {
             if (val < 10)
                 sb.append((char) ('0' + val));
             else
-                sb.append((char) ('A' + val));
+                sb.append((char) ('A' + (val - 10)));
         }
         // Puts the event code together and checks if it currently exists
         eventCode = sb.toString();

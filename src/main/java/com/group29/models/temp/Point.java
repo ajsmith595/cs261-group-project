@@ -8,4 +8,12 @@ public class Point {
         this.time = time;
         this.value = value;
     }
+
+    public long getTime() {
+        return this.time;
+    }
+
+    public float getValue() {
+        return this.value;
+    }
 }

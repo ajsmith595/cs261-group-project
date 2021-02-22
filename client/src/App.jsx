@@ -14,6 +14,7 @@ import {
 } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Jumbotron, Navbar } from 'react-bootstrap';
+import AttendeeHostView from './views/AttendeeHostView.jsx';
 
 // TODO Seems to be error with pages not changing when URL does until refreshed
 function App() {
@@ -46,12 +47,7 @@ function App() {
                         <Route exact path="/event/new">
                             <CreateEventView />
                         </Route>
-                        <Route exact path="/event/host">
-                            <HostView />
-                        </Route>
-                        <Route exact path="/event/attendee">
-                            <FeedbackView />
-                        </Route>
+                        <Route path="/event/:id" component={AttendeeHostView} />
                     </Switch>
                 </div>
             </Router>
