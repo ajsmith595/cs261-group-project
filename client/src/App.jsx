@@ -18,29 +18,21 @@ import { Container, Jumbotron, Navbar } from 'react-bootstrap';
 // TODO Seems to be error with pages not changing when URL does until refreshed
 function App() {
     return (
+
         <Jumbotron className="pt-4">
             <Router>
                 <div>
-<<<<<<< HEAD
-=======
-                    <Route path="/event/">
-                        <Link to="/" className="btn btn-primary">Back</Link>
-                        <Link to="/logout" className="btn btn-dark float-right">Logout</Link>
-                    </Route>
-                </div>
-                <Container className="border border bg-white rounded container-fluid  mt-2">
->>>>>>> feature/feedback-view
                     <Switch>
                         <Route exact path="/">
-                            <Link to="/event/new" className="btn btn-dark m-1">+ New Event</Link>
-                            <Link to="/events" className="btn btn-primary m-1">My Events</Link>
+                            <Link key="new_event_btn" to="/event/new" className="btn btn-dark m-1">+ New Event</Link>
+                            <Link key="my_events_btn" to="/events" className="btn btn-primary m-1">My Events</Link>
                         </Route>
 
                         <Route path={["/event"]}>
-                            <Link to="/" className="btn btn-primary m-1">Back</Link>
+                            <Link key="back_btn" to="/" className="btn btn-primary m-1">Back</Link>
                         </Route>
                     </Switch>
-                    <Link to="/logout" className="btn btn-dark float-right m-1">Logout</Link>
+                    <Link key="logout_btn" to="/logout" className="btn btn-dark float-right m-1">Logout</Link>
                 </div>
 
                 <div className="border border bg-white rounded container-fluid  mt-2">
@@ -61,11 +53,9 @@ function App() {
                             <FeedbackView />
                         </Route>
                     </Switch>
-                  </div>
-                </Container>
+                </div>
             </Router>
-        </Jumbotron>
->>>>>>> feature/feedback-view
+        </Jumbotron >
     );
 }
 
