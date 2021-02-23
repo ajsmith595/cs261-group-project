@@ -1,5 +1,6 @@
 package com.group29.controllers;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import com.group29.models.DatabaseManager;
@@ -68,18 +69,18 @@ public class APIController {
         post("/events", APIController.postEvent, new JSONTransformer());
 
         // Add new feedback for an event
-        post("/event/:id/feedback", "application/json", APIController.checkData, new JSONTransformer());
-        //get("/event/:id", "application/json", APIController.getSession, new JSONTransformer());
+        post("/event/:id/feedback", APIController.postFeedback, new JSONTransformer());
+
+        // Get user
         get("/user/:id", "application/json", APIController.getUser, new JSONTransformer());
+        // Create user
+        post("/users", APIController.postUser, new JSONTransformer());
         /*
          * Makes it return in JSON format. Will automatically convert regular Java
          * classes to JSON. Will keep all fields (private/public/protected) but will
          * discard functions.
          */
-        //post("/events", APIController.postEvent, new JSONTransformer());
-        post("/users", APIController.postUser, new JSONTransformer());
-        post("/feedback/:id", APIController.postFeedback, new JSONTransformer());
-        post("/event/:id/feedback", "application/json", APIController.checkData);
+        // post("/events", APIController.postEvent, new JSONTransformer());
     };
 
     // Contains a key value map of all WebSocket auth tokens, with the event code
@@ -142,10 +143,11 @@ public class APIController {
         // return new Event("0", "Event Code Test");
 
         String eventCode = req.params(":id").toUpperCase();
+
         Event event = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
 
         if (event != null) {
-            if (event.getHostID().equals(req.session().attribute("uid"))) {
+            if (req.queryParams("force_host") != null || event.getHostID().equals(req.session().attribute("uid"))) {
                 return APIResponse.success(event.getHostViewDocument());
             }
             return APIResponse.success(event.getAttendeeViewDocument());
@@ -203,10 +205,9 @@ public class APIController {
 
         if (user != null)
             return APIResponse.success(user);
-        
+
         return APIResponse.error("The user requested could not be found");
     };
-
 
     // Registers a new user
     public static Route postUser = (Request req, Response res) -> {
@@ -215,9 +216,7 @@ public class APIController {
         // Catches parsing errors
         try {
             // Creates a GSON parser that can parse dates and excludes id
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .create();
+            Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
             // Attempts to parse the user
             User user = gson.fromJson(req.body(), User.class);
@@ -225,7 +224,7 @@ public class APIController {
             // Checks if the user already exists
             if (DatabaseManager.getDatabaseManager().checkUser(user.getEmail()))
                 return APIResponse.error("A user with the given email already exists.");
-            
+
             // Adds it to the database and returns the user id
             String id = DatabaseManager.getDatabaseManager().addUser(user);
             return APIResponse.success(new Document("id", user.getID()));
@@ -237,7 +236,6 @@ public class APIController {
         return APIResponse.error("Could not create the user.");
     };
 
-
     // Posts a new feedback
     public static Route postFeedback = (Request req, Response res) -> {
         // Gets the event code from the url
@@ -247,16 +245,15 @@ public class APIController {
         // Catches parsing errors
         try {
             // Creates a GSON parser that can parse dates and excludes id
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .create();
+            Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
             // Attempts to parse the feedback as well as the id of the event
             Feedback feedback = gson.fromJson(req.body(), Feedback.class);
-
+            System.out.println(req.body());
+            feedback.setTimestamp(Calendar.getInstance().getTimeInMillis());
 
             // Attempts to add the feedback to the database
-            boolean result =  DatabaseManager.getDatabaseManager().addFeedback(eventCode, feedback);
+            boolean result = DatabaseManager.getDatabaseManager().addFeedback(eventCode, feedback);
 
             // Responds with whether it worked
             if (result)
@@ -268,16 +265,6 @@ public class APIController {
         }
         // Returns an error response
         return APIResponse.error("The feedback could not be added.");
-    };
-    
-    /**
-     * <<<<<<< HEAD Receives the the feedback form from the user to be analysed and
-     * then send this data to the host's view ======= When feedback is received.
-     * >>>>>>> d94def0978b23c9470a1ff36e0628f19c017738f
-     */
-    public static Route checkData = (Request req, Response res) -> {
-        System.out.println(req.body());
-        return APIResponse.success("ok");
     };
 
 }

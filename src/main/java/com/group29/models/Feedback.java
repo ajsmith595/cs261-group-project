@@ -25,28 +25,49 @@ public class Feedback {
     private boolean anonymous;
     @Expose
     private List<Response> responses;
+    // Timestamp in milliseconds?
+    private long timestamp;
 
-
-    private Feedback(String id, String userID, boolean anonymous, List<Response> responses)
-    {
+    private Feedback(String id, String userID, boolean anonymous, List<Response> responses, long timestamp) {
         this.id = id;
         this.userID = userID;
         this.anonymous = anonymous;
         this.responses = responses;
+        this.timestamp = timestamp;
     }
 
-    public static Feedback generateFeedbackFromDocument(Document doc)
-    {
+    public static Feedback generateFeedbackFromDocument(Document doc) {
         // Grabs the information from the document
-        //String id = doc.getObjectId("_id").toHexString();
+        // String id = doc.getObjectId("_id").toHexString();
         String userID = doc.getString("userID");
         boolean anonymous = doc.getBoolean("anonymous");
-        List<Response> responses = doc.getList("responses", Document.class).stream().map(x -> Response.generateResponseFromDocument(x)).collect(Collectors.toList());
-
+        long timestamp = doc.getLong("timestamp");
+        List<Response> responses = doc.getList("responses", Document.class).stream()
+                .map(x -> Response.generateResponseFromDocument(x)).collect(Collectors.toList());
         // Returns a new event using the data obtained
-        return new Feedback(null, userID, anonymous, responses);
+        return new Feedback(null, userID, anonymous, responses, timestamp);
     }
-    
+
+    public List<Response> getResponses() {
+        return this.responses;
+    }
+
+    public String getUserID() {
+        return this.userID;
+    }
+
+    public boolean getAnonymous() {
+        return this.anonymous;
+    }
+
+    public long getTimestamp() {
+        return this.timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     /**
      * Gets the feedback as a MongoDB Document
      * 
@@ -62,16 +83,16 @@ public class Feedback {
             doc.append("_id", new ObjectId(id));
         doc.append("userID", userID);
         doc.append("anonymous", anonymous);
+        doc.append("timestamp", timestamp);
         if (responses != null)
-            doc.append("responses", (List<Document>)(responses.stream().map(x -> x.getResponseAsDocument()).collect(Collectors.toList())));
-        else 
+            doc.append("responses", (List<Document>) (responses.stream().map(x -> x.getResponseAsDocument())
+                    .collect(Collectors.toList())));
+        else
             doc.append("responses", new ArrayList<Document>());
 
         // Returns the filled document
         return doc;
     }
-
-    
 
     // Codec class to allow MongoDB to automatically create Feedback classes
     public static class FeedbackCodec implements Codec<Feedback> {

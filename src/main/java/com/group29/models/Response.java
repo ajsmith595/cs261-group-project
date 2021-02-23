@@ -18,15 +18,22 @@ public class Response {
     @Expose
     private String questionID;
     @Expose
-    private String response;
+    private Object response;
 
-    private Response(String id, String questionID, String response)
-    {
+    private Response(String id, String questionID, Object response) {
         this.id = id;
         this.questionID = questionID;
         this.response = response;
     }
-    
+
+    public String getQuestionID() {
+        return this.questionID;
+    }
+
+    public Object getResponse() {
+        return this.response;
+    }
+
     /**
      * Gets the feedback as a MongoDB Document
      * 
@@ -47,19 +54,15 @@ public class Response {
         return doc;
     }
 
-    public static Response generateResponseFromDocument(Document doc)
-    {
+    public static Response generateResponseFromDocument(Document doc) {
         // Grabs the information from the document
-        //String id = doc.getObjectId("_id").toHexString();
+        // String id = doc.getObjectId("_id").toHexString();
         String questionID = doc.getString("questionID");
-        String response = doc.getString("response");
+        Object response = doc.get("response");
 
         // Returns a new event using the data obtained
         return new Response(null, questionID, response);
     }
-    
-
-    
 
     // Codec class to allow MongoDB to automatically create Response classes
     public static class ResponseCodec implements Codec<Response> {

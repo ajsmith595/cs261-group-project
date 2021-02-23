@@ -225,7 +225,7 @@ export default class HostView extends React.Component {
             >
                 {response => props =>
                 (
-                    <p style={props}><span className="font-weight-bold">{response.username || "Anonymous"}</span>: {response.message}</p>
+                    <p key={response.id} style={props}><span className="font-weight-bold">{response.username || "Anonymous"}</span>: {response.message}</p>
                 )
                 }
             </Transition>

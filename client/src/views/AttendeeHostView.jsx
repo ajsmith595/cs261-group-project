@@ -13,7 +13,7 @@ export default class AttendeeHostView extends React.Component {
     // When the component is ready to receive calls to this.setState
     // Uses a GET request on /api/event/:id to get data about the event.
     componentDidMount() {
-        fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + "/api/event/" + this.props.match.params.id).then(e => e.json()).then(e => {
+        fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + "/api/event/" + this.props.match.params.id + (process.env.REACT_APP_FORCE_HOST_VIEW ? "?force_host=1" : "")).then(e => e.json()).then(e => {
             if (e.status != "success") {
                 this.setState({
                     status: 'error',
