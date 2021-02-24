@@ -141,50 +141,134 @@ public class Event {
 //                    new QuestionResponse("Confusing", null, "f") }));
 //    private static int index = 0;
 
+    /**
+     * Updates the data of the event. Currently randomly generated sample data, but
+     * in the future should be linked to the DB
+     */
+
     public void updateData() {
-//        Trend energetic = new Trend("Energetic", 30 + (int) ((Math.random() - 0.5) * 20));
-//        Trend interesting = new Trend("Interesting", 40 + (int) ((Math.random() - 0.5) * 10));
-//        Trend inspiring = new Trend("Inspiring", 50 + (int) ((Math.random() - 0.5) * 45));
-//
-//        ArrayList<QuestionResponse> qrs = new ArrayList<>();
-//        for (int i = 3; i >= 0; i--) {
-//            qrs.add(all_responses.get((index + i) % all_responses.size()));
-//        }
-//        index += 1;
-//
-//        OpenQuestion oq = new OpenQuestion("General Feedback", qrs.toArray(new QuestionResponse[0]),
-//                new Trend[] { energetic, interesting, inspiring });
-//        ChoiceQuestion cq1 = new ChoiceQuestion("What is your favourite colour?",
-//                new Option[] { new Option("Red", (int) Math.floor(100 * Math.random())),
-//                        new Option("Yellow", (int) Math.floor(100 * Math.random())),
-//                        new Option("Green", (int) Math.floor(100 * Math.random())) });
-//        ChoiceQuestion cq2 = new ChoiceQuestion("What age group are you in?",
-//                new Option[] { new Option("18-24", (int) Math.floor(100 * Math.random())),
-//                        new Option("25-39", (int) Math.floor(100 * Math.random())),
-//                        new Option("40-59", (int) Math.floor(100 * Math.random())),
-//                        new Option("60+", (int) Math.floor(100 * Math.random())) });
-//
-//        ArrayList<Point> points = new ArrayList<Point>();
-//        Calendar c = Calendar.getInstance();
-//        long currentTime = c.getTimeInMillis() / 1000;
-//        c.set(Calendar.MINUTE, 0);
-//        long startTime = c.getTimeInMillis() / 1000;
-//        c.set(Calendar.HOUR, c.get(Calendar.HOUR) + 1);
-//        long endTime = c.getTimeInMillis() / 1000;
-//        for (long i = startTime; i < currentTime; i += 60 * 5) {
-//            points.add(new Point(i, (float) (Math.random() * 10)));
-//        }
-//        float currentValue = (float) (Math.random() * 10);
-//        points.add(new Point(currentTime, currentValue));
-//
-//        NumericQuestion nq = new NumericQuestion("How would you rate this event?", new Stats(currentValue, 5, 10), 0,
-//                10, startTime, endTime, currentTime, points.toArray(new Point[0]));
+        updateData(true);
+    }
 
+    public void updateData(boolean fetchFromDatabase) {
+        if (fetchFromDatabase)
+            this.feedbackList = DatabaseManager.getDatabaseManager().getFeedback(this.id);
 
+        ArrayList<QuestionResponse> qrs = new ArrayList<>();
+        HashMap<String, Integer> choiceMap = new HashMap<>();
+        choiceMap.put("Red", 0);
+        choiceMap.put("Yellow", 0);
+        choiceMap.put("Green", 0);
+        choiceMap.put("Blue", 0);
 
-//        WebSocketData wsd = new WebSocketData(new Question[] { oq, cq1, cq2, nq });
-//        this.data = wsd;
-        this.data = new WebSocketData(FeedbackAggregator.getFeedbackAggregator().collateFeedback(id));
+        ArrayList<Point> points = new ArrayList<Point>();
+
+        int feedbackNumber = 0;
+        for (Feedback f : this.feedbackList) {
+            int responseNumber = 0;
+            for (Response r : f.getResponses()) {
+                Object response = r.getResponse();
+                if (responseNumber == 0) {
+                    String key = "feedback_response_" + Integer.toString(feedbackNumber) + "_"
+                            + Integer.toString(responseNumber);
+                    if (response instanceof String) {
+                        qrs.add(new QuestionResponse((String) response, f.getAnonymous() ? null : f.getUserID(), key));
+                    } else {
+                        // Invalid
+                    }
+                } else if (responseNumber == 1) {
+                    if (response instanceof ArrayList) {
+                        ArrayList arr = (ArrayList) response;
+                        for (Object a : arr) {
+                            if (a instanceof String) {
+                                if (choiceMap.containsKey(a)) {
+                                    choiceMap.put((String) a, choiceMap.get(a) + 1);
+                                }
+                            }
+                        }
+                    } else if (response instanceof Integer) {
+                        System.out.println("Integer response");
+                    } else {
+                        System.out.println("Other response: " + response.toString());
+                    }
+                } else if (responseNumber == 2) {
+                    if (response instanceof Double) {
+                        float responseAsFloat = (float) ((double) response);
+                        System.out.println("Yes");
+                        points.add(new Point(f.getTimestamp() / 1000, responseAsFloat));
+                    } else {
+                        System.out.println("Nope: " + response.getClass().toString());
+                    }
+                }
+                responseNumber++;
+            }
+            feedbackNumber++;
+        }
+
+        Collections.reverse(qrs);
+
+        Trend energetic = new Trend("Energetic", 30 + (int) ((Math.random() - 0.5) * 20));
+        Trend interesting = new Trend("Interesting", 40 + (int) ((Math.random() - 0.5) * 10));
+        Trend inspiring = new Trend("Inspiring", 50 + (int) ((Math.random() - 0.5) * 45));
+
+        OpenQuestion generalFeedbackQuestion = new OpenQuestion("General Feedback",
+                qrs.toArray(new QuestionResponse[0]), new Trend[] { energetic, interesting, inspiring });
+
+        ArrayList<Option> options = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : choiceMap.entrySet()) {
+            options.add(new Option(entry.getKey(), entry.getValue()));
+        }
+        ChoiceQuestion cq1 = new ChoiceQuestion("What is your favourite colour?", options.toArray(new Option[0]), true);
+
+        Calendar c = Calendar.getInstance();
+        long currentTime = c.getTimeInMillis() / 1000;
+        c.set(Calendar.MINUTE, 30);
+        c.set(Calendar.HOUR, c.get(Calendar.HOUR) - 1);
+        long startTime = c.getTimeInMillis() / 1000;
+        c.set(Calendar.HOUR, c.get(Calendar.HOUR) + 1);
+        long endTime = c.getTimeInMillis() / 1000;
+
+        float currentValue = (float) (Math.random() * 10);
+        points.add(new Point(currentTime, currentValue));
+
+        NumericQuestion nq = new NumericQuestion("How would you rate this event?", new Stats(currentValue, 5, 10), 0,
+                10, startTime, endTime, currentTime, points.toArray(new Point[0]));
+
+        WebSocketData wsd = new WebSocketData(new Question[] { generalFeedbackQuestion, cq1, nq });
+        this.data = wsd;
+
+        // ArrayList<QuestionResponse> qrs = new ArrayList<>();
+        // for (int i = 3; i >= 0; i--) {
+        // qrs.add(all_responses.get((index + i) % all_responses.size()));
+        // }
+        // index += 1;
+
+        // OpenQuestion oq = new OpenQuestion("General Feedback", qrs.toArray(new
+        // QuestionResponse[0]),
+        // new Trend[] { energetic, interesting, inspiring });
+
+        // ChoiceQuestion cq2 = new ChoiceQuestion("What age group are you in?",
+        // new Option[] { new Option("18-24", (int) Math.floor(100 * Math.random())),
+        // new Option("25-39", (int) Math.floor(100 * Math.random())),
+        // new Option("40-59", (int) Math.floor(100 * Math.random())),
+        // new Option("60+", (int) Math.floor(100 * Math.random())) });
+
+        // ArrayList<Point> points = new ArrayList<Point>();
+        // Calendar c = Calendar.getInstance();
+        // long currentTime = c.getTimeInMillis() / 1000;
+        // c.set(Calendar.MINUTE, 0);
+        // long startTime = c.getTimeInMillis() / 1000;
+        // c.set(Calendar.HOUR, c.get(Calendar.HOUR) + 1);
+        // long endTime = c.getTimeInMillis() / 1000;
+        // for (long i = startTime; i < currentTime; i += 60 * 5) {
+        // points.add(new Point(i, (float) (Math.random() * 10)));
+        // }
+        // float currentValue = (float) (Math.random() * 10);
+        // points.add(new Point(currentTime, currentValue));
+
+        // NumericQuestion nq = new NumericQuestion("How would you rate this event?",
+        // new Stats(currentValue, 5, 10), 0,
+        // 10, startTime, endTime, currentTime, points.toArray(new Point[0]));
     }
 
     /**

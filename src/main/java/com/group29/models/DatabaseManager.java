@@ -222,31 +222,47 @@ public class DatabaseManager {
 
     // Adds a template to the database
     public void addTemplate(String eventID, Object questions) {
+    }
 
     // Adds a template to the database
     public Template getTemplate(String templateID) {
         //TODO Actually remove this mess
         return new Template(templateID, "a", new Question[] {
-                new OpenQuestion("General, Feedback", new QuestionResponse[0], new Trend[0], 0),
+                new OpenQuestion("General, Feedback", new QuestionResponse[0], new Trend[0]),
 
                 new ChoiceQuestion("What is your Favourite colour?", new Option[] {
                         new Option("Red", -1),
                         new Option("Yellow", -1),
                         new Option("Green", -1)
-                }),
+                },
+                true),
                 new ChoiceQuestion("What age group are you in?", new Option[] {
                         new Option("18-24", -1),
                         new Option("25-39", -1),
                         new Option("40-59", -1),
                         new Option("60+", -1)
-                }),
+                },
+                false),
                 new NumericQuestion("How would you rate this event?", new Stats(-1, -1, -1), -1,
                 10, 0L, 60L, 34L, new Point[0])
         });
     }
 
-    // Adds a feedback to the database
-    public void addFeedback(String eventID, int templateID, Feedback feedback) {
+    /**
+     * Adds a feedback to the database
+     * 
+     * @param eventID  The id of the event the feedback was for
+     * @param feedback The feedback to be stored
+     * @return True if the feedback was added successfully
+     */
+    public boolean addFeedback(String eventCode, Feedback feedback) {
+        // Gets the events collection and creates a query string for the event id
+        MongoCollection events = mongoDB.getCollection("Events");
+        Document query = new Document("eventCode", eventCode);
+
+        // Loops over events found matching the id, adding the feedback to the first one
+        // found
+        for (Event event : (FindIterable<Event>) events.find(query, Event.class)) {
 
             // Updates the database and returns true as it was inserted
 
@@ -257,7 +273,6 @@ public class DatabaseManager {
             return true;
         }
 
-        // Returns false if an event with the given id was not found
         return false;
     }
 

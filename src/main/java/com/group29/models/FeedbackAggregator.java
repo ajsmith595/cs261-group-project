@@ -39,7 +39,7 @@ public class FeedbackAggregator {
         // Add responses to questions lists
         for (Feedback fb : feedback) {
             for (Response r : fb.getResponses()) {
-                questionResponses.get(Integer.parseInt(r.getQuestionId())).add(
+                questionResponses.get(Integer.parseInt(r.getQuestionID())).add(
                         new UserResponse(fb.getUserID(), r));
             }
         }
@@ -71,12 +71,15 @@ public class FeedbackAggregator {
 
         for (UserResponse ur : responses) {
             Response r = ur.response;
+            Object response = r.getResponse();
             // Remove case and punctuation
-            String sanitised = r.getResponse().toLowerCase().replaceAll("\\p{P}", "");
-            for (String word : sanitised.split("\\s+")) {
-                if (!stopWords.contains(word)) {    // If not common word, increment counter
-                    wordCounts.inc(word);
-                }
+            if (response instanceof String) {
+                String sanitised = ((String) response).toLowerCase().replaceAll("\\p{P}", "");
+                for (String word : sanitised.split("\\s+")) {
+                    if (!stopWords.contains(word)) {    // If not common word, increment counter
+                        wordCounts.inc(word);
+                    }
+                }   
             }
         }
         // Sort words (could be done in Counter, using TreeMap or similar, but bad practice as TreeMap should sort as a total order between keys only)
@@ -95,10 +98,13 @@ public class FeedbackAggregator {
         QuestionResponse[] qrs = new QuestionResponse[responses.size()];
         for (int i = 0; i < responses.size(); i++) {
             UserResponse r = responses.get(i);
-            qrs[i] = new QuestionResponse(r.response.getResponse(), r.userID, r.userID);
+            Object response = r.response.getResponse();
+            if (response instanceof String) {
+                qrs[i] = new QuestionResponse((String) response, r.userID, r.userID);
+            }
         }
 
-        return new OpenQuestion(question.getTitle(), qrs, trends, 0);
+        return new OpenQuestion(question.getTitle(), qrs, trends);
     }
 
     /**
@@ -114,11 +120,14 @@ public class FeedbackAggregator {
         for (UserResponse ur : responses) {
             Response r = ur.response;
             // For each response, carry out aggregate functions
-            int rank = Integer.parseInt(r.getResponse());
-            sum += rank;
-            count++;
-            if (rank < min) min = rank;
-            if (rank > max) max = rank;
+            Object response = r.getResponse();
+            if (response instanceof Integer){
+                int rank = (Integer) response;
+                sum += rank;
+                count++;
+                if (rank < min) min = rank;
+                if (rank > max) max = rank;
+            }
         }
 
         Stats stats = new Stats(sum / count, min, max);
@@ -127,7 +136,7 @@ public class FeedbackAggregator {
         Point[] points = new Point[0];
 
         return new NumericQuestion(question.getTitle(), stats,
-                question.getMin_value(), question.getMax_value(), question.getMin_time(), question.getMax_time(),
+                question.getMinValue(), question.getMaxValue(), question.getMinTime(), question.getMaxTime(),
                 Calendar.getInstance().getTimeInMillis()/1000, points);
     }
 
@@ -143,8 +152,15 @@ public class FeedbackAggregator {
         // Increase counts for each option per response
         for (UserResponse ur : responses) {
             Response r = ur.response;
-            String choice = r.getResponse();
-            optionCounts.inc(choice);
+            Object response = r.getResponse();
+            if (response instanceof ArrayList) {
+                ArrayList arr = (ArrayList) response;
+                for (Object a : arr) {
+                    if (a instanceof String) {
+                        optionCounts.inc((String) a);
+                    }
+                }
+            }
         }
 
         // Copy options across, updating counts as we go
@@ -155,7 +171,7 @@ public class FeedbackAggregator {
             finalList[i] = new Option(name, optionCounts.get(name));
         }
 
-        return new ChoiceQuestion(question.getTitle(), finalList);
+        return new ChoiceQuestion(question.getTitle(), finalList,false);
     }
 }
 

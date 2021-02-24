@@ -93,32 +93,54 @@ public class Feedback {
         // Returns the filled document
         return doc;
     }
-
+    
     // Codec class to allow MongoDB to automatically create Feedback classes
     public static class FeedbackCodec implements Codec<Feedback> {
         // Document codec to read raw BSON
         private Codec<Document> documentCodec;
 
-    public Feedback(String id, String userID, boolean anonymous, List<Response> responses) {
-        this.id = id;
-        this.userID = userID;
-        this.anonymous = anonymous;
-        this.responses = responses;
-    }
+        /**
+         * Constructor for the codec
+         */
+        public FeedbackCodec() {
+            this.documentCodec = new DocumentCodec();
+        }
 
-    public String getId() {
-        return id;
-    }
+        /**
+         * Encodes an Feedback into the writer
+         * 
+         * @param writer         Writer to write into
+         * @param value          Feedback to write
+         * @param encoderContext Context for the encoding
+         */
+        @Override
+        public void encode(final BsonWriter writer, final Feedback value, final EncoderContext encoderContext) {
+            documentCodec.encode(writer, value.getFeedbackAsDocument(), encoderContext);
+        }
 
-    public String getUserID() {
-        return userID;
-    }
+        /**
+         * Decodes an Feedback from a BSON reader
+         * 
+         * @param reader         The reader to decode
+         * @param decoderContext Context for the decoding
+         * @return
+         */
+        @Override
+        public Feedback decode(final BsonReader reader, final DecoderContext decoderContext) {
+            // Generates a document from the reader
+            Document doc = documentCodec.decode(reader, decoderContext);
 
-    public boolean isAnonymous() {
-        return anonymous;
-    }
+            return generateFeedbackFromDocument(doc);
+        }
 
-    public List<Response> getResponses() {
-        return responses;
+        /**
+         * Gets the class type for this encoder
+         * 
+         * @return The Feedback class type
+         */
+        @Override
+        public Class<Feedback> getEncoderClass() {
+            return Feedback.class;
+        }
     }
 }
