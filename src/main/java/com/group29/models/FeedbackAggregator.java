@@ -21,16 +21,14 @@ public class FeedbackAggregator {
      * @param eventID The event specified
      * @return A list of question objects summarising the event's feedback
      */
-    public Question[] collateFeedback(String eventID) {
+    public Question[] collateFeedback(Event event) {
         // Get Data
         DatabaseManager dbManager = DatabaseManager.getDatabaseManager();
-        Event event = dbManager.getEventFromID(eventID);
-
         Template template = dbManager.getTemplate(event.getTemplateID());
         Question[] questions = template.getQuestions();
 
-        List<Feedback> feedback = dbManager.getFeedback(event.getID());
-
+        //List<Feedback> feedback = dbManager.getFeedback(event.getID()); //Commented out right now as this function just gets the event and returns the list right now
+        List<Feedback> feedback = event.getFeedback();
         // Record responses in these lists
         List<List<UserResponse>> questionResponses = new ArrayList<>();
         // Create lists per question
@@ -43,7 +41,6 @@ public class FeedbackAggregator {
                         new UserResponse(fb.getUserID(), r));
             }
         }
-
         // Calculate aggregates
         Question[] results = new Question[questions.length];
         for (int i = 0; i < questionResponses.size(); i++) {
@@ -89,7 +86,8 @@ public class FeedbackAggregator {
 
         // Calculate common words, and copy into array
         Trend[] trends = new Trend[3];
-        for (int i = 0; i < trends.length; i++) {
+        int loop = (counts.size() > trends.length) ? trends.length : counts.size();
+        for (int i = 0; i < loop; i++) {
             Map.Entry<String, Integer> entry = counts.get(i);
             trends[i] = new Trend(entry.getKey(), entry.getValue());
         }

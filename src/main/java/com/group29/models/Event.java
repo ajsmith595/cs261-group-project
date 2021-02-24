@@ -60,6 +60,7 @@ public class Event {
     private ArrayList<Session> clients;
     private WebSocketData data;
     private HashMap<String, List<Point>> ratingHistory = new HashMap<>();
+    private FeedbackAggregator aggregator;
 
     // Used to reconstruct an already created event
     private Event(String id, String hostID, String templateID, String title, Date startTime, int duration,
@@ -73,7 +74,10 @@ public class Event {
         this.eventCode = eventCode;
         this.feedbackList = feedbackList;
         this.clients = new ArrayList<Session>();
-
+        this.aggregator = FeedbackAggregator.getFeedbackAggregator();
+        //System.out.println(this.aggregator.collateFeedback(this));
+        //System.out.println("test");
+        this.aggregator.collateFeedback(this);
         this.updateData(false);
     }
 
