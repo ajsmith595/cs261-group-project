@@ -99,49 +99,26 @@ public class Feedback {
         // Document codec to read raw BSON
         private Codec<Document> documentCodec;
 
-        /**
-         * Constructor for the codec
-         */
-        public FeedbackCodec() {
-            this.documentCodec = new DocumentCodec();
-        }
-
-        /**
-         * Encodes an Feedback into the writer
-         * 
-         * @param writer         Writer to write into
-         * @param value          Feedback to write
-         * @param encoderContext Context for the encoding
-         */
-        @Override
-        public void encode(final BsonWriter writer, final Feedback value, final EncoderContext encoderContext) {
-            documentCodec.encode(writer, value.getFeedbackAsDocument(), encoderContext);
-        }
-
-        /**
-         * Decodes an Feedback from a BSON reader
-         * 
-         * @param reader         The reader to decode
-         * @param decoderContext Context for the decoding
-         * @return
-         */
-        @Override
-        public Feedback decode(final BsonReader reader, final DecoderContext decoderContext) {
-            // Generates a document from the reader
-            Document doc = documentCodec.decode(reader, decoderContext);
-
-            return generateFeedbackFromDocument(doc);
-        }
-
-        /**
-         * Gets the class type for this encoder
-         * 
-         * @return The Feedback class type
-         */
-        @Override
-        public Class<Feedback> getEncoderClass() {
-            return Feedback.class;
-        }
+    public Feedback(String id, String userID, boolean anonymous, List<Response> responses) {
+        this.id = id;
+        this.userID = userID;
+        this.anonymous = anonymous;
+        this.responses = responses;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public String getUserID() {
+        return userID;
+    }
+
+    public boolean isAnonymous() {
+        return anonymous;
+    }
+
+    public List<Response> getResponses() {
+        return responses;
+    }
 }

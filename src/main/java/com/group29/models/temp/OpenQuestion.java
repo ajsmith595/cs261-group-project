@@ -5,12 +5,12 @@ public class OpenQuestion extends Question {
     protected Trend[] trends;
     protected float current_mood;
 
-    public OpenQuestion(String title, QuestionResponse[] responses, Trend[] trends) {
+    public OpenQuestion(String title, QuestionResponse[] responses, Trend[] trends, float current_mood) {
         this.type = "open";
-        this.current_mood = (float) (Math.random() * 2 - 1);
         this.title = title;
         this.recent_responses = responses;
         this.trends = trends;
+        this.current_mood = current_mood;
     }
 
     public QuestionResponse[] getRecentResponses() {

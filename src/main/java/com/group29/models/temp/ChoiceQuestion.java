@@ -25,4 +25,8 @@ public class ChoiceQuestion extends Question {
     public Option[] getOptions() {
         return this.options;
     }
+
+    public Option[] getOptions() {
+        return options;
+    }
 }

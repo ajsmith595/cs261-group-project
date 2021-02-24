@@ -5,6 +5,10 @@ import java.util.List;
 
 import javax.xml.crypto.Data;
 
+import java.util.Arrays;
+import java.util.List;
+
+import com.group29.models.temp.*;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.BasicDBObject;
@@ -23,10 +27,10 @@ import com.group29.controllers.WebSocketController;
 
 public class DatabaseManager {
     // Instance of the database manager
-    private static DatabaseManager dbManager = new DatabaseManager();
+    private static final DatabaseManager dbManager = new DatabaseManager();
 
-    private MongoClient mongoClient;
-    private MongoDatabase mongoDB;
+    private final MongoClient mongoClient;
+    private final MongoDatabase mongoDB;
 
     /**
      * Gets the singleton instance of the database manager
@@ -219,23 +223,30 @@ public class DatabaseManager {
     // Adds a template to the database
     public void addTemplate(String eventID, Object questions) {
 
+    // Adds a template to the database
+    public Template getTemplate(String templateID) {
+        //TODO Actually remove this mess
+        return new Template(templateID, "a", new Question[] {
+                new OpenQuestion("General, Feedback", new QuestionResponse[0], new Trend[0], 0),
+
+                new ChoiceQuestion("What is your Favourite colour?", new Option[] {
+                        new Option("Red", -1),
+                        new Option("Yellow", -1),
+                        new Option("Green", -1)
+                }),
+                new ChoiceQuestion("What age group are you in?", new Option[] {
+                        new Option("18-24", -1),
+                        new Option("25-39", -1),
+                        new Option("40-59", -1),
+                        new Option("60+", -1)
+                }),
+                new NumericQuestion("How would you rate this event?", new Stats(-1, -1, -1), -1,
+                10, 0L, 60L, 34L, new Point[0])
+        });
     }
 
-    /**
-     * Adds a feedback to the database
-     * 
-     * @param eventID  The id of the event the feedback was for
-     * @param feedback The feedback to be stored
-     * @return True if the feedback was added successfully
-     */
-    public boolean addFeedback(String eventCode, Feedback feedback) {
-        // Gets the events collection and creates a query string for the event id
-        MongoCollection events = mongoDB.getCollection("Events");
-        Document query = new Document("eventCode", eventCode);
-
-        // Loops over events found matching the id, adding the feedback to the first one
-        // found
-        for (Event event : (FindIterable<Event>) events.find(query, Event.class)) {
+    // Adds a feedback to the database
+    public void addFeedback(String eventID, int templateID, Feedback feedback) {
 
             // Updates the database and returns true as it was inserted
 
@@ -262,6 +273,36 @@ public class DatabaseManager {
         if (e == null)
             return new ArrayList<>();
         return e.getFeedback();
+        /*// TODO Actually implement this mess, this is taken from the Event temporary updateData method
+        List<Feedback> fb = new ArrayList<>();
+
+        ArrayList<QuestionResponse> all_responses = new ArrayList<>(
+            Arrays.asList(new QuestionResponse("Very interesting and intriguing", null, "a"),
+                    new QuestionResponse("Something else....", "ajsmith595", "b"),
+                    new QuestionResponse("Pretty boring", "haterman443", "c"),
+                    new QuestionResponse("Clearly well-educated", "KrazyKid69", "d"),
+                    new QuestionResponse("Joy is at a low point here", null, "e"),
+                    new QuestionResponse("Confusing", null, "f")));
+
+        int index = 1000;
+        for (QuestionResponse qr : all_responses) {
+            fb.add(new Feedback(Integer.toString(++index), qr.getUsername() == null ? "x" : qr.getUsername(), qr.getUsername() != null,
+                    new ArrayList<>(Arrays.asList(new Response("r" + index + "0", "0", qr.getMessage())))));
+        }
+
+        for (int i = 0; i < 200; i++) {
+            String colour = new String[] {"Red", "Yellow", "Green"}[(int) Math.floor(3 * Math.random())];
+            String age = new String[] {"18-24", "25-39", "40-59", "60+"}[(int) Math.floor(4 * Math.random())];
+
+            fb.add(new Feedback(Integer.toString(i), "u" + i, false,
+                    new ArrayList<>(Arrays.asList(
+                            new Response("r" + i + "1", "1", colour),
+                            new Response("r" + i + "2", "2", age),
+                            new Response("r" + i + "3", "3", Integer.toString((int) (10 * Math.random())))
+                    ))));
+        }
+
+        return fb;*/
     }
 
 }
