@@ -35,11 +35,17 @@ public class FeedbackAggregator {
         for (int i = 0; i < questions.length; i++) questionResponses.add(new LinkedList<>());
 
         // Add responses to questions lists
+        int feedbackNumber = 0;
         for (Feedback fb : feedback) {
+            int responseNumber = 0;
             for (Response r : fb.getResponses()) {
+                String key = "feedback_response_" + Integer.toString(feedbackNumber) + "_"
+                            + Integer.toString(responseNumber);
                 questionResponses.get(Integer.parseInt(r.getQuestionID())).add(
-                        new UserResponse(fb.getUserID(), r));
+                        new UserResponse(fb.getUserID(), r, fb.getAnonymous(), key, fb.getTimestamp() ));
+                responseNumber++;
             }
+            feedbackNumber++;
         }
         // Calculate aggregates
         Question[] results = new Question[questions.length];
@@ -85,8 +91,9 @@ public class FeedbackAggregator {
         System.out.println(counts);
 
         // Calculate common words, and copy into array
-        Trend[] trends = new Trend[3];
-        int loop = (counts.size() > trends.length) ? trends.length : counts.size();
+        int trend_length = 3;
+        int loop = (counts.size() > trend_length) ? trend_length : counts.size();
+        Trend[] trends = new Trend[loop];
         for (int i = 0; i < loop; i++) {
             Map.Entry<String, Integer> entry = counts.get(i);
             trends[i] = new Trend(entry.getKey(), entry.getValue());
@@ -94,11 +101,13 @@ public class FeedbackAggregator {
 
         // Copy responses into QR array
         QuestionResponse[] qrs = new QuestionResponse[responses.size()];
-        for (int i = 0; i < responses.size(); i++) {
+        int j = 0;
+        for (int i = responses.size()-1; i >= 0; i--) {
             UserResponse r = responses.get(i);
             Object response = r.response.getResponse();
             if (response instanceof String) {
-                qrs[i] = new QuestionResponse((String) response, r.userID, r.userID);
+                qrs[j] = new QuestionResponse((String) response, ((r.anonymous) ? null : r.userID), r.username);
+                j++;
             }
         }
 
@@ -112,30 +121,31 @@ public class FeedbackAggregator {
      * @return A numeric question object containing this info
      */
     public NumericQuestion aggregateNumericQuestion(NumericQuestion question, List<UserResponse> responses) {
-        float sum = 0;
-        int count = 0, min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
+        double sum = 0;
+        double count = 0, min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
+        ArrayList<Point> points = new ArrayList<Point>();
 
         for (UserResponse ur : responses) {
             Response r = ur.response;
             // For each response, carry out aggregate functions
             Object response = r.getResponse();
-            if (response instanceof Integer){
-                int rank = (Integer) response;
+            if (response instanceof Double){
+                double responseAsFloat = (double) response;
+                double rank = (double) response;
                 sum += rank;
                 count++;
                 if (rank < min) min = rank;
                 if (rank > max) max = rank;
+                points.add(new Point(ur.timestamp / 1000, responseAsFloat));
+                
             }
+            //points.add(new Point(f.getTimestamp() / 1000, responseAsFloat));
         }
-
         Stats stats = new Stats(sum / count, min, max);
-
-        // TODO points to track over time, maybe record history in Event? (for w3)
-        Point[] points = new Point[0];
 
         return new NumericQuestion(question.getTitle(), stats,
                 question.getMinValue(), question.getMaxValue(), question.getMinTime(), question.getMaxTime(),
-                Calendar.getInstance().getTimeInMillis()/1000, points);
+                Calendar.getInstance().getTimeInMillis()/1000, points.toArray(new Point[0]));
     }
 
     /**
@@ -179,10 +189,16 @@ public class FeedbackAggregator {
 class UserResponse {
     public String userID;
     public Response response;
+    public String username;
+    public boolean anonymous;
+    public long timestamp;
 
-    public UserResponse(String userID, Response response) {
+    public UserResponse(String userID, Response response, boolean anonymous, String username, long timestamp  ) {
         this.userID = userID;
         this.response = response;
+        this.anonymous = anonymous;
+        this.username = username;
+        this.timestamp = timestamp;
     }
 }
 

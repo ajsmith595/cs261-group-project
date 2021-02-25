@@ -233,16 +233,10 @@ public class DatabaseManager {
                 new ChoiceQuestion("What is your Favourite colour?", new Option[] {
                         new Option("Red", -1),
                         new Option("Yellow", -1),
+                        new Option("Blue", -1),
                         new Option("Green", -1)
                 },
                 true),
-                new ChoiceQuestion("What age group are you in?", new Option[] {
-                        new Option("18-24", -1),
-                        new Option("25-39", -1),
-                        new Option("40-59", -1),
-                        new Option("60+", -1)
-                },
-                false),
                 new NumericQuestion("How would you rate this event?", new Stats(-1, -1, -1), -1,
                 10, 0L, 60L, 34L, new Point[0])
         });

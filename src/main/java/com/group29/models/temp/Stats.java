@@ -1,25 +1,25 @@
 package com.group29.models.temp;
 
 public class Stats {
-    protected float current_value;
-    protected int min_value;
-    protected int max_value;
+    protected double current_value;
+    protected double min_value;
+    protected double max_value;
 
-    public Stats(float current_value, int min_value, int max_value) {
+    public Stats(double current_value, double min_value, double max_value) {
         this.current_value = current_value;
         this.min_value = min_value;
         this.max_value = max_value;
     }
 
-    public float getCurrentValue() {
+    public double getCurrentValue() {
         return this.current_value;
     }
 
-    public int getMinValue() {
+    public double getMinValue() {
         return this.min_value;
     }
 
-    public int getMaxValue() {
+    public double getMaxValue() {
         return this.max_value;
     }
 }

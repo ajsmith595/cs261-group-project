@@ -77,7 +77,6 @@ public class Event {
         this.aggregator = FeedbackAggregator.getFeedbackAggregator();
         //System.out.println(this.aggregator.collateFeedback(this));
         //System.out.println("test");
-        this.aggregator.collateFeedback(this);
         this.updateData(false);
     }
 
@@ -157,7 +156,44 @@ public class Event {
     public void updateData(boolean fetchFromDatabase) {
         if (fetchFromDatabase)
             this.feedbackList = DatabaseManager.getDatabaseManager().getFeedback(this.id);
-
+        Question[] results = this.aggregator.collateFeedback(this);
+        /*for(Question q : results){
+            if(q instanceof OpenQuestion){
+                System.out.println(((OpenQuestion) q).getTitle());
+                System.out.println(((OpenQuestion) q).getRecentResponses().length);
+                for(QuestionResponse qr: ((OpenQuestion) q).getRecentResponses()){
+                    System.out.println(qr.getMessage());
+                    System.out.println(qr.getUsername());
+                    System.out.println(qr.getID());
+                }
+                for(Trend t: ((OpenQuestion) q).getTrends()){
+                    System.out.println(t.getPhrase());
+                    System.out.println(t.getProportion());
+                }
+            }
+            if(q instanceof NumericQuestion){
+                System.out.println(((NumericQuestion) q).getTitle());
+                System.out.println(((NumericQuestion) q).getMinValue());
+                System.out.println(((NumericQuestion) q).getMaxValue());
+                System.out.println(((NumericQuestion) q).getMinTime());
+                System.out.println(((NumericQuestion) q).getMaxTime());
+                System.out.println(((NumericQuestion) q).getCurrentTime());
+                System.out.println(((NumericQuestion) q).getPoints().length);
+                for(Point p: ((NumericQuestion) q).getPoints()){
+                    System.out.println(p.getTime());
+                    System.out.println(p.getValue());
+                }
+            }
+            if(q instanceof ChoiceQuestion){
+                System.out.println(((ChoiceQuestion) q).getTitle());
+                System.out.println(((ChoiceQuestion) q).getMultiple());
+                System.out.println(((ChoiceQuestion) q).getOptions().length);
+                for(Option o: ((ChoiceQuestion) q).getOptions()){
+                    System.out.println(o.getName());
+                    System.out.println(o.getNumber());
+                }
+            }
+        }
         ArrayList<QuestionResponse> qrs = new ArrayList<>();
         HashMap<String, Integer> choiceMap = new HashMap<>();
         choiceMap.put("Red", 0);
@@ -197,7 +233,7 @@ public class Event {
                     }
                 } else if (responseNumber == 2) {
                     if (response instanceof Double) {
-                        float responseAsFloat = (float) ((double) response);
+                        double responseAsFloat = ((double) response);
                         System.out.println("Yes");
                         points.add(new Point(f.getTimestamp() / 1000, responseAsFloat));
                     } else {
@@ -232,13 +268,13 @@ public class Event {
         c.set(Calendar.HOUR, c.get(Calendar.HOUR) + 1);
         long endTime = c.getTimeInMillis() / 1000;
 
-        float currentValue = (float) (Math.random() * 10);
+        double currentValue = (double) (Math.random() * 10);
         points.add(new Point(currentTime, currentValue));
 
         NumericQuestion nq = new NumericQuestion("How would you rate this event?", new Stats(currentValue, 5, 10), 0,
                 10, startTime, endTime, currentTime, points.toArray(new Point[0]));
-
-        WebSocketData wsd = new WebSocketData(new Question[] { generalFeedbackQuestion, cq1, nq });
+        //WebSocketData wsd = new WebSocketData(new Question[] { generalFeedbackQuestion, cq1, nq });*/
+        WebSocketData wsd = new WebSocketData(results);
         this.data = wsd;
 
         // ArrayList<QuestionResponse> qrs = new ArrayList<>();

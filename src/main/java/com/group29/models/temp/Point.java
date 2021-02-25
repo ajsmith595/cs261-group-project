@@ -2,9 +2,9 @@ package com.group29.models.temp;
 
 public class Point {
     protected long time;
-    protected float value;
+    protected double value;
 
-    public Point(long time, float value) {
+    public Point(long time, double value) {
         this.time = time;
         this.value = value;
     }
@@ -13,7 +13,7 @@ public class Point {
         return this.time;
     }
 
-    public float getValue() {
+    public double getValue() {
         return this.value;
     }
 }
