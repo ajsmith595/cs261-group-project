@@ -1,25 +1,21 @@
 import React from "react";
 import { Form, Col, Row, Button, ListGroup } from "react-bootstrap";
-import { Redirect } from "react-router-dom";
 export default class RegisterView extends React.Component {
     constructor(props) {
         super(props);
         this.sendStateToServer = this.sendStateToServer.bind(this);
 
         this.state = {
-            acceptTerms: false,
             email: "",
             username: "",
             serverError: "",
-            error: [],
-            status: 'main'
+            error: []
         };
     }
 
     /*
     Sends the state to the server. It first verifies the fields
-    for them being empty and having a valid email, and
-    if they have accepted the terms
+    for them being empty and having a valid email
     */
     sendStateToServer() {
         var errors = [];
@@ -44,7 +40,7 @@ export default class RegisterView extends React.Component {
                 error: errors
             });
         } else {
-            fetch('/api/register',
+            fetch('/api/login',
                 {
                     method: 'POST',
                     headers: {
@@ -59,47 +55,30 @@ export default class RegisterView extends React.Component {
                 }
                 response.json().then(data => {
                     if (data.status == "error") {//Custom error sent from server
-                        this.setState({//Empties the errors from validation
-                            error: [],
+                        this.setState({
+                            error: [], //Empties the errors from validation
                             serverError: data.message
                         });
                     } else if (data.status == "success") {
-                        this.setState({
-                            status: 'success'
-                        })
+                        window.location.replace("/events");
                     }
                 })
             });
         }
-
     }
 
     /* 
-    Renders the Registration View
+    Renders the Login View
     */
     render() {
-        if (this.state.status == 'success') {
-            return (
-                <Redirect to="/" />
-            );
-        }
         return (
             <div className="text-center py-2">
-                <h1>Register</h1>
+                <h1>Login</h1>
                 <hr />
                 <div id="Error message"><p>{this.renderErrors()}</p></div>
-                <p>
-                    Please register your email. This will only be used for identification purposes. If you choose
-                    to be anonymous when providing feedback, your username will not be visable to the host or any
-                    attendees. Your email will not be visable to any other users.
-                </p>
                 <Form id="feedback">
                     {this.renderEmail()}
                     {this.renderUsername()}
-                    <Form.Check type="checkbox" id="agree_check" >
-                        <Form.Check.Input type="checkbox" checked={this.state.anonymous} onChange={(e) => this.setState({ acceptTerms: e.target.checked })} />
-                        <Form.Check.Label>I agree to the terms.</Form.Check.Label>
-                    </Form.Check>
                     <hr />
                     <Row>
                         <Col xs={0} sm={1} md={3}></Col>

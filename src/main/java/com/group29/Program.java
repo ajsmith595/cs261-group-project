@@ -14,9 +14,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.servlet.DispatcherType;
 
+import com.google.gson.internal.bind.JsonTreeWriter;
 import com.group29.controllers.APIController;
 import com.group29.controllers.IndexController;
 import com.group29.controllers.WebSocketController;
+import com.group29.models.APIResponse;
 
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -112,7 +114,11 @@ public class Program {
         // Static Files must come before HTTP routes
 
         notFound((req, res) -> {
-            return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/error/404.html"));
+            if (req.uri().startsWith("/api/")) {
+                res.header("Content-Type", "application/json");
+                return (new JSONTransformer()).render(APIResponse.error("Method not found"));
+            }
+            return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/static/error/404.html"));
         });
 
         webSocket("/socket", WebSocketController.class);

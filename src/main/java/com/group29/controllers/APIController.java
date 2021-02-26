@@ -52,6 +52,16 @@ public class APIController {
         });
         // #endregion External Code Copied
 
+        before("/*", (req, res) -> {
+            boolean isRegisterOrLogin = req.uri().equals("/api/register") || req.uri().equals("/api/login");
+            boolean isLoggedIn = req.session().attribute("uid") != null;
+            // If not logged in, and not trying to login/register, stop!
+            if (!isLoggedIn && !isRegisterOrLogin) {
+                halt(401, (new JSONTransformer()).render(APIResponse.error("Not authenticated")));
+            } else if (isLoggedIn && isRegisterOrLogin) {
+                halt(401, (new JSONTransformer()).render(APIResponse.error("Already authenticated")));
+            }
+        });
         // Gets run after every request, just before the response is actually sent to
         // the user. Used for development environments.
         after("/*", (req, res) -> {
@@ -69,17 +79,20 @@ public class APIController {
 
         // Add new feedback for an event
         post("/event/:id/feedback", "application/json", APIController.checkData, new JSONTransformer());
-        //get("/event/:id", "application/json", APIController.getSession, new JSONTransformer());
+        // get("/event/:id", "application/json", APIController.getSession, new
+        // JSONTransformer());
         get("/user/:id", "application/json", APIController.getUser, new JSONTransformer());
         /*
          * Makes it return in JSON format. Will automatically convert regular Java
          * classes to JSON. Will keep all fields (private/public/protected) but will
          * discard functions.
          */
-        //post("/events", APIController.postEvent, new JSONTransformer());
-        post("/users", APIController.postUser, new JSONTransformer());
+        // post("/events", APIController.postEvent, new JSONTransformer());
         post("/feedback/:id", APIController.postFeedback, new JSONTransformer());
         post("/event/:id/feedback", "application/json", APIController.checkData);
+        post("/register", APIController.createUser, new JSONTransformer());
+        post("/login", APIController.loginUser, new JSONTransformer());
+        post("/logout", APIController.logoutUser, new JSONTransformer());
     };
 
     // Contains a key value map of all WebSocket auth tokens, with the event code
@@ -101,6 +114,11 @@ public class APIController {
             return d;
         }
 
+        if (!e.getHostID().equals(req.session().attribute("uid"))) {
+            Document d = new Document();
+            d.append("token", ""); // Give them an empty token
+            return d;
+        }
         // TODO: check if event's host ID = web session's user ID.
 
         char[] possibleChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
@@ -181,7 +199,7 @@ public class APIController {
             // Attempts to parse event
             Event event = gson.fromJson(req.body(), Event.class);
 
-            event.setHostID("-1"); // Set it to the current session's ID
+            event.setHostID(req.session().attribute("uid")); // Set it to the current session's ID
             // Generates a new code for the event
             event.generateEventCode();
 
@@ -203,21 +221,18 @@ public class APIController {
 
         if (user != null)
             return APIResponse.success(user);
-        
+
         return APIResponse.error("The user requested could not be found");
     };
 
-
     // Registers a new user
-    public static Route postUser = (Request req, Response res) -> {
+    public static Route createUser = (Request req, Response res) -> {
         // Sets the return type to json
         res.type("application/json");
         // Catches parsing errors
         try {
             // Creates a GSON parser that can parse dates and excludes id
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .create();
+            Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
             // Attempts to parse the user
             User user = gson.fromJson(req.body(), User.class);
@@ -225,10 +240,11 @@ public class APIController {
             // Checks if the user already exists
             if (DatabaseManager.getDatabaseManager().checkUser(user.getEmail()))
                 return APIResponse.error("A user with the given email already exists.");
-            
+
             // Adds it to the database and returns the user id
-            String id = DatabaseManager.getDatabaseManager().addUser(user);
-            return APIResponse.success(new Document("id", user.getID()));
+            DatabaseManager.getDatabaseManager().addUser(user);
+            req.session().attribute("uid", user.getID());
+            return APIResponse.success(new Document());
         } catch (Exception e) {
             // Prints the error to console
             e.printStackTrace();
@@ -236,7 +252,6 @@ public class APIController {
         // Returns an error response
         return APIResponse.error("Could not create the user.");
     };
-
 
     // Posts a new feedback
     public static Route postFeedback = (Request req, Response res) -> {
@@ -247,16 +262,13 @@ public class APIController {
         // Catches parsing errors
         try {
             // Creates a GSON parser that can parse dates and excludes id
-            Gson gson = new GsonBuilder()
-                .excludeFieldsWithoutExposeAnnotation()
-                .create();
+            Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
             // Attempts to parse the feedback as well as the id of the event
             Feedback feedback = gson.fromJson(req.body(), Feedback.class);
 
-
             // Attempts to add the feedback to the database
-            boolean result =  DatabaseManager.getDatabaseManager().addFeedback(eventCode, feedback);
+            boolean result = DatabaseManager.getDatabaseManager().addFeedback(eventCode, feedback);
 
             // Responds with whether it worked
             if (result)
@@ -269,7 +281,7 @@ public class APIController {
         // Returns an error response
         return APIResponse.error("The feedback could not be added.");
     };
-    
+
     /**
      * <<<<<<< HEAD Receives the the feedback form from the user to be analysed and
      * then send this data to the host's view ======= When feedback is received.
@@ -280,4 +292,27 @@ public class APIController {
         return APIResponse.success("ok");
     };
 
+    /**
+     * Handles the login attempt sent by a user Returns either an error with a
+     * message or success
+     */
+    public static Route loginUser = (Request req, Response res) -> {
+        // Might need to ensure the user is not logged in already?
+        System.out.println(req.body());
+        // Convert JSON to get Username and email
+        // Check if user exists
+
+        // If the attempt to login was a success, need to add the user's ID to the
+        // session
+        // Do so with the following:
+        // req.session().attribute('uid', value)
+
+        // Send success or failure with corresponding body
+        return APIResponse.error("Could not create the event.");
+    };
+
+    public static Route logoutUser = (Request req, Response res) -> {
+        req.session().removeAttribute("uid");
+        return APIResponse.success(new Document());
+    };
 }

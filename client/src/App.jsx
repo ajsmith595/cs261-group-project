@@ -5,6 +5,8 @@ import FeedbackView from './views/FeedbackView.jsx';
 import HomeView from './views/HomeView.jsx';
 import HostView from './views/HostView.jsx';
 import RegisterView from './views/RegisterView.jsx';
+import LoginView from './views/LoginView.jsx';
+import LogoutView from './views/LogoutView.jsx';
 import {
     BrowserRouter as Router,
     Switch,
@@ -33,7 +35,12 @@ function App() {
                             <Link key="back_btn" to="/" className="btn btn-primary m-1">Back</Link>
                         </Route>
                     </Switch>
-                    <Link key="logout_btn" to="/logout" className="btn btn-dark float-right m-1">Logout</Link>
+                    <Switch>
+                        <Route path={["/login", "/register"]} />
+                        <Route path="/">
+                            <Link key="logout_btn" to="/logout" className="btn btn-dark float-right m-1">Logout</Link>
+                        </Route>
+                    </Switch>
                 </div>
 
                 <div className="border border bg-white rounded container-fluid  mt-2">
@@ -48,6 +55,15 @@ function App() {
                             <CreateEventView />
                         </Route>
                         <Route path="/event/:id" component={AttendeeHostView} />
+                        <Route path="/register">
+                            <RegisterView />
+                        </Route>
+                        <Route path="/login">
+                            <LoginView />
+                        </Route>
+                        <Route path="/logout">
+                            <LogoutView />
+                        </Route>
                     </Switch>
                 </div>
             </Router>

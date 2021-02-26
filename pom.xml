@@ -59,7 +59,7 @@
             </resource>
             <resource>
                 <directory>client/build</directory>
-                <targetPath>${basedir}/target/classes/client</targetPath>
+                <targetPath>${basedir}/target/classes/client/static</targetPath>
             </resource>
         </resources>
         <pluginManagement>
