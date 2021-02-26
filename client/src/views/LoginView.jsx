@@ -1,5 +1,6 @@
 import React from "react";
 import { Form, Col, Row, Button, ListGroup } from "react-bootstrap";
+import { Redirect } from "react-router-dom";
 export default class RegisterView extends React.Component {
     constructor(props) {
         super(props);
@@ -9,7 +10,8 @@ export default class RegisterView extends React.Component {
             email: "",
             username: "",
             serverError: "",
-            error: []
+            error: [],
+            status: 'main'
         };
     }
 
@@ -37,10 +39,13 @@ export default class RegisterView extends React.Component {
         }
         if (errors != "") {
             this.setState({// Stores the set of errors to be shown to the user
-                error: errors
+                error: errors,
             });
         } else {
-            fetch('/api/login',
+            this.setState({
+                status: 'loading'
+            })
+            fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + '/api/login',
                 {
                     method: 'POST',
                     headers: {
@@ -48,19 +53,25 @@ export default class RegisterView extends React.Component {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(this.state),// Sends the state to the server
+                    credentials: "include"
                 }
             ).then(response => {
                 if (response.status >= 400) {//Throws an error if the server responds witha error status
-                    throw new Error("Bad response from server");
+                    this.setState({
+                        status: 'error'
+                    })
                 }
                 response.json().then(data => {
                     if (data.status == "error") {//Custom error sent from server
                         this.setState({
                             error: [], //Empties the errors from validation
-                            serverError: data.message
+                            serverError: data.message,
+                            status: 'main'
                         });
                     } else if (data.status == "success") {
-                        window.location.replace("/events");
+                        this.setState({
+                            status: 'success'
+                        })
                     }
                 })
             });
@@ -71,6 +82,18 @@ export default class RegisterView extends React.Component {
     Renders the Login View
     */
     render() {
+        if (this.state.status == 'error') {
+            return <div className="text-center">
+                <h1>An error occured</h1>
+                <Button onClick={() => this.setState({ status: 'main' })}></Button>
+            </div>
+        }
+        else if (this.state.status == 'loading') {
+            return <h1 className="text-center">Loading...</h1>
+        }
+        else if (this.state.status == 'success') {
+            return <Redirect to="/" />
+        }
         return (
             <div className="text-center py-2">
                 <h1>Login</h1>

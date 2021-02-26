@@ -169,7 +169,8 @@ export default class CreateEventView extends React.Component {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(obj_to_send)
+            body: JSON.stringify(obj_to_send),
+            credentials: "include"
         }).then(e => e.json()).then(data => {
             if (data.status == 'success') {
                 this.setState({
@@ -178,7 +179,6 @@ export default class CreateEventView extends React.Component {
                 });
             }
             else {
-                console.log(data);
                 this.setState({
                     status: 'error',
                     error: data.message
@@ -188,7 +188,6 @@ export default class CreateEventView extends React.Component {
             this.setState({
                 status: 'error'
             })
-            console.log(e);
         });
     }
 

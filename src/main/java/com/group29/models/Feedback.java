@@ -19,34 +19,35 @@ import org.bson.types.ObjectId;
 
 public class Feedback {
     private String id;
-    @Expose
     private String userID;
     @Expose
     private boolean anonymous;
     @Expose
     private List<Response> responses;
 
-
-    private Feedback(String id, String userID, boolean anonymous, List<Response> responses)
-    {
+    private Feedback(String id, String userID, boolean anonymous, List<Response> responses) {
         this.id = id;
         this.userID = userID;
         this.anonymous = anonymous;
         this.responses = responses;
     }
 
-    public static Feedback generateFeedbackFromDocument(Document doc)
-    {
+    public static Feedback generateFeedbackFromDocument(Document doc) {
         // Grabs the information from the document
-        //String id = doc.getObjectId("_id").toHexString();
+        // String id = doc.getObjectId("_id").toHexString();
         String userID = doc.getString("userID");
         boolean anonymous = doc.getBoolean("anonymous");
-        List<Response> responses = doc.getList("responses", Document.class).stream().map(x -> Response.generateResponseFromDocument(x)).collect(Collectors.toList());
+        List<Response> responses = doc.getList("responses", Document.class).stream()
+                .map(x -> Response.generateResponseFromDocument(x)).collect(Collectors.toList());
 
         // Returns a new event using the data obtained
         return new Feedback(null, userID, anonymous, responses);
     }
-    
+
+    public void setUserID(String userID) {
+        this.userID = userID;
+    }
+
     /**
      * Gets the feedback as a MongoDB Document
      * 
@@ -63,15 +64,14 @@ public class Feedback {
         doc.append("userID", userID);
         doc.append("anonymous", anonymous);
         if (responses != null)
-            doc.append("responses", (List<Document>)(responses.stream().map(x -> x.getResponseAsDocument()).collect(Collectors.toList())));
-        else 
+            doc.append("responses", (List<Document>) (responses.stream().map(x -> x.getResponseAsDocument())
+                    .collect(Collectors.toList())));
+        else
             doc.append("responses", new ArrayList<Document>());
 
         // Returns the filled document
         return doc;
     }
-
-    
 
     // Codec class to allow MongoDB to automatically create Feedback classes
     public static class FeedbackCodec implements Codec<Feedback> {

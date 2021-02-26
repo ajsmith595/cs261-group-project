@@ -13,8 +13,7 @@ import org.bson.types.ObjectId;
 
 import com.google.gson.annotations.Expose;
 
-public class User
-{
+public class User {
     private String id;
     @Expose
     private String email;
@@ -22,28 +21,26 @@ public class User
     private String username;
     private String currentEventID;
 
-
-    public User(String id, String email, String username, String currentEventID)
-    {
+    public User(String id, String email, String username, String currentEventID) {
         this.id = id;
         this.email = email;
         this.username = username;
         this.currentEventID = currentEventID;
     }
 
-
-    public String getID()
-    {
+    public String getID() {
         return id;
     }
 
-    public String getEmail()
-    {
+    public String getEmail() {
         return email;
     }
 
-    public void setID(String id)
-    {
+    public String getUsername() {
+        return username;
+    }
+
+    public void setID(String id) {
         this.id = id;
     }
 
@@ -69,7 +66,6 @@ public class User
         // Returns the filled document
         return doc;
     }
-
 
     // Codec class to allow MongoDB to automatically create User classes
     public static class UserCodec implements Codec<User> {

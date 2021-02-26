@@ -18,7 +18,8 @@ export default class LogoutView extends React.Component {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: "include"
         }).then(e => e.json()).then(e => {
             if (e.status == 'error') {
                 this.setState({

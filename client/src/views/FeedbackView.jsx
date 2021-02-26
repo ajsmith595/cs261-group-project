@@ -5,7 +5,6 @@ import Multiselect from "react-multi-select-component";
 export default class FeedbackView extends React.Component {
     constructor(props) {
         super(props);
-        console.log(props.data);
         this.sendStateToServer = this.sendStateToServer.bind(this);
         this.state = {
             status: 'show',
@@ -67,6 +66,7 @@ export default class FeedbackView extends React.Component {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(this.state),
+                credentials: "include"
             }
         ).then(response => response.json()).then(data => {
             if (data.status === 'success') {

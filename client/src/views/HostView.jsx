@@ -40,7 +40,9 @@ export default class HostView extends React.Component {
     }
     webSocketOpen(e) {
         // When the WebSocket first connects, the server expects the client to 'authenticate' with a token. We need to get the token, and then send it to the websocket.
-        fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/event/${this.props.eventID}/token`).then(e => e.json()).then(data => {
+        fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/event/${this.props.eventID}/token`, {
+            credentials: "include"
+        }).then(e => e.json()).then(data => {
             this.socket.send(data.token); // authenticate with the token
         }).catch(e => {
             // If something failed, we should close the connection - the client can always reload the page/click the reconnect button to reconnect

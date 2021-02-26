@@ -44,7 +44,7 @@ export default class RegisterView extends React.Component {
                 error: errors
             });
         } else {
-            fetch('/api/register',
+            fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + '/api/register',
                 {
                     method: 'POST',
                     headers: {
@@ -52,6 +52,7 @@ export default class RegisterView extends React.Component {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(this.state),// Sends the state to the server
+                    credentials: "include"
                 }
             ).then(response => {
                 if (response.status >= 400) {//Throws an error if the server responds witha error status

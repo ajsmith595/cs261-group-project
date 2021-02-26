@@ -53,20 +53,21 @@ public class APIController {
         // #endregion External Code Copied
 
         before("/*", (req, res) -> {
-            boolean isRegisterOrLogin = req.uri().equals("/api/register") || req.uri().equals("/api/login");
-            boolean isLoggedIn = req.session().attribute("uid") != null;
-            // If not logged in, and not trying to login/register, stop!
-            if (!isLoggedIn && !isRegisterOrLogin) {
-                halt(401, (new JSONTransformer()).render(APIResponse.error("Not authenticated")));
-            } else if (isLoggedIn && isRegisterOrLogin) {
-                halt(401, (new JSONTransformer()).render(APIResponse.error("Already authenticated")));
+            res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+            res.header("Access-Control-Allow-Credentials", "true");
+            if (!req.requestMethod().equals("OPTIONS")) {
+                boolean isRegisterOrLogin = req.uri().equals("/api/register") || req.uri().equals("/api/login");
+                boolean isLoggedIn = req.session().attribute("uid") != null;
+                // If not logged in, and not trying to login/register, stop!
+                if (!isLoggedIn && !isRegisterOrLogin) {
+                    halt(401, (new JSONTransformer()).render(APIResponse.error("Not authenticated")));
+                } else if (isLoggedIn && isRegisterOrLogin) {
+                    halt(401, (new JSONTransformer()).render(APIResponse.error("Already authenticated")));
+                }
             }
         });
         // Gets run after every request, just before the response is actually sent to
         // the user. Used for development environments.
-        after("/*", (req, res) -> {
-            res.header("Access-Control-Allow-Origin", "http://localhost:3000");
-        });
 
         // Get WebSocket authentication token for a particular event
         get("/event/:id/token", "application/json", APIController.getWebSocketToken, new JSONTransformer());
@@ -78,18 +79,17 @@ public class APIController {
         post("/events", APIController.postEvent, new JSONTransformer());
 
         // Add new feedback for an event
-        post("/event/:id/feedback", "application/json", APIController.checkData, new JSONTransformer());
+        post("/event/:id/feedback", "application/json", APIController.postFeedback, new JSONTransformer());
         // get("/event/:id", "application/json", APIController.getSession, new
         // JSONTransformer());
-        get("/user/:id", "application/json", APIController.getUser, new JSONTransformer());
+        // get("/user/:id", "application/json", APIController.getUser, new
+        // JSONTransformer());
         /*
          * Makes it return in JSON format. Will automatically convert regular Java
          * classes to JSON. Will keep all fields (private/public/protected) but will
          * discard functions.
          */
         // post("/events", APIController.postEvent, new JSONTransformer());
-        post("/feedback/:id", APIController.postFeedback, new JSONTransformer());
-        post("/event/:id/feedback", "application/json", APIController.checkData);
         post("/register", APIController.createUser, new JSONTransformer());
         post("/login", APIController.loginUser, new JSONTransformer());
         post("/logout", APIController.logoutUser, new JSONTransformer());
@@ -114,12 +114,11 @@ public class APIController {
             return d;
         }
 
-        if (!e.getHostID().equals(req.session().attribute("uid"))) {
+        if (!e.getHostID().equals(req.session().attribute("uid"))) { // If it's not the host
             Document d = new Document();
             d.append("token", ""); // Give them an empty token
             return d;
         }
-        // TODO: check if event's host ID = web session's user ID.
 
         char[] possibleChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
 
@@ -266,10 +265,12 @@ public class APIController {
 
             // Attempts to parse the feedback as well as the id of the event
             Feedback feedback = gson.fromJson(req.body(), Feedback.class);
+            feedback.setUserID(req.session().attribute("uid"));
 
             // Attempts to add the feedback to the database
             boolean result = DatabaseManager.getDatabaseManager().addFeedback(eventCode, feedback);
-
+            System.out.println("Feedback created!");
+            System.out.println(result);
             // Responds with whether it worked
             if (result)
                 return APIResponse.success(new Document());
@@ -297,18 +298,19 @@ public class APIController {
      * message or success
      */
     public static Route loginUser = (Request req, Response res) -> {
-        // Might need to ensure the user is not logged in already?
-        System.out.println(req.body());
-        // Convert JSON to get Username and email
-        // Check if user exists
 
-        // If the attempt to login was a success, need to add the user's ID to the
-        // session
-        // Do so with the following:
-        // req.session().attribute('uid', value)
+        // Creates a GSON parser that can parse dates and excludes id
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
-        // Send success or failure with corresponding body
-        return APIResponse.error("Could not create the event.");
+        // Attempts to parse the feedback as well as the id of the event
+        User user = gson.fromJson(req.body(), User.class);
+        User dbUser = DatabaseManager.getDatabaseManager().getUserFromDetails(user.getEmail(), user.getUsername());
+        if (dbUser == null) {
+            return APIResponse.error("User not found");
+        }
+
+        req.session().attribute("uid", dbUser.getID());
+        return APIResponse.success(new Document());
     };
 
     public static Route logoutUser = (Request req, Response res) -> {
