@@ -157,44 +157,8 @@ public class Event {
         if (fetchFromDatabase)
             this.feedbackList = DatabaseManager.getDatabaseManager().getFeedback(this.id);
         Question[] results = this.aggregator.collateFeedback(this);
-        /*for(Question q : results){
-            if(q instanceof OpenQuestion){
-                System.out.println(((OpenQuestion) q).getTitle());
-                System.out.println(((OpenQuestion) q).getRecentResponses().length);
-                for(QuestionResponse qr: ((OpenQuestion) q).getRecentResponses()){
-                    System.out.println(qr.getMessage());
-                    System.out.println(qr.getUsername());
-                    System.out.println(qr.getID());
-                }
-                for(Trend t: ((OpenQuestion) q).getTrends()){
-                    System.out.println(t.getPhrase());
-                    System.out.println(t.getProportion());
-                }
-            }
-            if(q instanceof NumericQuestion){
-                System.out.println(((NumericQuestion) q).getTitle());
-                System.out.println(((NumericQuestion) q).getMinValue());
-                System.out.println(((NumericQuestion) q).getMaxValue());
-                System.out.println(((NumericQuestion) q).getMinTime());
-                System.out.println(((NumericQuestion) q).getMaxTime());
-                System.out.println(((NumericQuestion) q).getCurrentTime());
-                System.out.println(((NumericQuestion) q).getPoints().length);
-                for(Point p: ((NumericQuestion) q).getPoints()){
-                    System.out.println(p.getTime());
-                    System.out.println(p.getValue());
-                }
-            }
-            if(q instanceof ChoiceQuestion){
-                System.out.println(((ChoiceQuestion) q).getTitle());
-                System.out.println(((ChoiceQuestion) q).getMultiple());
-                System.out.println(((ChoiceQuestion) q).getOptions().length);
-                for(Option o: ((ChoiceQuestion) q).getOptions()){
-                    System.out.println(o.getName());
-                    System.out.println(o.getNumber());
-                }
-            }
-        }
-        ArrayList<QuestionResponse> qrs = new ArrayList<>();
+        //this.printQuestions(results);
+        /*ArrayList<QuestionResponse> qrs = new ArrayList<>();
         HashMap<String, Integer> choiceMap = new HashMap<>();
         choiceMap.put("Red", 0);
         choiceMap.put("Yellow", 0);
@@ -274,6 +238,7 @@ public class Event {
         NumericQuestion nq = new NumericQuestion("How would you rate this event?", new Stats(currentValue, 5, 10), 0,
                 10, startTime, endTime, currentTime, points.toArray(new Point[0]));
         //WebSocketData wsd = new WebSocketData(new Question[] { generalFeedbackQuestion, cq1, nq });*/
+        
         WebSocketData wsd = new WebSocketData(results);
         this.data = wsd;
 
@@ -496,6 +461,46 @@ public class Event {
 
     public HashMap<String, List<Point>> getRatingHistory() {
         return ratingHistory;
+    }
+
+    private void printQuestions( Question[] questions){
+        for(Question q : questions){
+            if(q instanceof OpenQuestion){
+                System.out.println(((OpenQuestion) q).getTitle());
+                System.out.println(((OpenQuestion) q).getRecentResponses().length);
+                for(QuestionResponse qr: ((OpenQuestion) q).getRecentResponses()){
+                    System.out.println(qr.getMessage());
+                    System.out.println(qr.getUsername());
+                    System.out.println(qr.getID());
+                }
+                for(Trend t: ((OpenQuestion) q).getTrends()){
+                    System.out.println(t.getPhrase());
+                    System.out.println(t.getProportion());
+                }
+            }
+            if(q instanceof NumericQuestion){
+                System.out.println(((NumericQuestion) q).getTitle());
+                System.out.println(((NumericQuestion) q).getMinValue());
+                System.out.println(((NumericQuestion) q).getMaxValue());
+                System.out.println(((NumericQuestion) q).getMinTime());
+                System.out.println(((NumericQuestion) q).getMaxTime());
+                System.out.println(((NumericQuestion) q).getCurrentTime());
+                System.out.println(((NumericQuestion) q).getPoints().length);
+                for(Point p: ((NumericQuestion) q).getPoints()){
+                    System.out.println(p.getTime());
+                    System.out.println(p.getValue());
+                }
+            }
+            if(q instanceof ChoiceQuestion){
+                System.out.println(((ChoiceQuestion) q).getTitle());
+                System.out.println(((ChoiceQuestion) q).getMultiple());
+                System.out.println(((ChoiceQuestion) q).getOptions().length);
+                for(Option o: ((ChoiceQuestion) q).getOptions()){
+                    System.out.println(o.getName());
+                    System.out.println(o.getNumber());
+                }
+            }
+        }
     }
 
     // Codec class to allow MongoDB to automatically create Event classes

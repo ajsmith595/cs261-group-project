@@ -7,6 +7,7 @@ import javax.xml.crypto.Data;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Calendar;
 
 import com.group29.models.temp.*;
 import com.mongodb.MongoClient;
@@ -227,6 +228,13 @@ public class DatabaseManager {
     // Adds a template to the database
     public Template getTemplate(String templateID) {
         //TODO Actually remove this mess
+        Calendar c = Calendar.getInstance();
+        long currentTime = c.getTimeInMillis() / 1000;
+        c.set(Calendar.MINUTE, 30);
+        c.set(Calendar.HOUR, c.get(Calendar.HOUR) - 1);
+        long startTime = c.getTimeInMillis() / 1000;
+        c.set(Calendar.HOUR, c.get(Calendar.HOUR) + 1);
+        long endTime = c.getTimeInMillis() / 1000;
         return new Template(templateID, "a", new Question[] {
                 new OpenQuestion("General, Feedback", new QuestionResponse[0], new Trend[0]),
 
@@ -238,7 +246,7 @@ public class DatabaseManager {
                 },
                 true),
                 new NumericQuestion("How would you rate this event?", new Stats(-1, -1, -1), -1,
-                10, 0L, 60L, 34L, new Point[0])
+                10, startTime, endTime, 34L, new Point[0])
         });
     }
 
