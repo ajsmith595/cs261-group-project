@@ -141,7 +141,11 @@ public class FeedbackAggregator {
             }
             //points.add(new Point(f.getTimestamp() / 1000, responseAsFloat));
         }
-        Stats stats = new Stats(sum / count, min, max);
+        double current_value = (question.getMinValue() + question.getMaxValue()) / 2;
+        if (count > 0) {
+            current_value = sum / count;
+        }
+        Stats stats = new Stats(current_value, min, max);
 
         return new NumericQuestion(question.getTitle(), stats,
                 question.getMinValue(), question.getMaxValue(), question.getMinTime(), question.getMaxTime(),

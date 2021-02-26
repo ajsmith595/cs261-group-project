@@ -6,6 +6,7 @@ import java.util.List;
 import javax.xml.crypto.Data;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 import com.group29.models.temp.*;
@@ -226,20 +227,23 @@ public class DatabaseManager {
 
     // Adds a template to the database
     public Template getTemplate(String templateID) {
-        //TODO Actually remove this mess
-        return new Template(templateID, "a", new Question[] {
-                new OpenQuestion("General, Feedback", new QuestionResponse[0], new Trend[0]),
+        // TODO Actually remove this mess
+        Calendar c = Calendar.getInstance();
+        long current_time = c.getTimeInMillis() / 1000;
+        c.add(Calendar.MINUTE, 30);
+        c.set(Calendar.MINUTE, 30);
+        long end_time = c.getTimeInMillis() / 1000;
+        c.add(Calendar.HOUR, -1);
+        long start_time = c.getTimeInMillis() / 1000;
+        return new Template(templateID, "a",
+                new Question[] { new OpenQuestion("General, Feedback", new QuestionResponse[0], new Trend[0]),
 
-                new ChoiceQuestion("What is your Favourite colour?", new Option[] {
-                        new Option("Red", -1),
-                        new Option("Yellow", -1),
-                        new Option("Blue", -1),
-                        new Option("Green", -1)
-                },
-                true),
-                new NumericQuestion("How would you rate this event?", new Stats(-1, -1, -1), -1,
-                10, 0L, 60L, 34L, new Point[0])
-        });
+                        new ChoiceQuestion("What is your Favourite colour?",
+                                new Option[] { new Option("Red", -1), new Option("Yellow", -1), new Option("Blue", -1),
+                                        new Option("Green", -1) },
+                                true),
+                        new NumericQuestion("How would you rate this event?", new Stats(-1, -1, -1), 0, 10, start_time,
+                                end_time, current_time, new Point[0]) });
     }
 
     /**
@@ -282,36 +286,35 @@ public class DatabaseManager {
         if (e == null)
             return new ArrayList<>();
         return e.getFeedback();
-        /*// TODO Actually implement this mess, this is taken from the Event temporary updateData method
-        List<Feedback> fb = new ArrayList<>();
-
-        ArrayList<QuestionResponse> all_responses = new ArrayList<>(
-            Arrays.asList(new QuestionResponse("Very interesting and intriguing", null, "a"),
-                    new QuestionResponse("Something else....", "ajsmith595", "b"),
-                    new QuestionResponse("Pretty boring", "haterman443", "c"),
-                    new QuestionResponse("Clearly well-educated", "KrazyKid69", "d"),
-                    new QuestionResponse("Joy is at a low point here", null, "e"),
-                    new QuestionResponse("Confusing", null, "f")));
-
-        int index = 1000;
-        for (QuestionResponse qr : all_responses) {
-            fb.add(new Feedback(Integer.toString(++index), qr.getUsername() == null ? "x" : qr.getUsername(), qr.getUsername() != null,
-                    new ArrayList<>(Arrays.asList(new Response("r" + index + "0", "0", qr.getMessage())))));
-        }
-
-        for (int i = 0; i < 200; i++) {
-            String colour = new String[] {"Red", "Yellow", "Green"}[(int) Math.floor(3 * Math.random())];
-            String age = new String[] {"18-24", "25-39", "40-59", "60+"}[(int) Math.floor(4 * Math.random())];
-
-            fb.add(new Feedback(Integer.toString(i), "u" + i, false,
-                    new ArrayList<>(Arrays.asList(
-                            new Response("r" + i + "1", "1", colour),
-                            new Response("r" + i + "2", "2", age),
-                            new Response("r" + i + "3", "3", Integer.toString((int) (10 * Math.random())))
-                    ))));
-        }
-
-        return fb;*/
+        /*
+         * // TODO Actually implement this mess, this is taken from the Event temporary
+         * updateData method List<Feedback> fb = new ArrayList<>();
+         * 
+         * ArrayList<QuestionResponse> all_responses = new ArrayList<>(
+         * Arrays.asList(new QuestionResponse("Very interesting and intriguing", null,
+         * "a"), new QuestionResponse("Something else....", "ajsmith595", "b"), new
+         * QuestionResponse("Pretty boring", "haterman443", "c"), new
+         * QuestionResponse("Clearly well-educated", "KrazyKid69", "d"), new
+         * QuestionResponse("Joy is at a low point here", null, "e"), new
+         * QuestionResponse("Confusing", null, "f")));
+         * 
+         * int index = 1000; for (QuestionResponse qr : all_responses) { fb.add(new
+         * Feedback(Integer.toString(++index), qr.getUsername() == null ? "x" :
+         * qr.getUsername(), qr.getUsername() != null, new ArrayList<>(Arrays.asList(new
+         * Response("r" + index + "0", "0", qr.getMessage()))))); }
+         * 
+         * for (int i = 0; i < 200; i++) { String colour = new String[] {"Red",
+         * "Yellow", "Green"}[(int) Math.floor(3 * Math.random())]; String age = new
+         * String[] {"18-24", "25-39", "40-59", "60+"}[(int) Math.floor(4 *
+         * Math.random())];
+         * 
+         * fb.add(new Feedback(Integer.toString(i), "u" + i, false, new
+         * ArrayList<>(Arrays.asList( new Response("r" + i + "1", "1", colour), new
+         * Response("r" + i + "2", "2", age), new Response("r" + i + "3", "3",
+         * Integer.toString((int) (10 * Math.random()))) )))); }
+         * 
+         * return fb;
+         */
     }
 
 }
