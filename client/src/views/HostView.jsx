@@ -80,15 +80,8 @@ export default class HostView extends React.Component {
                 for (let j in question.trends) {
                     let trend = question.trends[j];
                     trend.previous_proportion = 30;
-<<<<<<< HEAD
                     if (this.state.feedback && this.state.feedback[i].trends[j]) {
                         trend.previous_mood = this.state.feedback[i].trends[j].proportion;
-=======
-                    if (this.state.feedback) {
-                        if(this.state.feedback[i].trends.length > j){
-                            trend.previous_mood = this.state.feedback[i].trends[j].proportion;
-                        }
->>>>>>> d03f92dcffd38473b5add6fa09682acfdb371f0a
                     }
 
                 }
