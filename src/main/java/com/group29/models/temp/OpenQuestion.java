@@ -7,10 +7,10 @@ public class OpenQuestion extends Question {
 
     public OpenQuestion(String title, QuestionResponse[] responses, Trend[] trends) {
         this.type = "open";
-        this.current_mood = (float) (Math.random() * 2 - 1);
         this.title = title;
         this.recent_responses = responses;
         this.trends = trends;
+        //this.current_mood = current_mood;
     }
 
     public QuestionResponse[] getRecentResponses() {

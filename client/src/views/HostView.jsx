@@ -82,7 +82,7 @@ export default class HostView extends React.Component {
                 for (let j in question.trends) {
                     let trend = question.trends[j];
                     trend.previous_proportion = 30;
-                    if (this.state.feedback) {
+                    if (this.state.feedback && this.state.feedback[i].trends[j]) {
                         trend.previous_mood = this.state.feedback[i].trends[j].proportion;
                     }
 
@@ -227,7 +227,7 @@ export default class HostView extends React.Component {
             >
                 {response => props =>
                 (
-                    <p style={props}><span className="font-weight-bold">{response.username || "Anonymous"}</span>: {response.message}</p>
+                    <p key={response.id} style={props}><span className="font-weight-bold">{response.username || "Anonymous"}</span>: {response.message}</p>
                 )
                 }
             </Transition>

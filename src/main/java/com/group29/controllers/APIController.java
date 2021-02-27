@@ -1,5 +1,6 @@
 package com.group29.controllers;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import com.group29.models.DatabaseManager;
@@ -80,18 +81,16 @@ public class APIController {
 
         // Add new feedback for an event
         post("/event/:id/feedback", "application/json", APIController.postFeedback, new JSONTransformer());
-        // get("/event/:id", "application/json", APIController.getSession, new
-        // JSONTransformer());
-        // get("/user/:id", "application/json", APIController.getUser, new
-        // JSONTransformer());
         /*
          * Makes it return in JSON format. Will automatically convert regular Java
          * classes to JSON. Will keep all fields (private/public/protected) but will
          * discard functions.
          */
-        // post("/events", APIController.postEvent, new JSONTransformer());
+        // Register a user
         post("/register", APIController.createUser, new JSONTransformer());
+        // Login a user
         post("/login", APIController.loginUser, new JSONTransformer());
+        // Logout a user
         post("/logout", APIController.logoutUser, new JSONTransformer());
     };
 
@@ -159,10 +158,11 @@ public class APIController {
         // return new Event("0", "Event Code Test");
 
         String eventCode = req.params(":id").toUpperCase();
+
         Event event = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
 
         if (event != null) {
-            if (event.getHostID().equals(req.session().attribute("uid"))) {
+            if (req.queryParams("force_host") != null || event.getHostID().equals(req.session().attribute("uid"))) {
                 return APIResponse.success(event.getHostViewDocument());
             }
             return APIResponse.success(event.getAttendeeViewDocument());
@@ -266,11 +266,11 @@ public class APIController {
             // Attempts to parse the feedback as well as the id of the event
             Feedback feedback = gson.fromJson(req.body(), Feedback.class);
             feedback.setUserID(req.session().attribute("uid"));
+            feedback.setTimestamp(Calendar.getInstance().getTimeInMillis());
 
             // Attempts to add the feedback to the database
             boolean result = DatabaseManager.getDatabaseManager().addFeedback(eventCode, feedback);
-            System.out.println("Feedback created!");
-            System.out.println(result);
+
             // Responds with whether it worked
             if (result)
                 return APIResponse.success(new Document());
@@ -281,16 +281,6 @@ public class APIController {
         }
         // Returns an error response
         return APIResponse.error("The feedback could not be added.");
-    };
-
-    /**
-     * <<<<<<< HEAD Receives the the feedback form from the user to be analysed and
-     * then send this data to the host's view ======= When feedback is received.
-     * >>>>>>> d94def0978b23c9470a1ff36e0628f19c017738f
-     */
-    public static Route checkData = (Request req, Response res) -> {
-        System.out.println(req.body());
-        return APIResponse.success("ok");
     };
 
     /**

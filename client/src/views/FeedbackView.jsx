@@ -9,53 +9,40 @@ export default class FeedbackView extends React.Component {
         this.state = {
             status: 'show',
             anonymous: false,
-            // questions: {
-            //     "0": {
-            //         id: "0", // this needs to be the same as the index, so the questions can directly access their own state
-            //         type: 'open',
-            //         title: 'Any other comments?',
-            //         value: ''
-            //     },
-            //     "1": {
-            //         id: "1",
-            //         type: 'numeric',
-            //         title: 'On a scale of 1 to 10, 10 being the best, how would you rate the event?',
-            //         min: 1,
-            //         max: 10,
-            //         value: 5
-            //     },
-            //     "2": {
-            //         id: "2",
-            //         type: 'choice',
-            //         title: 'Choose a colour',
-            //         choices: ["Red", "Yellow", "Green", "Blue"],
-            //         value: -1
-            //     },
-            //     "3": {
-            //         id: "3",
-            //         type: "multi-choice",
-            //         title: "choose all colours",
-            //         choices: ["Red", "Yellow", "Blue", "Orange", "Marshmellow"],
-            //         value: []
-            //     }
-            // }
             questions: props.data.questions
         };
 
 
     }
-
-    //When the page has received the form from the server it loads the page
-    /*componentDidMount() {
-        fetch('/api/event/:id')
-          .then((response) => response.json())
-          .then((data) => this.setState({questions: data, loading: false}));
-    }*/
-
     /*
     Sends the state to the server to store and analyse the feedback
     */
     sendStateToServer() {
+        let responseData = [];
+        for (let qid in this.state.questions) {
+            let question = this.state.questions[qid];
+            let value = question.value;
+
+            if (question.type == "choice" && question.multiple) {
+                let newValues = [];
+                for (let x of value) {
+                    newValues.push(x.value);
+                }
+                value = newValues;
+            }
+            if (question.type === "numeric") {
+                value = parseInt(value);
+            }
+
+            responseData.push({
+                questionID: qid,
+                response: value
+            });
+        }
+        let dataToSend = {
+            anonymous: this.state.anonymous,
+            responses: responseData
+        };
         this.setState({
             status: 'loading'
         });
@@ -65,7 +52,7 @@ export default class FeedbackView extends React.Component {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(this.state),
+                body: JSON.stringify(dataToSend),
                 credentials: "include"
             }
         ).then(response => response.json()).then(data => {

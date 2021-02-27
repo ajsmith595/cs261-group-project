@@ -131,7 +131,7 @@ public class Program {
             public void run() {
                 WebSocketController.updateEvent(null); // update all events every 5 seconds
             }
-        }, 0, 5000);
+        }, 0, 1000 * 60);
 
         asyncInject(); // 404 fix
 
