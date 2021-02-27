@@ -196,8 +196,8 @@ public class FeedbackAggregator {
         double pointAverage = 0;
         Calendar c = Calendar.getInstance();
         long currentTime = c.getTime().getTime();
-        System.out.println("current Time: " +currentTime);
-        System.out.println("start Time: " +startTime);
+        //System.out.println("current Time: " +currentTime);
+        //System.out.println("start Time: " +startTime);
         // As go through ur
         // Store each user's points in a hashmap
         // When ur is over interval
@@ -224,7 +224,7 @@ public class FeedbackAggregator {
                 if(ur.timestamp > startTime + i*interval){
                     pointAverage = this.averageValues(ratings);
                     while(startTime + i*interval < ur.timestamp){
-                        System.out.println("new Point: " + (startTime + i*interval));
+                        //System.out.println("new Point: " + (startTime + i*interval));
                         points.add(new Point((startTime + i*interval) / 1000, pointAverage));
                         i++;
                     }
