@@ -26,6 +26,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Comparator;
 
 import java.lang.StringBuilder;
 import org.bson.Document;
@@ -73,6 +74,7 @@ public class Event {
         this.duration = duration;
         this.eventCode = eventCode;
         this.feedbackList = feedbackList;
+        this.feedbackList.sort(Comparator.comparing(Feedback::getTimestamp));
         this.clients = new ArrayList<Session>();
         this.aggregator = FeedbackAggregator.getFeedbackAggregator();
         //System.out.println(this.aggregator.collateFeedback(this));
@@ -117,6 +119,15 @@ public class Event {
     }
 
     /**
+     * Gets the event start time
+     * 
+     * @return the start time in unix format
+     */
+    public Date getStartTime() {
+        return this.startTime;
+    }
+
+    /**
      * Temporal function to set the host ID. Used so that we can set the host ID on
      * the server, as opposed to trusting the client to give us the right host ID.
      * 
@@ -156,8 +167,10 @@ public class Event {
     public void updateData(boolean fetchFromDatabase) {
         if (fetchFromDatabase)
             this.feedbackList = DatabaseManager.getDatabaseManager().getFeedback(this.id);
+            // Sort feedback based on time stamp
+            this.feedbackList.sort(Comparator.comparing(Feedback::getTimestamp));
         Question[] results = this.aggregator.collateFeedback(this);
-        //this.printQuestions(results);
+        this.printQuestions(results);
         /*ArrayList<QuestionResponse> qrs = new ArrayList<>();
         HashMap<String, Integer> choiceMap = new HashMap<>();
         choiceMap.put("Red", 0);
@@ -487,8 +500,8 @@ public class Event {
                 System.out.println(((NumericQuestion) q).getCurrentTime());
                 System.out.println(((NumericQuestion) q).getPoints().length);
                 for(Point p: ((NumericQuestion) q).getPoints()){
-                    System.out.println(p.getTime());
-                    System.out.println(p.getValue());
+                    System.out.println("Point time: "+p.getTime());
+                    System.out.println("Point value: "+p.getValue());
                 }
             }
             if(q instanceof ChoiceQuestion){
@@ -550,9 +563,9 @@ public class Event {
             String eventCode = doc.getString("eventCode");
             List<Feedback> feedbackList = doc.getList("feedbackList", Document.class).stream()
                     .map(x -> Feedback.generateFeedbackFromDocument(x)).collect(Collectors.toList());
-            if (feedbackList != null) {
-                System.out.println(feedbackList.size());
-            }
+            //if (feedbackList != null) {
+            //    System.out.println(feedbackList.size());
+            //}
 
             // Returns a new event using the data obtained
             return new Event(id, hostID, templateID, title, startTime, duration, eventCode, feedbackList);

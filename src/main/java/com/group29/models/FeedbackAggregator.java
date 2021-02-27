@@ -61,7 +61,7 @@ public class FeedbackAggregator {
             if (q instanceof OpenQuestion)
                 results[i] = aggregateOpenQuestion((OpenQuestion) q, responses);
             else if (q instanceof NumericQuestion)
-                results[i] = aggregateNumericQuestion((NumericQuestion) q, responses);
+                results[i] = aggregateNumericQuestion((NumericQuestion) q, responses, event.getStartTime().getTime());
             else if (q instanceof ChoiceQuestion)
                 results[i] = aggregateChoiceQuestion((ChoiceQuestion) q, responses);
         }
@@ -167,6 +167,16 @@ public class FeedbackAggregator {
         return new OpenQuestion(question.getTitle(), qrs, trends);
     }
 
+    private double averageValues(HashMap<String, Double> ratings){
+        int size = ratings.size();
+        long sum = 0;
+        for (Double i : ratings.values()) {
+            sum += i;
+        }
+        double average = (size == 0) ? 0 : (sum / size);
+        return average;
+    }
+
     /**
      * Analyses a numeric question, returns the min max and average ratings
      * 
@@ -174,17 +184,33 @@ public class FeedbackAggregator {
      * @param responses List of responses to analyse
      * @return A numeric question object containing this info
      */
-    public NumericQuestion aggregateNumericQuestion(NumericQuestion question, List<UserResponse> responses) {
+    public NumericQuestion aggregateNumericQuestion(NumericQuestion question, List<UserResponse> responses, long startTime) {
         double sum = 0;
         double count = 0, min = 10, max = 0;
         ArrayList<Point> points = new ArrayList<Point>();
-
+        HashMap<String, Double> ratings = new HashMap<String, Double>();
+        int interval = 300000;
+        int i = 1;
+        double pointAverage = 0;
+        Calendar c = Calendar.getInstance();
+        long currentTime = c.getTime().getTime();
+        System.out.println("current Time: " +currentTime);
+        System.out.println("start Time: " +startTime);
+        // As go through ur
+        // Store each user's points in a hashmap
+        // When ur is over interval
+        // Average each response stored in HM
+        // Create a point with this average at the interval point (function to do this would be good)
+        // When finished with all ur
+        // Add points at intervals until at current time
+        // Add point at current time
         for (UserResponse ur : responses) {
             Response r = ur.response;
+            System.out.println("ur Time: " +ur.timestamp);
             // For each response, carry out aggregate functions
             Object response = r.getResponse();
             if (response instanceof Double) {
-                double responseAsFloat = (double) response;
+                double responseAsDouble = (double) response;
                 double rank = (double) response;
                 sum += rank;
                 count++;
@@ -192,10 +218,25 @@ public class FeedbackAggregator {
                     min = rank;
                 if (rank > max)
                     max = rank;
-                points.add(new Point(ur.timestamp / 1000, responseAsFloat));
-
+                //points.add(new Point(ur.timestamp / 1000, responseAsDouble));
+                if(ur.timestamp > startTime + i*interval){
+                    pointAverage = this.averageValues(ratings);
+                    while(startTime + i*interval < ur.timestamp){
+                        System.out.println("new Point: " + (startTime + i*interval));
+                        points.add(new Point((startTime + i*interval) / 1000, pointAverage));
+                        i++;
+                    }
+                }
+                ratings.put(ur.userID, responseAsDouble);
             }
         }
+        pointAverage = this.averageValues(ratings);
+        while(startTime + i*interval < currentTime){
+            points.add(new Point((startTime + i*interval) / 1000, pointAverage));
+            i++;
+        }
+        //Add point for current time
+        points.add(new Point(currentTime / 1000, pointAverage));
         double average = (count == 0) ? 0 : (sum / count); // Prevent divide by 0 error
         Stats stats = new Stats(average, min, max);
         return new NumericQuestion(question.getTitle(), stats, question.getMinValue(), question.getMaxValue(),

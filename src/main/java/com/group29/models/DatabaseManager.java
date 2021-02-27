@@ -242,7 +242,7 @@ public class DatabaseManager {
                         new ChoiceQuestion("What is your Favourite colour?",
                                 new Option[] { new Option("Red", -1), new Option("Yellow", -1), new Option("Blue", -1),
                                         new Option("Green", -1) },
-                                true),
+                                false),
                         new NumericQuestion("How would you rate this event?", new Stats(-1, -1, -1), 0, 10, start_time,
                                 end_time, current_time, new Point[0]) });
     }
