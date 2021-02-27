@@ -21,19 +21,12 @@ export default class LogoutView extends React.Component {
             },
             credentials: "include"
         }).then(e => e.json()).then(e => {
-            if (e.status == 'error') {
-                this.setState({
-                    status: 'error'
-                });
-            }
-            else {
-                this.setState({
-                    status: 'success'
-                })
-            }
+            this.setState({
+                status: 'success'
+            })
         }).catch(e => {
             this.setState({
-                status: 'error'
+                status: 'success'
             });
         });
     }
