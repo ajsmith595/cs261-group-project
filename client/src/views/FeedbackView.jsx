@@ -26,11 +26,11 @@ export default class FeedbackView extends React.Component {
             if (question.type == "choice" && question.multiple) {
                 let newValues = [];
                 for (let x of value) {
-                    newValues.push(x.value);
+                    newValues.push(parseInt(x.value));
                 }
                 value = newValues;
             }
-            if (question.type === "numeric") {
+            else if (question.type === "numeric" || question.type == "choice") {
                 value = parseInt(value);
             }
 
@@ -275,7 +275,7 @@ export default class FeedbackView extends React.Component {
     renderMultipleChoiceQuestion(question) {
         let options = [];
         for (let choice in question.choices) {
-            options.push({ label: question.choices[choice], value: question.choices[choice] });
+            options.push({ label: question.choices[choice], value: choice });
         }
         return (
             <Form.Group controlId={"formQuestion_" + question.id}>
