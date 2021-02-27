@@ -137,7 +137,9 @@ public class FeedbackAggregator {
         }
         for (int i = 0; i < loop; i++) {
             Map.Entry<String, Integer> entry = counts.get(i);
-            trends[i] = new Trend(entry.getKey(), entry.getValue() * 100 / total);
+            double proportion = (double) entry.getValue() / (double) total;
+            int percent = (int) (Math.pow(proportion, 0.8) * 100);
+            trends[i] = new Trend(entry.getKey(), percent);
         }
 
         // Copy responses into QR array

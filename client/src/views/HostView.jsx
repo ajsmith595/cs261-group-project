@@ -238,7 +238,7 @@ export default class HostView extends React.Component {
                 <div className="w-100" style={{ height: "33%" }}>
                     <Spring from={{ proportion: trend.previous_proportion }} to={{ proportion: trend.proportion }}>
                         {props => ( // Animates the proportion so that the text will animate large <--> small                        
-                            <p style={{ transform: "scale(" + Math.min(Math.max(props.proportion / 100 * 5, 0.5), 3) + ")" }}>{trend.phrase}</p>
+                            <p style={{ transform: "scale(" + Math.min(Math.max(props.proportion / 100 * 4, 0.5), 2) + ")" }}>{trend.phrase}</p>
                         )}
                     </Spring>
                 </div>
