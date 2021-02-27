@@ -206,7 +206,7 @@ public class FeedbackAggregator {
         // Add point at current time
         for (UserResponse ur : responses) {
             Response r = ur.response;
-            System.out.println("ur Time: " +ur.timestamp);
+            //System.out.println("ur Time: " +ur.timestamp);
             // For each response, carry out aggregate functions
             Object response = r.getResponse();
             if (response instanceof Double) {

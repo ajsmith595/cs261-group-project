@@ -170,7 +170,7 @@ public class Event {
             // Sort feedback based on time stamp
             this.feedbackList.sort(Comparator.comparing(Feedback::getTimestamp));
         Question[] results = this.aggregator.collateFeedback(this);
-        this.printQuestions(results);
+        //this.printQuestions(results);
         /*ArrayList<QuestionResponse> qrs = new ArrayList<>();
         HashMap<String, Integer> choiceMap = new HashMap<>();
         choiceMap.put("Red", 0);
