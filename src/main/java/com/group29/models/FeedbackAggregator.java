@@ -7,7 +7,7 @@ import java.util.*;
 // TODO eventually rewrite to update (not entirely recalculate) data
 public class FeedbackAggregator {
     // Instance of the feedback aggregator
-    private static FeedbackAggregator feedbackAggregator = new FeedbackAggregator();
+    private static final FeedbackAggregator feedbackAggregator = new FeedbackAggregator();
 
     /**
      * Gets the singleton instance of the feedback aggregator
@@ -21,7 +21,7 @@ public class FeedbackAggregator {
     /**
      * Collects the feedback submitted for a specified event
      * 
-     * @param eventID The event specified
+     * @param event The event specified
      * @return A list of question objects summarising the event's feedback
      */
     public Question[] collateFeedback(Event event) {
@@ -45,8 +45,8 @@ public class FeedbackAggregator {
         for (Feedback fb : feedback) {
             int responseNumber = 0;
             for (Response r : fb.getResponses()) {
-                String key = "feedback_response_" + Integer.toString(feedbackNumber) + "_"
-                        + Integer.toString(responseNumber);
+                String key = "feedback_response_" + feedbackNumber + "_"
+                        + responseNumber;
                 questionResponses.get(Integer.parseInt(r.getQuestionID()))
                         .add(new UserResponse(fb.getUserID(), r, fb.getAnonymous(), key, fb.getTimestamp()));
                 responseNumber++;
@@ -129,7 +129,7 @@ public class FeedbackAggregator {
         counts.sort(Map.Entry.<String, Integer>comparingByKey().reversed());
         // Calculate common words, and copy into array
         int trend_length = 3;
-        int loop = (counts.size() > trend_length) ? trend_length : counts.size();
+        int loop = Math.min(counts.size(), trend_length);
         Trend[] trends = new Trend[loop];
         int total = 0;
         for (int i = 0; i < loop; i++) {
@@ -166,8 +166,23 @@ public class FeedbackAggregator {
             }
         }
 
-        return new OpenQuestion(question.getTitle(), qrs, trends);
+        // Sentiment analysis
+        // Sum up sentiment of each text response to get mean
+        SentimentAnalyser sa = SentimentAnalyser.getSentimentAnalyser();
+        double moodSum = 0.0;
+        int count = 0;
+        for (UserResponse r : responses) {
+            Object response = r.response.getResponse();
+            if (response instanceof String) {
+                String message = (String) response;
+                moodSum += sa.analyse(message);
+                count++;
+            }
+        }
+
+        return new OpenQuestion(question.getTitle(), qrs, trends, (float) (moodSum / count));
     }
+
 
     private double averageValues(HashMap<String, Double> ratings){
         int size = ratings.size();
@@ -175,7 +190,7 @@ public class FeedbackAggregator {
         for (Double i : ratings.values()) {
             sum += i;
         }
-        double average = (size == 0) ? 0 : (sum / size);
+        double average = (size == 0) ? 0 : ((double) sum / size);
         return average;
     }
 
@@ -189,8 +204,8 @@ public class FeedbackAggregator {
     public NumericQuestion aggregateNumericQuestion(NumericQuestion question, List<UserResponse> responses, long startTime) {
         double sum = 0;
         double count = 0, min = 10, max = 0;
-        ArrayList<Point> points = new ArrayList<Point>();
-        HashMap<String, Double> ratings = new HashMap<String, Double>();
+        ArrayList<Point> points = new ArrayList<>();
+        HashMap<String, Double> ratings = new HashMap<>();
         int interval = 300000;
         int i = 1;
         double pointAverage = 0;
@@ -265,23 +280,23 @@ public class FeedbackAggregator {
                 if (!question.getMultiple()) {
                     continue;
                 }
+                // Raw arraylist as response could be int, double or string
                 ArrayList arr = (ArrayList) response;
                 for (Object a : arr) {
                     int value = 0;
                     if (a instanceof Double) {
                         value = ((Double) a).intValue();
                     } else if (a instanceof Integer) {
-                        value = ((Integer) a).intValue();
+                        value = (Integer) a;
                     }
                     optionCounts.inc(value);
                 }
             } else {
                 int value = 0;
-                Object a = response;
-                if (a instanceof Double) {
-                    value = ((Double) a).intValue();
-                } else if (a instanceof Integer) {
-                    value = ((Integer) a).intValue();
+                if (response instanceof Double) {
+                    value = ((Double) response).intValue();
+                } else if (response instanceof Integer) {
+                    value = (Integer) response;
                 }
                 optionCounts.inc(value);
             }
@@ -326,7 +341,7 @@ class UserResponse {
  * @param <T> Type of object to count
  */
 class Counter<T> {
-    private HashMap<T, Integer> counts = new HashMap<>();
+    private final HashMap<T, Integer> counts = new HashMap<>();
     private int total;
 
     public int get(T key) {
