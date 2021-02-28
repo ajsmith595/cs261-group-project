@@ -37,13 +37,18 @@ public class SentimentAnalyser {
             for (int i = 0; i < 5; i++)
                 results[i] += mood_proportions.get(i, 0) * partText.length();
         }
+
+        if (length == 0) return 0f;
+
         // Total up resulting value
-        float total = 0;
+        float total = 0f;
         for (int i = 0; i < 5; i++) {
             results[i] /= length;
             total += results[i] * i;
         }
-        return total;
+
+        // Remap to 0 to 4 to -1 to 1
+        return (total / 2)-1;
     }
 
     public static SentimentAnalyser getSentimentAnalyser() {

@@ -179,8 +179,9 @@ public class FeedbackAggregator {
                 count++;
             }
         }
+        float avg = (count == 0) ? 0f : (float) (moodSum / count);
 
-        return new OpenQuestion(question.getTitle(), qrs, trends, (float) (moodSum / count));
+        return new OpenQuestion(question.getTitle(), qrs, trends, avg);
     }
 
 
