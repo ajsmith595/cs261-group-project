@@ -45,8 +45,7 @@ public class FeedbackAggregator {
         for (Feedback fb : feedback) {
             int responseNumber = 0;
             for (Response r : fb.getResponses()) {
-                String key = "feedback_response_" + feedbackNumber + "_"
-                        + responseNumber;
+                String key = "feedback_response_" + feedbackNumber + "_" + responseNumber;
                 questionResponses.get(Integer.parseInt(r.getQuestionID()))
                         .add(new UserResponse(fb.getUserID(), r, fb.getAnonymous(), key, fb.getTimestamp()));
                 responseNumber++;
@@ -110,15 +109,26 @@ public class FeedbackAggregator {
     public OpenQuestion aggregateOpenQuestion(OpenQuestion question, List<UserResponse> responses) {
         Counter<String> wordCounts = new Counter<>();
 
+        HashMap<String, UserResponse> userResponsesMap = new HashMap<>();
         for (UserResponse ur : responses) {
+            userResponsesMap.put(ur.userID, ur); // only use most recent response for each user
+        }
+
+        ArrayList<UserResponse> userResponses = new ArrayList<>(userResponsesMap.values());
+
+        for (UserResponse ur : userResponses) {
             Response r = ur.response;
             Object response = r.getResponse();
             // Remove case and punctuation
             if (response instanceof String) {
                 String sanitised = ((String) response).toLowerCase().replaceAll("\\p{P}", "");
+                ArrayList<String> wordsUsed = new ArrayList<>();
                 for (String word : sanitised.split("\\s+")) {
-                    if (!stopWords.contains(word)) { // If not common word, increment counter
+                    if (!stopWords.contains(word) && !wordsUsed.contains(word)) {
+                        // If not common word, and word has not already been said in current response,
+                        // increment counter
                         wordCounts.inc(word);
+                        wordsUsed.add(word);
                     }
                 }
             }
@@ -143,10 +153,10 @@ public class FeedbackAggregator {
         }
 
         // Copy responses into QR array
-        QuestionResponse[] qrs = new QuestionResponse[responses.size()];
+        int numResponses = Math.min(8, responses.size());
+        QuestionResponse[] qrs = new QuestionResponse[numResponses];
         int j = 0;
-        int responses_left = 8; // only send 8 responses max
-        for (int i = responses.size() - 1; i >= 0; i--) {
+        for (int i = responses.size() - 1; i >= responses.size() - numResponses; i--) {
             UserResponse r = responses.get(i);
             Object response = r.response.getResponse();
             if (response instanceof String) {
@@ -157,12 +167,7 @@ public class FeedbackAggregator {
                         username = u.getUsername();
                     }
                 }
-                qrs[j] = new QuestionResponse((String) response, username, r.key);
-                j++;
-                responses_left--;
-                if (responses_left == 0) {
-                    break;
-                }
+                qrs[j++] = new QuestionResponse((String) response, username, r.key);
             }
         }
 
@@ -171,7 +176,7 @@ public class FeedbackAggregator {
         SentimentAnalyser sa = SentimentAnalyser.getSentimentAnalyser();
         double moodSum = 0.0;
         int count = 0;
-        for (UserResponse r : responses) {
+        for (UserResponse r : userResponses) {
             Object response = r.response.getResponse();
             if (response instanceof String) {
                 String message = (String) response;
@@ -184,8 +189,7 @@ public class FeedbackAggregator {
         return new OpenQuestion(question.getTitle(), qrs, trends, avg);
     }
 
-
-    private double averageValues(HashMap<String, Double> ratings){
+    private double averageValues(HashMap<String, Double> ratings) {
         int size = ratings.size();
         long sum = 0;
         for (Double i : ratings.values()) {
@@ -202,29 +206,31 @@ public class FeedbackAggregator {
      * @param responses List of responses to analyse
      * @return A numeric question object containing this info
      */
-    public NumericQuestion aggregateNumericQuestion(NumericQuestion question, List<UserResponse> responses, long startTime) {
+    public NumericQuestion aggregateNumericQuestion(NumericQuestion question, List<UserResponse> responses,
+            long startTime) {
         double sum = 0;
         double count = 0, min = 10, max = 0;
         ArrayList<Point> points = new ArrayList<>();
         HashMap<String, Double> ratings = new HashMap<>();
         int interval = 300000;
-        int i = 1;
+        int i = 0;
         double pointAverage = 0;
         Calendar c = Calendar.getInstance();
         long currentTime = c.getTime().getTime();
-        //System.out.println("current Time: " +currentTime);
-        //System.out.println("start Time: " +startTime);
+        // System.out.println("current Time: " +currentTime);
+        // System.out.println("start Time: " +startTime);
         // As go through ur
         // Store each user's points in a hashmap
         // When ur is over interval
         // Average each response stored in HM
-        // Create a point with this average at the interval point (function to do this would be good)
+        // Create a point with this average at the interval point (function to do this
+        // would be good)
         // When finished with all ur
         // Add points at intervals until at current time
         // Add point at current time
         for (UserResponse ur : responses) {
             Response r = ur.response;
-            //System.out.println("ur Time: " +ur.timestamp);
+            // System.out.println("ur Time: " +ur.timestamp);
             // For each response, carry out aggregate functions
             Object response = r.getResponse();
             if (response instanceof Double) {
@@ -236,12 +242,12 @@ public class FeedbackAggregator {
                     min = rank;
                 if (rank > max)
                     max = rank;
-                //points.add(new Point(ur.timestamp / 1000, responseAsDouble));
-                if(ur.timestamp > startTime + i*interval){
+                // points.add(new Point(ur.timestamp / 1000, responseAsDouble));
+                if (ur.timestamp > startTime + i * interval) {
                     pointAverage = this.averageValues(ratings);
-                    while(startTime + i*interval < ur.timestamp){
-                        //System.out.println("new Point: " + (startTime + i*interval));
-                        points.add(new Point((startTime + i*interval) / 1000, pointAverage));
+                    while (startTime + i * interval < ur.timestamp) {
+                        // System.out.println("new Point: " + (startTime + i*interval));
+                        points.add(new Point((startTime + i * interval) / 1000, pointAverage));
                         i++;
                     }
                 }
@@ -249,11 +255,11 @@ public class FeedbackAggregator {
             }
         }
         pointAverage = this.averageValues(ratings);
-        while(startTime + i*interval < currentTime){
-            points.add(new Point((startTime + i*interval) / 1000, pointAverage));
+        while (startTime + i * interval < currentTime) {
+            points.add(new Point((startTime + i * interval) / 1000, pointAverage));
             i++;
         }
-        //Add point for current time
+        // Add point for current time
         points.add(new Point(currentTime / 1000, pointAverage));
         double average = (count == 0) ? 0 : (sum / count); // Prevent divide by 0 error
         Stats stats = new Stats(average, min, max);
@@ -273,8 +279,13 @@ public class FeedbackAggregator {
     public ChoiceQuestion aggregateChoiceQuestion(ChoiceQuestion question, List<UserResponse> responses) {
         Counter<Integer> optionCounts = new Counter<>();
 
-        // Increase counts for each option per response
+        HashMap<String, UserResponse> userResponses = new HashMap<>();
         for (UserResponse ur : responses) {
+            userResponses.put(ur.userID, ur);
+        }
+
+        // Increase counts for each option per response
+        for (UserResponse ur : userResponses.values()) {
             Response r = ur.response;
             Object response = r.getResponse();
             if (response instanceof ArrayList) {
