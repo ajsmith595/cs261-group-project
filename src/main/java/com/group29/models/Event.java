@@ -378,7 +378,7 @@ public class Event {
                     NumericQuestion nq = (NumericQuestion) q;
                     d2.append("min", nq.getMinValue());
                     d2.append("max", nq.getMaxValue());
-                    d2.append("value", (int) Math.round((nq.getMaxValue() + nq.getMinValue()) / 2));
+                    d2.append("value", Math.round((nq.getMaxValue() + nq.getMinValue()) / 2f));
                     break;
             }
             questionDoc.append(Integer.toString(i), d2);

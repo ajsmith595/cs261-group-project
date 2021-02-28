@@ -15,16 +15,14 @@ import {
     NavLink
 } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Jumbotron, Navbar } from 'react-bootstrap';
+import { Jumbotron } from 'react-bootstrap';
 import AttendeeHostView from './views/AttendeeHostView.jsx';
 
-// TODO Seems to be error with pages not changing when URL does until refreshed
 function App() {
     return (
-
-        <Jumbotron className="pt-4">
+        <Jumbotron className="pt-4 mb-0 min-vh-100">
             <Router>
-                <div>
+                <div className="clearfix">
                     <Switch>
                         <Route exact path="/">
                             <Link key="new_event_btn" to="/event/new" className="btn btn-dark m-1">+ New Event</Link>
@@ -36,7 +34,13 @@ function App() {
                         </Route>
                     </Switch>
                     <Switch>
-                        <Route path={["/login", "/register"]} />
+                        <Route path="/login">
+                            <Link key="register_btn" to="/register" className="btn btn-primary m-1 float-right">Register</Link>
+                        </Route>
+
+                        <Route path="/register">
+                            <Link key="login_btn" to="/login" className="btn btn-primary m-1 float-right">Login</Link>
+                        </Route>
                         <Route path="/">
                             <Link key="logout_btn" to="/logout" className="btn btn-dark float-right m-1">Logout</Link>
                         </Route>
