@@ -42,9 +42,10 @@ public class DatabaseManager {
         User.UserCodec userCodec = new User.UserCodec();
         Feedback.FeedbackCodec feedbackCodec = new Feedback.FeedbackCodec();
         Response.ResponseCodec responseCodec = new Response.ResponseCodec();
+        Template.TemplateCodec templateCodec = new Template.TemplateCodec();
 
         // Adds the event codec to the codec registry and saves it in the options
-        CodecRegistry codecReg = CodecRegistries.fromRegistries(CodecRegistries.fromCodecs(eventCodec, userCodec, feedbackCodec, responseCodec), defaultCodecReg);
+        CodecRegistry codecReg = CodecRegistries.fromRegistries(CodecRegistries.fromCodecs(eventCodec, userCodec, feedbackCodec, responseCodec, templateCodec), defaultCodecReg);
         MongoClientOptions options = MongoClientOptions.builder().codecRegistry(codecReg).build();
 
         // Creates a connection to the client with the custom codecs and access the database
@@ -205,9 +206,42 @@ public class DatabaseManager {
         return null;
     }
 
-    // Adds a template to the database
-    public void addTemplate(String eventID, Object questions) {
+    /**
+     * Adds a template to the database
+     * @param template The template to be added
+     * @return The id of the added template (also now stored inside of the template)
+     */
+    public String addTemplate(Template template) {
+        // Gets the events collection and the event as a document
+        MongoCollection templates = mongoDB.getCollection("Templates");
+        Document obj = template.getTemplateAsDocument();
 
+        // Inserts the event and sets the id of the event to the one given
+        templates.insertOne(obj);
+        template.setID(obj.getObjectId("_id").toHexString());
+
+        // Returns the id of the event
+        return template.getID();
+    }
+
+    /**
+     * Gets the template matching the given template id
+     * @param templateID The id of the template to find
+     * @return The template with the given id, or null if none are found
+     */
+    public Template getTemplate(String templateID)
+    {
+        // Gets the templates collection and creates a query string for the template id
+        MongoCollection templates = mongoDB.getCollection("Templates");
+        Document query = new Document("_id", new ObjectId(templateID));
+
+        // Loops over templates found matching the id, returning the first one
+        for (Template template : (FindIterable<Template>)templates.find(query, Template.class)) {
+            return template;
+        }
+
+        // Returns null if none are found
+        return null;
     }
 
     /**
@@ -233,15 +267,6 @@ public class DatabaseManager {
 
         // Returns false if an event with the given id was not found
         return false;
-    }
-
-    /**
-     * Gets a list of the feedback for the given event id
-     * @param eventId The event of the feedback
-     * @return List of feedback for the given event
-     */
-    public List<Feedback> getFeedback(String eventId) {
-        return null;
     }
 
 }

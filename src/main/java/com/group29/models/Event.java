@@ -217,13 +217,13 @@ public class Event {
     }
 
     /**
-     * Gets all feedback for this event TODO: this
+     * Gets all feedback for this event
      * 
      * @return Object
      */
     // Gets all the feedback from the event
-    public Object getFeedback() {
-        return null;
+    public List<Feedback> getFeedback() {
+        return feedbackList;
     }
 
     /**
@@ -344,8 +344,8 @@ public class Event {
         // Includes the id if one exists
         if (id != null)
             doc.append("_id", new ObjectId(id));
-        doc.append("hostID", hostID);
-        doc.append("templateID", templateID);
+        doc.append("hostID", new ObjectId(hostID));
+        doc.append("templateID", new ObjectId(templateID));
         doc.append("title", title);
         doc.append("startTime", startTime);
         doc.append("duration", duration);
@@ -400,20 +400,13 @@ public class Event {
 
             // Grabs the information from the document
             String id = doc.getObjectId("_id").toHexString();
-            // TODO change these to getObjectId
-            String hostID = doc.getString("hostID");
-            String templateID = doc.getString("templateID");
+            String hostID = doc.getObjectId("hostID").toHexString();
+            String templateID = doc.getObjectId("templateID").toHexString();
             String title = doc.getString("title");
             Date startTime = doc.getDate("startTime");
             int duration = doc.getInteger("duration");
             String eventCode = doc.getString("eventCode");
             List<Feedback> feedbackList = doc.getList("feedbackList", Document.class).stream().map(x -> Feedback.generateFeedbackFromDocument(x)).collect(Collectors.toList());
-            System.out.println("~~~~~FEEDBACK~~~~~");
-            System.out.println(feedbackList);
-            if (feedbackList != null)
-            {
-            System.out.println(feedbackList.size());
-            }
 
             // Returns a new event using the data obtained
             return new Event(id, hostID, templateID, title, startTime, duration, eventCode, feedbackList);

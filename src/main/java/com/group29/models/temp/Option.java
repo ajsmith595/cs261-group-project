@@ -1,5 +1,7 @@
 package com.group29.models.temp;
 
+import org.bson.Document;
+
 public class Option {
     protected String name;
     protected int number;
@@ -15,5 +17,16 @@ public class Option {
 
     public int getNumber() {
         return this.number;
+    }
+
+    /**
+     * Gets the option as a MongoDB Document
+     * @return The document containing information about the option
+     */
+    public Document getAsDocument()
+    {
+        Document doc = new Document("name", name);
+        doc.append("number", number);
+        return doc;
     }
 }

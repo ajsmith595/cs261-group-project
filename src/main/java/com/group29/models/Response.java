@@ -14,21 +14,19 @@ import org.bson.codecs.ObjectIdCodec;
 import org.bson.types.ObjectId;
 
 public class Response {
-    private String id;
     @Expose
     private String questionID;
     @Expose
     private String response;
 
-    private Response(String id, String questionID, String response)
+    private Response(String questionID, String response)
     {
-        this.id = id;
         this.questionID = questionID;
         this.response = response;
     }
     
     /**
-     * Gets the feedback as a MongoDB Document
+     * Gets the response as a MongoDB Document
      * 
      * @return Document
      */
@@ -37,9 +35,6 @@ public class Response {
         Document doc = new Document();
 
         // Fills the document with data
-        // Includes the id if one exists
-        if (id != null)
-            doc.append("_id", new ObjectId(id));
         doc.append("questionID", questionID);
         doc.append("response", response);
 
@@ -50,12 +45,11 @@ public class Response {
     public static Response generateResponseFromDocument(Document doc)
     {
         // Grabs the information from the document
-        //String id = doc.getObjectId("_id").toHexString();
         String questionID = doc.getString("questionID");
         String response = doc.getString("response");
 
         // Returns a new event using the data obtained
-        return new Response(null, questionID, response);
+        return new Response(questionID, response);
     }
     
 
