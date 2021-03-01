@@ -67,7 +67,8 @@ export default class RegisterView extends React.Component {
                     } else if (data.status == "success") {
                         this.setState({
                             status: 'success'
-                        })
+                        });
+                        this.props.history.push("/");
                     }
                 })
             });
@@ -79,37 +80,39 @@ export default class RegisterView extends React.Component {
     Renders the Registration View
     */
     render() {
-        if (this.state.status == 'success') {
-            return (
-                <Redirect to="/" />
-            );
-        }
         return (
-            <div className="text-center py-2">
-                <h1>Register</h1>
+            <div className="py-2">
+                <h1 className="text-center">Register</h1>
                 <hr />
-                <div id="Error message"><p>{this.renderErrors()}</p></div>
-                <p>
-                    Please register your email. This will only be used for identification purposes. If you choose
-                    to be anonymous when providing feedback, your username will not be visable to the host or any
-                    attendees. Your email will not be visable to any other users.
-                </p>
-                <Form id="feedback">
-                    {this.renderEmail()}
-                    {this.renderUsername()}
-                    <Form.Check type="checkbox" id="agree_check" >
-                        <Form.Check.Input type="checkbox" checked={this.state.anonymous} onChange={(e) => this.setState({ acceptTerms: e.target.checked })} />
-                        <Form.Check.Label>I agree to the terms.</Form.Check.Label>
-                    </Form.Check>
-                    <hr />
-                    <Row>
-                        <Col xs={0} sm={1} md={3}></Col>
-                        <Col xs={12} sm={10} md={6}>
-                            <Button className="w-100" type="button" variant="primary" onClick={this.sendStateToServer}>Submit</Button>
-                        </Col>
-                        <Col xs={0} sm={1} md={3}></Col>
-                    </Row>
-                </Form>
+                <Row>
+                    <Col xs={0} sm={1} md={3}></Col>
+                    <Col xs={12} sm={10} md={6}>
+                        <div id="Error message"><p>{this.renderErrors()}</p></div>
+                        <p>
+                            Please register your email. This will only be used for identification purposes. If you choose
+                            to be anonymous when providing feedback, your username will not be visible to the host or any
+                            attendees. Your email will not be visible to any other users.
+                        </p>
+                        <Form id="feedback">
+                            <Form.Group>
+                                <Form.Label>Email</Form.Label>
+                                <Form.Control className="mx-auto" onChange={(e) => this.setState({ email: e.target.value })} value={this.state.email} placeholder="Enter email" as="input"></Form.Control>
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Username</Form.Label>
+                                <Form.Control className="mx-auto" onChange={(e) => this.setState({ username: e.target.value })} value={this.state.username} placeholder="Enter username" as="input"></Form.Control>
+                            </Form.Group>
+                            <Form.Check type="checkbox" id="agree_check" >
+                                <Form.Check.Input type="checkbox" checked={this.state.anonymous} onChange={(e) => this.setState({ acceptTerms: e.target.checked })} />
+                                <Form.Check.Label>I agree to the terms.</Form.Check.Label>
+                            </Form.Check>
+                            <hr />
+                            <Button className="w-100" type="button" variant="primary" onClick={this.sendStateToServer} disabled={this.state.status === 'success'}>Submit</Button>
+                        </Form>
+                    </Col>
+
+                    <Col xs={0} sm={1} md={3}></Col>
+                </Row>
             </div >
         );
     }

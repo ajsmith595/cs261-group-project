@@ -70,7 +70,8 @@ export default class HostView extends React.Component {
         // When we receive new data, we need to update the display.
         // The following will take the questions, and assign 'previous' values to the mood (smiley face animation), and trend values (trend word font sizes).
         // TODO: the trends do not take into account the fact that the actual trend word/phrase could change, so not a nice animation for that.
-        let questions = JSON.parse(event.data).questions;
+        let data = JSON.parse(event.data);
+        let questions = data.questions;
         for (let i in questions) { // Go through the questions, and assign their 'previous' values - this allows for animation.
             let question = questions[i];
             if (question.type === 'open') {
@@ -89,9 +90,15 @@ export default class HostView extends React.Component {
                 }
             }
         }
+        let stats = {
+            mins_left: data.mins_left,
+            total_responses: data.total_responses,
+            total_users: data.total_users
+        };
         this.setState({
             feedback: questions,
-            status: 'show'
+            status: 'show',
+            stats
         });
     }
     // If the component is gonna be removed, close the websocket connection.
@@ -197,12 +204,12 @@ export default class HostView extends React.Component {
                     <Col xs={12} sm={2}>
                         <Row>
                             <Col className="border py-2 px-1">
-                                <h4 className="mb-0">{question.stats.current_value.toFixed(2)}</h4>
-                                <small>CURRENT</small>
+                                <h4 className="mb-0">{question.stats.overall_average?.toFixed(2)}</h4>
+                                <small>OVERALL</small>
                             </Col>
                             <Col className="border py-2 px-1">
-                                <h4 className="d-inline-block mb-0">{(question.max_time - question.current_time) / 60}</h4><small>mins</small><br />
-                                <small>TIME LEFT</small>
+                                <h4 className="mb-0">{question.stats.current_value.toFixed(2)}</h4>
+                                <small>CURRENT</small>
                             </Col>
                         </Row>
                     </Col>
@@ -339,7 +346,8 @@ export default class HostView extends React.Component {
             scales: {
                 yAxes: [{
                     ticks: {
-                        suggestedMin: 0
+                        suggestedMin: 0,
+                        precision: 0
                     }
                 }]
             }
@@ -373,9 +381,55 @@ export default class HostView extends React.Component {
                 }
             }
             // TODO: change this 'props.event' so it uses the new input data.
+            let time_left_display;
+            if (this.props.data.duration < this.state.stats.mins_left || !this.state.stats) {
+                time_left_display = (
+                    <Col xs={12} lg={2} className="border">
+                        <h1 className="font-weight-bold lead h-100 d-flex justify-content-center align-items-center">THIS EVENT HAS NOT STARTED</h1>
+                    </Col>
+                );
+            } else if (this.state.stats.mins_left <= 0) {
+                time_left_display = (
+                    <Col xs={12} lg={2} className="border">
+                        <h1 className="font-weight-bold lead h-100 d-flex justify-content-center align-items-center">THIS EVENT HAS ENDED</h1>
+                    </Col>
+                );
+            } else {
+                let time;
+                if (this.state.stats?.mins_left > 60) {
+                    time = <h2 className="mb-0">{Math.floor(this.state.stats?.mins_left / 60)}h {this.state.stats?.mins_left % 60}m</h2>;
+                }
+                else {
+                    time = <h2 className="mb-0">{this.state.stats?.mins_left}<small>mins</small></h2>;
+                }
+
+                time_left_display = (
+                    <Col xs={12} lg={2} className="border">
+                        {time}
+                        <small>TIME LEFT</small>
+                    </Col>
+                );
+            }
             return (
                 <div className="text-center p-3">
-                    <h1>{this.props.event?.title || "Unknown Event"}</h1>
+                    <Row className="mb-2">
+                        <Col xs={12} lg={2} className="border">
+                            <h2 className="mb-0">{this.props.eventID}</h2>
+                            <small>EVENT CODE</small>
+                        </Col>
+                        {time_left_display}
+                        <Col lg={4}>
+                            <h1>{this.props.data.title || "Unknown Event"}</h1>
+                        </Col>
+                        <Col lg={2} className="border">
+                            <h2 className="mb-0">{this.state.stats?.total_users}</h2>
+                            <small>ATTENDEES</small>
+                        </Col>
+                        <Col lg={2} className="border">
+                            <h2 className="mb-0">{this.state.stats?.total_responses}</h2>
+                            <small>RESPONSES</small>
+                        </Col>
+                    </Row>
                     <Row>
                         {divs}
                     </Row>
@@ -384,15 +438,11 @@ export default class HostView extends React.Component {
         }
         else if (this.state.status === 'loading') {
             return (
-                <div className="text-center">
-                    <h1>Loading...</h1>
-                </div>
+                <h1 className="text-center">Loading...</h1>
             )
         } else if (this.state.status === 'error') { // TODO: change so that you get a more detailed error
             return (
-                <div className="text-center">
-                    <h1>There was a problem with the WebSocket connection :/</h1>
-                </div>
+                <h1 className="text-center">There was a problem with the WebSocket connection :/</h1>
             )
         }
         else if (this.state.status === 'closed') {

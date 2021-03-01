@@ -88,11 +88,6 @@ export default class CreateEventView extends React.Component {
                 </div>
             );
         }
-        else if (this.state.status == 'success') { // If the document was successfully created, redirect to the event view.
-            return (
-                <Redirect to={`/event/${this.state.eventCode}`} />
-            )
-        }
         return (
             <div className="text-left align-middle pt-2">
                 <h1 className="text-center">Create Event</h1>
@@ -137,8 +132,8 @@ export default class CreateEventView extends React.Component {
                             {this.renderQuestions()}
 
                             {/* Buttons */}
-                            <Button className="m-2" type="button" variant="primary" onClick={this.addQuestion}>Add Question</Button>
-                            <Button className="m-2" type="button" variant="success" onClick={this.submit}>Create Event</Button>
+                            <Button className="m-2" type="button" variant="primary" onClick={this.addQuestion} disabled={this.state.status === 'completed'}>Add Question</Button>
+                            <Button className="m-2" type="button" variant="success" onClick={this.submit} disabled={this.state.status === 'completed'}>Create Event</Button>
 
                         </Col>
                         <Col />
@@ -177,6 +172,7 @@ export default class CreateEventView extends React.Component {
                     status: 'success',
                     eventCode: data.data.eventCode
                 });
+                this.props.history.push(`/event/${data.data.eventCode}`);
             }
             else {
                 this.setState({

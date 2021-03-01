@@ -11,6 +11,12 @@ export default class FeedbackView extends React.Component {
             anonymous: false,
             questions: props.data.questions
         };
+        if (props.data.error) {
+            this.state = {
+                status: 'event_error',
+                error: props.data.error
+            };
+        }
 
 
     }
@@ -121,6 +127,17 @@ export default class FeedbackView extends React.Component {
                     <Col xs={12} sm={10} md={6}>
                         <h1 className="text-center">An error occurred!</h1>
                         <Button className="w-100 mx-auto" variant="primary" onClick={() => this.setState({ status: 'show' })}>Try Again?</Button>
+                    </Col>
+                    <Col xs={0} sm={1} md={3} />
+                </Row>
+            );
+        }
+        else if (this.state.status == 'event_error') {
+            return (
+                <Row>
+                    <Col xs={0} sm={1} md={3} />
+                    <Col xs={12} sm={10} md={6}>
+                        <h1 className="text-center">{this.state.error}</h1>
                     </Col>
                     <Col xs={0} sm={1} md={3} />
                 </Row>

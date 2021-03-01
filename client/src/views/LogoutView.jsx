@@ -21,14 +21,9 @@ export default class LogoutView extends React.Component {
             },
             credentials: "include"
         }).then(e => e.json()).then(e => {
-            this.setState({
-                status: 'success'
-            })
         }).catch(e => {
-            this.setState({
-                status: 'success'
-            });
         });
+        this.props.history.push("/login");
     }
     render() {
         if (this.state.status == 'loading') {
@@ -43,7 +38,7 @@ export default class LogoutView extends React.Component {
                 </div>
             );
         } else {
-            return <Redirect to="/login" />
+            return null;
         }
 
     }

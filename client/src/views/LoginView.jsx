@@ -71,7 +71,8 @@ export default class RegisterView extends React.Component {
                     } else if (data.status == "success") {
                         this.setState({
                             status: 'success'
-                        })
+                        });
+                        this.props.history.push("/");
                     }
                 })
             });
@@ -88,68 +89,33 @@ export default class RegisterView extends React.Component {
                 <Button onClick={() => this.setState({ status: 'main' })}></Button>
             </div>
         }
-        else if (this.state.status == 'loading') {
-            return <h1 className="text-center">Loading...</h1>
-        }
-        else if (this.state.status == 'success') {
-            return <Redirect to="/" />
-        }
         return (
-            <div className="text-center py-2">
-                <h1>Login</h1>
+            <div className="py-2">
+                <h1 className="text-center">Login</h1>
                 <hr />
-                <div id="Error message"><p>{this.renderErrors()}</p></div>
-                <Form id="feedback">
-                    {this.renderEmail()}
-                    {this.renderUsername()}
-                    <hr />
-                    <Row>
-                        <Col xs={0} sm={1} md={3}></Col>
-                        <Col xs={12} sm={10} md={6}>
-                            <Button className="w-100" type="button" variant="primary" onClick={this.sendStateToServer}>Submit</Button>
-                        </Col>
-                        <Col xs={0} sm={1} md={3}></Col>
-                    </Row>
-                </Form>
+                <Row>
+                    <Col xs={0} sm={1} md={3}></Col>
+                    <Col xs={12} sm={10} md={6}>
+                        <div id="Error message"><p>{this.renderErrors()}</p></div>
+                        <Form id="feedback">
+                            <Form.Group>
+                                <Form.Label>Email</Form.Label>
+                                <Form.Control className="mx-auto" onChange={(e) => this.setState({ email: e.target.value })} value={this.state.email} placeholder="Enter email" as="input"></Form.Control>
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Username</Form.Label>
+                                <Form.Control className="mx-auto" onChange={(e) => this.setState({ username: e.target.value })} value={this.state.username} placeholder="Enter username" as="input"></Form.Control>
+                            </Form.Group>
+                            <hr />
+                            <Button className="w-100" type="button" variant="primary" onClick={this.sendStateToServer} disabled={this.state.status === 'success' || this.state.status === 'loading'}>Submit</Button>
+                        </Form>
+                    </Col>
+                    <Col xs={0} sm={1} md={3}></Col>
+                </Row>
             </div >
         );
     }
 
-    /*
-    Returns the Form input for the email field
-    */
-    renderEmail() {
-        return (
-            <Form.Group controlId={"email"}>
-                <Form.Label>{"email:"}</Form.Label>
-                <Row>
-                    <Col xs={0} sm={1} md={3}></Col>
-                    <Col xs={12} sm={10} md={6}>
-                        <Form.Control className="mx-auto" onChange={(e) => this.setState({ email: e.target.value })} value={this.state.email} placeholder="Enter email" as="input"></Form.Control>
-                    </Col>
-                    <Col xs={0} sm={1} md={3}></Col>
-                </Row>
-            </Form.Group >
-        );
-    }
-
-    /*
-    Returns the Form input for the username field
-    */
-    renderUsername() {
-        return (
-            <Form.Group controlId={"username"}>
-                <Form.Label>{"username:"}</Form.Label>
-                <Row>
-                    <Col xs={0} sm={1} md={3}></Col>
-                    <Col xs={12} sm={10} md={6}>
-                        <Form.Control className="mx-auto" onChange={(e) => this.setState({ username: e.target.value })} value={this.state.username} placeholder="Enter username" as="input"></Form.Control>
-                    </Col>
-                    <Col xs={0} sm={1} md={3}></Col>
-                </Row>
-            </Form.Group >
-        );
-    }
 
     /* 
     Renders the list of errors, both validation errors and from the server

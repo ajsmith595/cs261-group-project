@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java.util.Calendar;
+import java.util.Date;
 
 import com.group29.models.temp.*;
 import com.mongodb.MongoClient;
@@ -16,6 +17,7 @@ import org.bson.types.ObjectId;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.configuration.CodecRegistries;
 
+import com.google.protobuf.Duration;
 import com.group29.controllers.WebSocketController;
 
 public class DatabaseManager {
@@ -217,15 +219,11 @@ public class DatabaseManager {
     }
 
     // Adds a template to the database
-    public Template getTemplate(String templateID) {
-        // TODO Actually remove this mess
-        Calendar c = Calendar.getInstance();
-        long current_time = c.getTimeInMillis() / 1000;
-        c.add(Calendar.MINUTE, 30);
-        c.set(Calendar.MINUTE, 30);
-        long end_time = c.getTimeInMillis() / 1000;
-        c.add(Calendar.HOUR, -1);
-        long start_time = c.getTimeInMillis() / 1000;
+    public Template getTemplate(Event e) {
+        String templateID = e.getTemplateID();
+        long start_time = e.getStartTime().getTime() / 1000;
+        long end_time = start_time + e.getDuration() * 60;
+        long current_time = (new Date()).getTime() / 1000;
         return new Template(templateID, "a",
                 new Question[] { new OpenQuestion("General, Feedback", new QuestionResponse[0], new Trend[0], 0),
 
@@ -233,15 +231,15 @@ public class DatabaseManager {
                                 new Option[] { new Option("Red", -1), new Option("Yellow", -1), new Option("Blue", -1),
                                         new Option("Green", -1) },
                                 false),
-                        new NumericQuestion("How would you rate this event?", new Stats(-1, -1, -1), 0, 10, start_time,
-                                end_time, current_time, new Point[0]) });
+                        new NumericQuestion("How would you rate this event?", new Stats(-1, -1, -1, -1), 0, 10,
+                                start_time, end_time, current_time, new Point[0]) });
     }
 
     /**
      * Adds a feedback to the database
      * 
-     * @param eventCode  The code of the event the feedback was for
-     * @param feedback The feedback to be stored
+     * @param eventCode The code of the event the feedback was for
+     * @param feedback  The feedback to be stored
      * @return True if the feedback was added successfully
      */
     public boolean addFeedback(String eventCode, Feedback feedback) {
@@ -252,6 +250,12 @@ public class DatabaseManager {
         // Loops over events found matching the id, adding the feedback to the first one
         // found
         for (Event event : events.find(query, Event.class)) {
+            long startTime = event.getStartTime().getTime();
+            long endTime = startTime + event.getDuration() * 60 * 1000;
+            long currentTime = (new Date()).getTime();
+            if (startTime > currentTime || endTime < currentTime) {
+                continue;
+            }
 
             // Updates the database and returns true as it was inserted
 

@@ -17,10 +17,12 @@ import {
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Jumbotron } from 'react-bootstrap';
 import AttendeeHostView from './views/AttendeeHostView.jsx';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
+import "./App.css";
 
 function App() {
     return (
-        <Jumbotron className="pt-4 mb-0 min-vh-100">
+        <Jumbotron className="py-2 mb-0 min-vh-100">
             <Router>
                 <div className="clearfix">
                     <Switch>
@@ -47,29 +49,28 @@ function App() {
                     </Switch>
                 </div>
 
-                <div className="border border bg-white rounded container-fluid  mt-2">
-                    <Switch>
-                        <Route exact path="/">
-                            <HomeView />
-                        </Route>
-                        <Route exact path="/events">
-                            <EventsView />
-                        </Route>
-                        <Route exact path="/event/new">
-                            <CreateEventView />
-                        </Route>
-                        <Route path="/event/:id" component={AttendeeHostView} />
-                        <Route path="/register">
-                            <RegisterView />
-                        </Route>
-                        <Route path="/login">
-                            <LoginView />
-                        </Route>
-                        <Route path="/logout">
-                            <LogoutView />
-                        </Route>
-                    </Switch>
-                </div>
+
+                <Route render={({ location }) => (
+                    <TransitionGroup className="main-view">
+                        <CSSTransition
+                            timeout={300}
+                            classNames="fade-animation"
+                            key={location.key}
+                        >
+                            <div className="border border bg-white rounded container-fluid mt-2">
+                                <Switch location={location}>
+                                    <Route exact path="/" component={HomeView} />
+                                    <Route exact path="/events" component={EventsView} />
+                                    <Route exact path="/event/new" component={CreateEventView} />
+                                    <Route path="/event/:id" component={AttendeeHostView} />
+                                    <Route path="/register" component={RegisterView} />
+                                    <Route path="/login" component={LoginView} />
+                                    <Route path="/logout" component={LogoutView} />
+                                </Switch>
+                            </div>
+                        </CSSTransition>
+                    </TransitionGroup>
+                )} />
             </Router>
         </Jumbotron >
     );

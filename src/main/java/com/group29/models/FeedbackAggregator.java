@@ -24,10 +24,10 @@ public class FeedbackAggregator {
      * @param event The event specified
      * @return A list of question objects summarising the event's feedback
      */
-    public Question[] collateFeedback(Event event) {
+    public WebSocketData collateFeedback(Event event) {
         // Get Data
         DatabaseManager dbManager = DatabaseManager.getDatabaseManager();
-        Template template = dbManager.getTemplate(event.getTemplateID());
+        Template template = dbManager.getTemplate(event);
         Question[] questions = template.getQuestions();
 
         // List<Feedback> feedback = dbManager.getFeedback(event.getID()); //Commented
@@ -40,9 +40,13 @@ public class FeedbackAggregator {
         for (int i = 0; i < questions.length; i++)
             questionResponses.add(new LinkedList<>());
 
+        int totalNumberOfResponses = 0;
+        HashSet<String> uniqueUsers = new HashSet<String>();
         // Add responses to questions lists
         int feedbackNumber = 0;
         for (Feedback fb : feedback) {
+            totalNumberOfResponses += 1;
+            uniqueUsers.add(fb.getUserID());
             int responseNumber = 0;
             for (Response r : fb.getResponses()) {
                 String key = "feedback_response_" + feedbackNumber + "_" + responseNumber;
@@ -64,7 +68,10 @@ public class FeedbackAggregator {
             else if (q instanceof ChoiceQuestion)
                 results[i] = aggregateChoiceQuestion((ChoiceQuestion) q, responses);
         }
-        return results;
+
+        long endTimeInMins = event.getStartTime().getTime() / 1000 / 60 + event.getDuration();
+        int minsLeft = (int) (endTimeInMins - (new Date()).getTime() / 1000 / 60);
+        return new WebSocketData(results, totalNumberOfResponses, uniqueUsers.size(), minsLeft);
     }
 
     // From https://xpo6.com/list-of-english-stop-words/
@@ -262,7 +269,7 @@ public class FeedbackAggregator {
         // Add point for current time
         points.add(new Point(currentTime / 1000, pointAverage));
         double average = (count == 0) ? 0 : (sum / count); // Prevent divide by 0 error
-        Stats stats = new Stats(average, min, max);
+        Stats stats = new Stats(pointAverage, average, min, max);
         return new NumericQuestion(question.getTitle(), stats, question.getMinValue(), question.getMaxValue(),
                 question.getMinTime(), question.getMaxTime(), Calendar.getInstance().getTimeInMillis() / 1000,
                 points.toArray(new Point[0]));

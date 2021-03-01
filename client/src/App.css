@@ -1,38 +1,30 @@
-.App {
-  text-align: center;
+.main-view {
+    position: relative;
+}
+.main-view > div {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.fade-animation-appear,
+.fade-animation-enter {
+    opacity: 0;
+    z-index: 1;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.fade-animation-appear-active,
+.fade-animation-enter.fade-animation-enter-active {
+    opacity: 1;
+    transition: opacity 300ms;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.fade-animation-exit {
+    opacity: 1;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.fade-animation-exit.fade-animation-exit-active {
+    opacity: 0;
+    transition: opacity 300ms linear;
 }

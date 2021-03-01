@@ -77,8 +77,8 @@ public class Event {
         this.feedbackList.sort(Comparator.comparing(Feedback::getTimestamp));
         this.clients = new ArrayList<Session>();
         this.aggregator = FeedbackAggregator.getFeedbackAggregator();
-        //System.out.println(this.aggregator.collateFeedback(this));
-        //System.out.println("test");
+        // System.out.println(this.aggregator.collateFeedback(this));
+        // System.out.println("test");
         this.updateData(false);
     }
 
@@ -127,6 +127,10 @@ public class Event {
         return this.startTime;
     }
 
+    public int getDuration() {
+        return this.duration;
+    }
+
     /**
      * Temporal function to set the host ID. Used so that we can set the host ID on
      * the server, as opposed to trusting the client to give us the right host ID.
@@ -146,14 +150,15 @@ public class Event {
         }
     }
 
-//    private static ArrayList<QuestionResponse> all_responses = new ArrayList<>(
-//            Arrays.asList(new QuestionResponse[] { new QuestionResponse("Very interesting and intriguing", null, "a"),
-//                    new QuestionResponse("Something else....", "ajsmith595", "b"),
-//                    new QuestionResponse("Pretty boring", "haterman443", "c"),
-//                    new QuestionResponse("Clearly well-educated", "KrazyKid69", "d"),
-//                    new QuestionResponse("Joy is at a low point here", null, "e"),
-//                    new QuestionResponse("Confusing", null, "f") }));
-//    private static int index = 0;
+    // private static ArrayList<QuestionResponse> all_responses = new ArrayList<>(
+    // Arrays.asList(new QuestionResponse[] { new QuestionResponse("Very interesting
+    // and intriguing", null, "a"),
+    // new QuestionResponse("Something else....", "ajsmith595", "b"),
+    // new QuestionResponse("Pretty boring", "haterman443", "c"),
+    // new QuestionResponse("Clearly well-educated", "KrazyKid69", "d"),
+    // new QuestionResponse("Joy is at a low point here", null, "e"),
+    // new QuestionResponse("Confusing", null, "f") }));
+    // private static int index = 0;
 
     /**
      * Updates the data of the event. Currently randomly generated sample data, but
@@ -167,126 +172,10 @@ public class Event {
     public void updateData(boolean fetchFromDatabase) {
         if (fetchFromDatabase)
             this.feedbackList = DatabaseManager.getDatabaseManager().getFeedback(this.id);
-            // Sort feedback based on time stamp
-            this.feedbackList.sort(Comparator.comparing(Feedback::getTimestamp));
-        Question[] results = this.aggregator.collateFeedback(this);
-        //this.printQuestions(results);
-        /*ArrayList<QuestionResponse> qrs = new ArrayList<>();
-        HashMap<String, Integer> choiceMap = new HashMap<>();
-        choiceMap.put("Red", 0);
-        choiceMap.put("Yellow", 0);
-        choiceMap.put("Green", 0);
-        choiceMap.put("Blue", 0);
-
-        ArrayList<Point> points = new ArrayList<Point>();
-
-        int feedbackNumber = 0;
-        for (Feedback f : this.feedbackList) {
-            int responseNumber = 0;
-            for (Response r : f.getResponses()) {
-                Object response = r.getResponse();
-                if (responseNumber == 0) {
-                    String key = "feedback_response_" + Integer.toString(feedbackNumber) + "_"
-                            + Integer.toString(responseNumber);
-                    if (response instanceof String) {
-                        qrs.add(new QuestionResponse((String) response, f.getAnonymous() ? null : f.getUserID(), key));
-                    } else {
-                        // Invalid
-                    }
-                } else if (responseNumber == 1) {
-                    if (response instanceof ArrayList) {
-                        ArrayList arr = (ArrayList) response;
-                        for (Object a : arr) {
-                            if (a instanceof String) {
-                                if (choiceMap.containsKey(a)) {
-                                    choiceMap.put((String) a, choiceMap.get(a) + 1);
-                                }
-                            }
-                        }
-                    } else if (response instanceof Integer) {
-                        System.out.println("Integer response");
-                    } else {
-                        System.out.println("Other response: " + response.toString());
-                    }
-                } else if (responseNumber == 2) {
-                    if (response instanceof Double) {
-                        double responseAsFloat = ((double) response);
-                        System.out.println("Yes");
-                        points.add(new Point(f.getTimestamp() / 1000, responseAsFloat));
-                    } else {
-                        System.out.println("Nope: " + response.getClass().toString());
-                    }
-                }
-                responseNumber++;
-            }
-            feedbackNumber++;
-        }
-
-        Collections.reverse(qrs);
-
-        Trend energetic = new Trend("Energetic", 30 + (int) ((Math.random() - 0.5) * 20));
-        Trend interesting = new Trend("Interesting", 40 + (int) ((Math.random() - 0.5) * 10));
-        Trend inspiring = new Trend("Inspiring", 50 + (int) ((Math.random() - 0.5) * 45));
-
-        OpenQuestion generalFeedbackQuestion = new OpenQuestion("General Feedback",
-                qrs.toArray(new QuestionResponse[0]), new Trend[] { energetic, interesting, inspiring });
-
-        ArrayList<Option> options = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : choiceMap.entrySet()) {
-            options.add(new Option(entry.getKey(), entry.getValue()));
-        }
-        ChoiceQuestion cq1 = new ChoiceQuestion("What is your favourite colour?", options.toArray(new Option[0]), true);
-
-        Calendar c = Calendar.getInstance();
-        long currentTime = c.getTimeInMillis() / 1000;
-        c.set(Calendar.MINUTE, 30);
-        c.set(Calendar.HOUR, c.get(Calendar.HOUR) - 1);
-        long startTime = c.getTimeInMillis() / 1000;
-        c.set(Calendar.HOUR, c.get(Calendar.HOUR) + 1);
-        long endTime = c.getTimeInMillis() / 1000;
-
-        double currentValue = (double) (Math.random() * 10);
-        points.add(new Point(currentTime, currentValue));
-
-        NumericQuestion nq = new NumericQuestion("How would you rate this event?", new Stats(currentValue, 5, 10), 0,
-                10, startTime, endTime, currentTime, points.toArray(new Point[0]));
-        //WebSocketData wsd = new WebSocketData(new Question[] { generalFeedbackQuestion, cq1, nq });*/
-        
-        WebSocketData wsd = new WebSocketData(results);
-        this.data = wsd;
-
-        // ArrayList<QuestionResponse> qrs = new ArrayList<>();
-        // for (int i = 3; i >= 0; i--) {
-        // qrs.add(all_responses.get((index + i) % all_responses.size()));
-        // }
-        // index += 1;
-
-        // OpenQuestion oq = new OpenQuestion("General Feedback", qrs.toArray(new
-        // QuestionResponse[0]),
-        // new Trend[] { energetic, interesting, inspiring });
-
-        // ChoiceQuestion cq2 = new ChoiceQuestion("What age group are you in?",
-        // new Option[] { new Option("18-24", (int) Math.floor(100 * Math.random())),
-        // new Option("25-39", (int) Math.floor(100 * Math.random())),
-        // new Option("40-59", (int) Math.floor(100 * Math.random())),
-        // new Option("60+", (int) Math.floor(100 * Math.random())) });
-
-        // ArrayList<Point> points = new ArrayList<Point>();
-        // Calendar c = Calendar.getInstance();
-        // long currentTime = c.getTimeInMillis() / 1000;
-        // c.set(Calendar.MINUTE, 0);
-        // long startTime = c.getTimeInMillis() / 1000;
-        // c.set(Calendar.HOUR, c.get(Calendar.HOUR) + 1);
-        // long endTime = c.getTimeInMillis() / 1000;
-        // for (long i = startTime; i < currentTime; i += 60 * 5) {
-        // points.add(new Point(i, (float) (Math.random() * 10)));
-        // }
-        // float currentValue = (float) (Math.random() * 10);
-        // points.add(new Point(currentTime, currentValue));
-
-        // NumericQuestion nq = new NumericQuestion("How would you rate this event?",
-        // new Stats(currentValue, 5, 10), 0,
-        // 10, startTime, endTime, currentTime, points.toArray(new Point[0]));
+        // Sort feedback based on time stamp
+        this.feedbackList.sort(Comparator.comparing(Feedback::getTimestamp));
+        WebSocketData results = this.aggregator.collateFeedback(this);
+        this.data = results;
     }
 
     /**
@@ -344,10 +233,20 @@ public class Event {
         Document d = new Document();
 
         d.append("isHost", false);
-        d.append("hostID", hostID);
         d.append("title", title);
         d.append("startTime", startTime.getTime());
         d.append("duration", duration);
+
+        long currentTime = (new Date()).getTime();
+        long endTime = startTime.getTime() + duration * 60 * 1000;
+        if (currentTime > endTime) {
+            d.append("error", "Sorry! This event has ended!");
+            return d;
+        } else if (currentTime < startTime.getTime()) {
+            d.append("error", "This event hasn't started yet!");
+            return d;
+        }
+
         Document questionDoc = new Document();
         Question[] questions = this.data.getQuestions();
         for (int i = 0; i < questions.length; i++) {
@@ -398,6 +297,8 @@ public class Event {
     public Document getHostViewDocument() {
         Document d = new Document();
         d.append("isHost", true);
+        d.append("title", title);
+        d.append("duration", duration);
         return d;
     }
 
@@ -476,22 +377,22 @@ public class Event {
         return ratingHistory;
     }
 
-    private void printQuestions( Question[] questions){
-        for(Question q : questions){
-            if(q instanceof OpenQuestion){
+    private void printQuestions(Question[] questions) {
+        for (Question q : questions) {
+            if (q instanceof OpenQuestion) {
                 System.out.println(((OpenQuestion) q).getTitle());
                 System.out.println(((OpenQuestion) q).getRecentResponses().length);
-                for(QuestionResponse qr: ((OpenQuestion) q).getRecentResponses()){
+                for (QuestionResponse qr : ((OpenQuestion) q).getRecentResponses()) {
                     System.out.println(qr.getMessage());
                     System.out.println(qr.getUsername());
                     System.out.println(qr.getID());
                 }
-                for(Trend t: ((OpenQuestion) q).getTrends()){
+                for (Trend t : ((OpenQuestion) q).getTrends()) {
                     System.out.println(t.getPhrase());
                     System.out.println(t.getProportion());
                 }
             }
-            if(q instanceof NumericQuestion){
+            if (q instanceof NumericQuestion) {
                 System.out.println(((NumericQuestion) q).getTitle());
                 System.out.println(((NumericQuestion) q).getMinValue());
                 System.out.println(((NumericQuestion) q).getMaxValue());
@@ -499,16 +400,16 @@ public class Event {
                 System.out.println(((NumericQuestion) q).getMaxTime());
                 System.out.println(((NumericQuestion) q).getCurrentTime());
                 System.out.println(((NumericQuestion) q).getPoints().length);
-                for(Point p: ((NumericQuestion) q).getPoints()){
-                    System.out.println("Point time: "+p.getTime());
-                    System.out.println("Point value: "+p.getValue());
+                for (Point p : ((NumericQuestion) q).getPoints()) {
+                    System.out.println("Point time: " + p.getTime());
+                    System.out.println("Point value: " + p.getValue());
                 }
             }
-            if(q instanceof ChoiceQuestion){
+            if (q instanceof ChoiceQuestion) {
                 System.out.println(((ChoiceQuestion) q).getTitle());
                 System.out.println(((ChoiceQuestion) q).getMultiple());
                 System.out.println(((ChoiceQuestion) q).getOptions().length);
-                for(Option o: ((ChoiceQuestion) q).getOptions()){
+                for (Option o : ((ChoiceQuestion) q).getOptions()) {
                     System.out.println(o.getName());
                     System.out.println(o.getNumber());
                 }
@@ -563,9 +464,9 @@ public class Event {
             String eventCode = doc.getString("eventCode");
             List<Feedback> feedbackList = doc.getList("feedbackList", Document.class).stream()
                     .map(x -> Feedback.generateFeedbackFromDocument(x)).collect(Collectors.toList());
-            //if (feedbackList != null) {
-            //    System.out.println(feedbackList.size());
-            //}
+            // if (feedbackList != null) {
+            // System.out.println(feedbackList.size());
+            // }
 
             // Returns a new event using the data obtained
             return new Event(id, hostID, templateID, title, startTime, duration, eventCode, feedbackList);

@@ -33,16 +33,12 @@ export default class AttendeeHostView extends React.Component {
     render() {
         if (this.state.status == 'loading') {
             return (
-                <div>
-                    <h1>Loading...</h1>
-                </div>
+                <h1 className="text-center">Loading...</h1>
             );
         }
         else if (this.state.status == 'error') {
             return (
-                <div>
-                    <h1>{this.state.message}</h1>
-                </div>
+                <h1>{this.state.message}</h1>
             );
         }
         // Note: this.props.match.params.id gets the :id part of the URL
