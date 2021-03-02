@@ -15,6 +15,8 @@ import com.group29.JSONTransformer;
 import com.group29.models.Event;
 import com.group29.models.User;
 import com.group29.models.Feedback;
+import com.group29.models.Template;
+import com.group29.models.temp.Question;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -78,6 +80,10 @@ public class APIController {
 
         // Create a new event
         post("/events", APIController.postEvent, new JSONTransformer());
+        // Creates new template
+        post("/templates", APIController.postTemplate, new JSONTransformer());
+        // Gets a template with the given id
+        get("/template/:id", APIController.getTemplate, new JSONTransformer());
 
         // Add new feedback for an event
         post("/event/:id/feedback", "application/json", APIController.postFeedback, new JSONTransformer());
@@ -281,6 +287,53 @@ public class APIController {
         }
         // Returns an error response
         return APIResponse.error("The feedback could not be added.");
+    };
+
+    
+
+    // Posts a new template
+    public static Route postTemplate = (Request req, Response res) -> {
+        // Sets the return type to json
+        res.type("application/json");
+        // Catches parsing errors
+        try {
+            // Creates a GSON parser that can parse dates and excludes id
+            Gson gson = new GsonBuilder()
+                                .excludeFieldsWithoutExposeAnnotation()
+                                .registerTypeAdapter(Question.class, Question.deserialiser)
+                                .create();
+
+            // Attempts to parse the feedback as well as the id of the event
+            Template template = gson.fromJson(req.body(), Template.class);
+
+            // Attempts to add the feedback to the database
+            String id = DatabaseManager.getDatabaseManager().addTemplate(template);
+            // Responds with whether it worked
+            if (id == null)
+                return APIResponse.error("The template could not be added.");
+            return APIResponse.success(new Document("id", id));
+        } catch (Exception e) {
+            // Prints the error to console
+            e.printStackTrace();
+        }
+        // Returns an error response
+        return APIResponse.error("The template could not be added.");
+    };
+
+
+    /**
+     * GETs the details for a particular template.
+     */
+    public static Route getTemplate = (Request req, Response res) -> {
+
+        String templateID = req.params(":id");
+        Template template = DatabaseManager.getDatabaseManager().getTemplate(templateID);
+
+        if (template != null) {
+            return APIResponse.success(template.getTemplateAsDocument());
+        }
+
+        return APIResponse.error("Could not find the template");
     };
 
     /**
