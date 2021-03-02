@@ -13,9 +13,8 @@ public class OpenQuestion extends Question {
         super("open", doc.getString("title"));
     }
 
-    public OpenQuestion(String title, QuestionResponse[] responses, Trend[] trends) {
+    public OpenQuestion(String title, QuestionResponse[] responses, Trend[] trends, float current_mood) {
         super("open", title);
-        this.current_mood = (float) (Math.random() * 2 - 1);
         this.recent_responses = responses;
         this.trends = trends;
         this.current_mood = current_mood;

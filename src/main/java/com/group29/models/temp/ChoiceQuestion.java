@@ -34,8 +34,6 @@ public class ChoiceQuestion extends Question {
         return this.options;
     }
 
-<<<<<<< HEAD
-=======
     @Override
     public Document getQuestionAsDocument()
     {
@@ -53,5 +51,4 @@ public class ChoiceQuestion extends Question {
         // Returns this filled document
         return doc;
     }
->>>>>>> 59b67fb9bf8152df489ac53cefb9b95941469b8c
 }

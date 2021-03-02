@@ -19,7 +19,7 @@ public class Response {
     @Expose
     private Object response;
 
-    private Response(String questionID, String response)
+    private Response(String questionID, Object response)
     {
         this.questionID = questionID;
         this.response = response;

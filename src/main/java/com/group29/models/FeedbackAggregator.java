@@ -27,7 +27,7 @@ public class FeedbackAggregator {
     public WebSocketData collateFeedback(Event event) {
         // Get Data
         DatabaseManager dbManager = DatabaseManager.getDatabaseManager();
-        Template template = dbManager.getTemplate(event);
+        Template template = dbManager.getTemplate(event.getTemplateID());
         Question[] questions = template.getQuestions();
 
         // List<Feedback> feedback = dbManager.getFeedback(event.getID()); //Commented

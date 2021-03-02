@@ -11,6 +11,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.FindIterable;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -19,6 +20,8 @@ import org.bson.codecs.configuration.CodecRegistries;
 
 import com.google.protobuf.Duration;
 import com.group29.controllers.WebSocketController;
+
+
 
 public class DatabaseManager {
     // Instance of the database manager

@@ -202,6 +202,7 @@ public class APIController {
                     .excludeFieldsWithoutExposeAnnotation().create();
 
             // Attempts to parse event
+            System.out.println(req.body());
             Event event = gson.fromJson(req.body(), Event.class);
 
             event.setHostID(req.session().attribute("uid")); // Set it to the current session's ID

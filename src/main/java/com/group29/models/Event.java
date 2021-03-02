@@ -131,6 +131,10 @@ public class Event {
         return this.duration;
     }
 
+    public String getTemplateID() {
+        return this.templateID;
+    }
+
     /**
      * Temporal function to set the host ID. Used so that we can set the host ID on
      * the server, as opposed to trusting the client to give us the right host ID.
@@ -367,10 +371,6 @@ public class Event {
 
         // Returns the filled document
         return doc;
-    }
-
-    public String getTemplateID() {
-        return templateID;
     }
 
     public HashMap<String, List<Point>> getRatingHistory() {

@@ -45,6 +45,10 @@ public class Template
         this.id = id;
     }
 
+    public Question[] getQuestions() {
+        return this.questions.toArray(new Question[0]);
+    }
+
     
     /**
      * Gets the template as a MongoDB Document
