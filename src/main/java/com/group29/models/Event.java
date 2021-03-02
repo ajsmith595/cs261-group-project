@@ -112,6 +112,13 @@ public class Event {
     }
 
     /**
+     * @param id The template ID
+     */
+    public void setTemplateID(String id){
+        this.templateID = id;
+    }
+
+    /**
      * Gets the event start time
      * 
      * @return the start time in unix format
@@ -122,6 +129,10 @@ public class Event {
 
     public int getDuration() {
         return this.duration;
+    }
+
+    public String getTemplateID() {
+        return this.templateID;
     }
 
     /**
@@ -206,7 +217,7 @@ public class Event {
     }
 
     /**
-     * Gets all feedback for this event TODO: this
+     * Gets all feedback for this event
      * 
      * @return Object
      */
@@ -344,8 +355,8 @@ public class Event {
         // Includes the id if one exists
         if (id != null)
             doc.append("_id", new ObjectId(id));
-        doc.append("hostID", hostID);
-        doc.append("templateID", templateID);
+        doc.append("hostID", new ObjectId(hostID));
+        doc.append("templateID", new ObjectId(templateID));
         doc.append("title", title);
         doc.append("startTime", startTime);
         doc.append("duration", duration);
@@ -360,10 +371,6 @@ public class Event {
 
         // Returns the filled document
         return doc;
-    }
-
-    public String getTemplateID() {
-        return templateID;
     }
 
     public HashMap<String, List<Point>> getRatingHistory() {
@@ -448,18 +455,13 @@ public class Event {
 
             // Grabs the information from the document
             String id = doc.getObjectId("_id").toHexString();
-            // TODO change these to getObjectId
-            String hostID = doc.getString("hostID");
-            String templateID = doc.getString("templateID");
+            String hostID = doc.getObjectId("hostID").toHexString();
+            String templateID = doc.getObjectId("templateID").toHexString();
             String title = doc.getString("title");
             Date startTime = doc.getDate("startTime");
             int duration = doc.getInteger("duration");
             String eventCode = doc.getString("eventCode");
-            List<Feedback> feedbackList = doc.getList("feedbackList", Document.class).stream()
-                    .map(x -> Feedback.generateFeedbackFromDocument(x)).collect(Collectors.toList());
-            // if (feedbackList != null) {
-            // System.out.println(feedbackList.size());
-            // }
+            List<Feedback> feedbackList = doc.getList("feedbackList", Document.class).stream().map(x -> Feedback.generateFeedbackFromDocument(x)).collect(Collectors.toList());
 
             // Returns a new event using the data obtained
             return new Event(id, hostID, templateID, title, startTime, duration, eventCode, feedbackList);

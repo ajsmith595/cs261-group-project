@@ -10,6 +10,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.FindIterable;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -17,6 +18,8 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.configuration.CodecRegistries;
 
 import com.group29.controllers.WebSocketController;
+
+
 
 public class DatabaseManager {
     // Instance of the database manager
@@ -44,10 +47,10 @@ public class DatabaseManager {
         User.UserCodec userCodec = new User.UserCodec();
         Feedback.FeedbackCodec feedbackCodec = new Feedback.FeedbackCodec();
         Response.ResponseCodec responseCodec = new Response.ResponseCodec();
+        Template.TemplateCodec templateCodec = new Template.TemplateCodec();
 
         // Adds the event codec to the codec registry and saves it in the options
-        CodecRegistry codecReg = CodecRegistries.fromRegistries(
-                CodecRegistries.fromCodecs(eventCodec, userCodec, feedbackCodec, responseCodec), defaultCodecReg);
+        CodecRegistry codecReg = CodecRegistries.fromRegistries(CodecRegistries.fromCodecs(eventCodec, userCodec, feedbackCodec, responseCodec, templateCodec), defaultCodecReg);
         MongoClientOptions options = MongoClientOptions.builder().codecRegistry(codecReg).build();
 
         // Creates a connection to the client with the custom codecs and access the
@@ -212,25 +215,43 @@ public class DatabaseManager {
         return null;
     }
 
-    // Adds a template to the database
-    public void addTemplate(String eventID, Object questions) {
+    /**
+     * Adds a template to the database
+     * @param template The template to be added
+     * @return The id of the added template (also now stored inside of the template)
+     */
+    public String addTemplate(Template template) {
+        System.out.println("JKHJKHKJHKJH");
+        // Gets the events collection and the event as a document
+        MongoCollection templates = mongoDB.getCollection("Templates");
+        Document obj = template.getTemplateAsDocument();
+
+        // Inserts the event and sets the id of the event to the one given
+        templates.insertOne(obj);
+        template.setID(obj.getObjectId("_id").toHexString());
+
+        // Returns the id of the event
+        return template.getID();
     }
 
-    // Adds a template to the database
-    public Template getTemplate(Event e) {
-        String templateID = e.getTemplateID();
-        long start_time = e.getStartTime().getTime() / 1000;
-        long end_time = start_time + e.getDuration() * 60;
-        long current_time = (new Date()).getTime() / 1000;
-        return new Template(templateID, "a",
-                new Question[] { new OpenQuestion("General, Feedback", new QuestionResponse[0], new Trend[0], 0),
+    /**
+     * Gets the template matching the given template id
+     * @param templateID The id of the template to find
+     * @return The template with the given id, or null if none are found
+     */
+    public Template getTemplate(String templateID)
+    {
+        // Gets the templates collection and creates a query string for the template id
+        MongoCollection templates = mongoDB.getCollection("Templates");
+        Document query = new Document("_id", new ObjectId(templateID));
 
-                        new ChoiceQuestion("What is your Favourite colour?",
-                                new Option[] { new Option("Red", -1), new Option("Yellow", -1), new Option("Blue", -1),
-                                        new Option("Green", -1) },
-                                false),
-                        new NumericQuestion("How would you rate this event?", new Stats(-1, -1, -1, -1), 0, 10,
-                                start_time, end_time, current_time, new Point[0]) });
+        // Loops over templates found matching the id, returning the first one
+        for (Template template : (FindIterable<Template>)templates.find(query, Template.class)) {
+            return template;
+        }
+
+        // Returns null if none are found
+        return null;
     }
 
     /**

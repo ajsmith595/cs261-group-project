@@ -243,7 +243,6 @@ export default class CreateEventView extends React.Component {
                     question.validationErrors.push("minmax");
                 }
             }
-            newValue = newValue.toString();
         }
         if (prop == "type") {
             if (newValue == "choice") {
@@ -360,7 +359,7 @@ export default class CreateEventView extends React.Component {
                 </Col>
                 <Col xs={12} sm={6}>
                     <Form.Label>Maximum Value</Form.Label>
-                    <Form.Control className={classes} value={question.max || 10} onChange={(e) => this.changeQuestionProp(question.id, "max", e)} />
+                    <Form.Control className={classes} type="number" value={question.max || 10} onChange={(e) => this.changeQuestionProp(question.id, "max", e)} />
                 </Col>
             </Row>
         )

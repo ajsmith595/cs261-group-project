@@ -12,14 +12,13 @@ import org.bson.codecs.EncoderContext;
 import org.bson.types.ObjectId;
 
 public class Response {
-    private String id;
     @Expose
     private String questionID;
     @Expose
     private Object response;
 
-    private Response(String id, String questionID, Object response) {
-        this.id = id;
+    private Response(String questionID, Object response)
+    {
         this.questionID = questionID;
         this.response = response;
     }
@@ -33,7 +32,7 @@ public class Response {
     }
 
     /**
-     * Gets the feedback as a MongoDB Document
+     * Gets the response as a MongoDB Document
      * 
      * @return Document
      */
@@ -42,9 +41,6 @@ public class Response {
         Document doc = new Document();
 
         // Fills the document with data
-        // Includes the id if one exists
-        if (id != null)
-            doc.append("_id", new ObjectId(id));
         doc.append("questionID", questionID);
         doc.append("response", response);
 
@@ -54,12 +50,11 @@ public class Response {
 
     public static Response generateResponseFromDocument(Document doc) {
         // Grabs the information from the document
-        // String id = doc.getObjectId("_id").toHexString();
         String questionID = doc.getString("questionID");
         Object response = doc.get("response");
 
         // Returns a new event using the data obtained
-        return new Response(null, questionID, response);
+        return new Response(questionID, response);
     }
 
     // Codec class to allow MongoDB to automatically create Response classes

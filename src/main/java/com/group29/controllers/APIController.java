@@ -2,6 +2,7 @@ package com.group29.controllers;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Arrays;
 
 import com.group29.models.DatabaseManager;
 import com.group29.models.APIResponse;
@@ -77,6 +78,10 @@ public class APIController {
 
         // Create a new event
         post("/events", APIController.postEvent, new JSONTransformer());
+        // Creates new template
+        post("/templates", APIController.postTemplate, new JSONTransformer());
+        // Gets a template with the given id
+        get("/template/:id", APIController.getTemplate, new JSONTransformer());
 
         // Add new feedback for an event
         post("/event/:id/feedback", "application/json", APIController.postFeedback, new JSONTransformer());
@@ -159,7 +164,6 @@ public class APIController {
         String eventCode = req.params(":id").toUpperCase();
 
         Event event = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
-
         if (event != null) {
             if (req.queryParams("force_host") != null || event.getHostID().equals(req.session().attribute("uid"))) {
                 return APIResponse.success(event.getHostViewDocument());
@@ -195,15 +199,16 @@ public class APIController {
                     .excludeFieldsWithoutExposeAnnotation().create();
 
             // Attempts to parse event
+            System.out.println(req.body());
             Event event = gson.fromJson(req.body(), Event.class);
-
             event.setHostID(req.session().attribute("uid")); // Set it to the current session's ID
             // Generates a new code for the event
             event.generateEventCode();
 
             Question[] questions = Template.parseQuestionsFromJSON(gson, req.body());
-            Template t = new Template(null, req.session().attribute("uid"), questions);
-
+            Template t = new Template(null, req.session().attribute("uid"), Arrays.asList(questions));
+            String templateID = DatabaseManager.getDatabaseManager().addTemplate(t);
+            event.setTemplateID(templateID);
             // Adds it to the database and returns the event code
             DatabaseManager.getDatabaseManager().addEvent(event);
             return APIResponse.success(new Document("eventCode", event.getEventCode()));
@@ -287,6 +292,53 @@ public class APIController {
         }
         // Returns an error response
         return APIResponse.error("The feedback could not be added.");
+    };
+
+    
+
+    // Posts a new template
+    public static Route postTemplate = (Request req, Response res) -> {
+        // Sets the return type to json
+        res.type("application/json");
+        // Catches parsing errors
+        try {
+            // Creates a GSON parser that can parse dates and excludes id
+            Gson gson = new GsonBuilder()
+                                .excludeFieldsWithoutExposeAnnotation()
+                                .registerTypeAdapter(Question.class, Question.deserialiser)
+                                .create();
+
+            // Attempts to parse the feedback as well as the id of the event
+            Template template = gson.fromJson(req.body(), Template.class);
+
+            // Attempts to add the feedback to the database
+            String id = DatabaseManager.getDatabaseManager().addTemplate(template);
+            // Responds with whether it worked
+            if (id == null)
+                return APIResponse.error("The template could not be added.");
+            return APIResponse.success(new Document("id", id));
+        } catch (Exception e) {
+            // Prints the error to console
+            e.printStackTrace();
+        }
+        // Returns an error response
+        return APIResponse.error("The template could not be added.");
+    };
+
+
+    /**
+     * GETs the details for a particular template.
+     */
+    public static Route getTemplate = (Request req, Response res) -> {
+
+        String templateID = req.params(":id");
+        Template template = DatabaseManager.getDatabaseManager().getTemplate(templateID);
+
+        if (template != null) {
+            return APIResponse.success(template.getTemplateAsDocument());
+        }
+
+        return APIResponse.error("Could not find the template");
     };
 
     /**
