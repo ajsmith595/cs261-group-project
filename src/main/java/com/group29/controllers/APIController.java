@@ -169,7 +169,7 @@ public class APIController {
 
         Event event = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
         if (event != null) {
-            if (req.queryParams("force_host") != null || event.getHostID().equals(req.session().attribute("uid"))) {
+            if (event.getHostID().equals(req.session().attribute("uid"))) {
                 return APIResponse.success(event.getHostViewDocument());
             }
             return APIResponse.success(event.getAttendeeViewDocument());
