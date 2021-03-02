@@ -74,6 +74,7 @@ export default class CreateEventView extends React.Component {
             let question = {}
             // Copy and modify the template question
             Object.assign(question, this.defaultQuestion);
+            question.choices = question.choices.slice(0);
             let newQuestions = state.questions.slice();
             newQuestions.push(question);
             return { questions: newQuestions }
