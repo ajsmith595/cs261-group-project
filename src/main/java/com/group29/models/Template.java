@@ -1,6 +1,20 @@
 package com.group29.models;
 
+import java.util.ArrayList;
+import java.util.Map;
+
+import com.google.gson.Gson;
+import com.group29.models.temp.ChoiceQuestion;
+import com.group29.models.temp.NumericQuestion;
+import com.group29.models.temp.OpenQuestion;
+import com.group29.models.temp.Option;
+import com.group29.models.temp.Point;
 import com.group29.models.temp.Question;
+import com.group29.models.temp.QuestionResponse;
+import com.group29.models.temp.Stats;
+import com.group29.models.temp.Trend;
+
+import org.bson.Document;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -75,60 +89,85 @@ public class Template
         return doc;
     }
 
-    // Codec class to allow MongoDB to automatically create Template classes
-    public static class TemplateCodec implements Codec<Template> {
-        // Document codec to read raw BSON
-        private Codec<Document> documentCodec;
-
-        /**
-         * Constructor for the codec
-         */
-        public TemplateCodec() {
-            this.documentCodec = new DocumentCodec();
+    public static Question[] parseQuestionsFromJSON(Gson gson, String json) throws ClassCastException {
+        Map<String, Object> document = (Map<String, Object>) gson.fromJson(json, Map.class);
+        if (!document.containsKey("questions")) {
+            throw new ClassCastException("Invalid template");
         }
-
-        /**
-         * Encodes an Template into the writer
-         * 
-         * @param writer         Writer to write into
-         * @param value          Template to write
-         * @param encoderContext Context for the encoding
-         */
-        @Override
-        public void encode(final BsonWriter writer, final Template value, final EncoderContext encoderContext) {
-            documentCodec.encode(writer, value.getTemplateAsDocument(), encoderContext);
+        ArrayList<Map<String, Object>> questions = (ArrayList<Map<String, Object>>) document.get("questions");
+        ArrayList<Question> questionObjs = new ArrayList<>();
+        if (questions.size() == 0) {
+            ;
+            throw new ClassCastException("Invalid template");
         }
-
-        /**
-         * Decodes an Template from a BSON reader
-         * 
-         * @param reader         The reader to decode
-         * @param decoderContext Context for the decoding
-         * @return
-         */
-        @Override
-        public Template decode(final BsonReader reader, final DecoderContext decoderContext) {
-            // Generates a document from the reader
-            Document doc = documentCodec.decode(reader, decoderContext);
-
-            String id = doc.getObjectId("_id").toHexString();
-            String userID = doc.getObjectId("userID").toHexString();
-            List<Question> questions = doc.getList("questions", Document.class).stream().map(x -> Question.generateQuestionFromDocument(x)).collect(Collectors.toList());
-
-
-            return new Template(id, userID, questions);
+        boolean valid = true;
+        for (Map<String, Object> question : questions) {
+            Document d = new Document(question);
+            if (!d.containsKey("type") || !d.containsKey("title") || !(d.get("type") instanceof String)
+                    || !(d.get("title") instanceof String)) {
+                valid = false;
+                System.out.println("Invalid keys (general)!");
+                break;
+            }
+            String type = d.getString("type");
+            String title = d.getString("title");
+            switch (type) {
+                case "open":
+                    questionObjs.add(new OpenQuestion(title, new QuestionResponse[0], new Trend[0], 0));
+                    break;
+                case "numeric":
+                    if (!d.containsKey("min") || !d.containsKey("max")) {
+                        valid = false;
+                        System.out.println("Numeric keys invalid!");
+                        break;
+                    }
+                    int min = d.getDouble("min").intValue();
+                    int max = d.getDouble("max").intValue();
+                    questionObjs
+                            .add(new NumericQuestion(title, new Stats(0, 0, 0, 0), min, max, 0, 0, 0, new Point[0]));
+                    break;
+                case "choice":
+                    if (!d.containsKey("choices") || !d.containsKey("allowMultiple")) {
+                        valid = false;
+                        System.out.println("Choice keys invalid!");
+                        break;
+                    }
+                    ArrayList<String> choices = (ArrayList<String>) d.get("choices");
+                    if (choices.size() == 0) {
+                        valid = false;
+                        System.out.println("No choices!");
+                        break;
+                    }
+                    ArrayList<Option> choiceObjs = new ArrayList<Option>();
+                    ArrayList<String> choicesUsed = new ArrayList<String>();
+                    for (int i = 0; i < choices.size(); i++) {
+                        String c = choices.get(i);
+                        if (choicesUsed.contains(c)) {
+                            valid = false;
+                            System.out.println("Duplicate choices!");
+                            break;
+                        }
+                        if (c != null && c.length() >= 1) {
+                            choiceObjs.add(new Option(c, i));
+                            choicesUsed.add(c);
+                        }
+                    }
+                    if (!valid)
+                        break;
+                    boolean multiple = d.getBoolean("allowMultiple");
+                    questionObjs.add(new ChoiceQuestion(title, choiceObjs.toArray(new Option[0]), multiple));
+                    break;
+                default:
+                    valid = false;
+                    System.out.println("Invalid type!");
+                    break;
+            }
+            if (!valid)
+                break;
         }
-
-        /**
-         * Gets the class type for this encoder
-         * 
-         * @return The Template class type
-         */
-        @Override
-        public Class<Template> getEncoderClass() {
-            return Template.class;
+        if (!valid) {
+            throw new ClassCastException("Invalid template");
         }
+        return questionObjs.toArray(new Question[0]);
     }
-
-
 }

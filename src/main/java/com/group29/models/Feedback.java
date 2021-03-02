@@ -7,14 +7,12 @@ import java.util.ArrayList;
 import com.google.gson.annotations.Expose;
 
 import org.bson.Document;
-import org.bson.BsonType;
 import org.bson.BsonWriter;
 import org.bson.BsonReader;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-import org.bson.codecs.ObjectIdCodec;
 import org.bson.types.ObjectId;
 
 public class Feedback {
@@ -50,6 +48,7 @@ public class Feedback {
     public void setUserID(String userID) {
         this.userID = userID;
     }
+
     public List<Response> getResponses() {
         return this.responses;
     }
@@ -95,6 +94,7 @@ public class Feedback {
         // Returns the filled document
         return doc;
     }
+
     // Codec class to allow MongoDB to automatically create Feedback classes
     public static class FeedbackCodec implements Codec<Feedback> {
         // Document codec to read raw BSON

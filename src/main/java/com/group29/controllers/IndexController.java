@@ -4,9 +4,6 @@ import static spark.Spark.*;
 
 import java.util.Map;
 
-import com.group29.JSONTransformer;
-import com.group29.models.Event;
-
 import spark.ModelAndView;
 import spark.Request;
 import spark.Response;

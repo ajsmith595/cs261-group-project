@@ -2,19 +2,14 @@ package com.group29;
 
 import static spark.Spark.*;
 import spark.template.velocity.VelocityTemplateEngine;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import javax.servlet.DispatcherType;
-
-import com.google.gson.internal.bind.JsonTreeWriter;
 import com.group29.controllers.APIController;
 import com.group29.controllers.IndexController;
 import com.group29.controllers.WebSocketController;
@@ -25,11 +20,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
-import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import spark.ExceptionMapper;
 import spark.ModelAndView;
