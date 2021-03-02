@@ -216,7 +216,7 @@ public class FeedbackAggregator {
     public NumericQuestion aggregateNumericQuestion(NumericQuestion question, List<UserResponse> responses,
             long startTime) {
         double sum = 0;
-        double count = 0, min = 10, max = 0;
+        double count = 0, min = Double.MAX_VALUE, max = Double.MIN_VALUE;
         ArrayList<Point> points = new ArrayList<>();
         HashMap<String, Double> ratings = new HashMap<>();
         int interval = 300000;
@@ -224,17 +224,6 @@ public class FeedbackAggregator {
         double pointAverage = 0;
         Calendar c = Calendar.getInstance();
         long currentTime = c.getTime().getTime();
-        // System.out.println("current Time: " +currentTime);
-        // System.out.println("start Time: " +startTime);
-        // As go through ur
-        // Store each user's points in a hashmap
-        // When ur is over interval
-        // Average each response stored in HM
-        // Create a point with this average at the interval point (function to do this
-        // would be good)
-        // When finished with all ur
-        // Add points at intervals until at current time
-        // Add point at current time
         for (UserResponse ur : responses) {
             Response r = ur.response;
             // System.out.println("ur Time: " +ur.timestamp);
@@ -269,6 +258,10 @@ public class FeedbackAggregator {
         // Add point for current time
         points.add(new Point(currentTime / 1000, pointAverage));
         double average = (count == 0) ? 0 : (sum / count); // Prevent divide by 0 error
+        if(count == 0){
+            min = -1;
+            max = -1;
+        }
         Stats stats = new Stats(pointAverage, average, min, max);
         return new NumericQuestion(question.getTitle(), stats, question.getMinValue(), question.getMaxValue(),
                 question.getMinTime(), question.getMaxTime(), Calendar.getInstance().getTimeInMillis() / 1000,
