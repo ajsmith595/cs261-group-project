@@ -27,6 +27,7 @@ export default class CreateEventView extends React.Component {
             datetime: isoString,
             duration: 60,
             description: "",
+            validationErrors: ["title"],
 
 
             // Because we can change the question type, we keep ALL question's properties in the object, in the case that the question gets changed to the type with the relevant properties. It has the (dis)advantage (depending on how you look at it) that if you change question type, then change back, the properties will be maintained.
@@ -81,6 +82,24 @@ export default class CreateEventView extends React.Component {
         });
     }
 
+    changeEventProp(prop, e) {
+        let newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != prop);
+        if (prop == "title") {
+            if (e.target.value.trim().length == 0) {
+                newValidationErrors.push("title");
+            }
+        }
+        else if (prop == "duration") {
+            if (parseInt(e.target.value) < 5) {
+                newValidationErrors.push("duration");
+            }
+        }
+        this.setState({
+            [prop]: e.target.value,
+            validationErrors: newValidationErrors
+        });
+    }
+
     render() {
         if (this.state.status == 'error') {
             return (
@@ -88,6 +107,16 @@ export default class CreateEventView extends React.Component {
                     <h1>An error occured!: {this.state.error}</h1>
                 </div>
             );
+        }
+        let hasErrors = false;
+        if (this.state.validationErrors.length > 0 || this.state.questions.length == 0) {
+            hasErrors = true;
+        }
+        for (let qid in this.state.questions) {
+            let q = this.state.questions[qid];
+            if (q.validationErrors.length > 0) {
+                hasErrors = true;
+            }
         }
         return (
             <div className="text-left align-middle pt-2">
@@ -100,23 +129,23 @@ export default class CreateEventView extends React.Component {
                             {/* Title */}
                             <Form.Group>
                                 <Form.Label className="">Title</Form.Label>
-                                <Form.Control type="text" name="title" placeholder="Event Title" onChange={(e) => (this.setState({ title: e.target.value }))} />
+                                <Form.Control className={this.state.validationErrors.includes("title") ? 'border-danger' : ''} type="text" name="title" placeholder="Event Title" onChange={(e) => this.changeEventProp("title", e)} />
                             </Form.Group>
 
                             {/* Date and Time */}
                             <Form.Row>
-                                <Form.Group as={Col} xs={12} sm={8}>
+                                <Form.Group as={Col} xs={12} sm={6} lg={7}>
                                     <Form.Label>Start Date/Time</Form.Label>
-                                    <Form.Control type="datetime-local" value={this.state.datetime} onChange={(e) => (this.setState({ datetime: e.target.value }))} />
+                                    <Form.Control type="datetime-local" value={this.state.datetime} onChange={(e) => this.changeEventProp("datetime", e)} />
                                 </Form.Group>
-                                <Form.Group as={Col} xs={12} sm={4}>
-                                    <Form.Label>Duration</Form.Label>
+                                <Form.Group as={Col} xs={12} sm={6} lg={5}>
+                                    <Form.Label className="w-100">Duration<span className="float-right text-danger">{this.state.validationErrors.includes("duration") ? 'Must be at least 5 mins' : ''}</span></Form.Label>
                                     <InputGroup>
-                                        <Form.Control type="number" value={this.state.duration} onChange={(e) => (this.setState({ duration: e.target.value }))} />
+                                        <Form.Control type="number" min="5" className={this.state.validationErrors.includes("duration") ? 'border-danger' : ''} value={this.state.duration} onChange={(e) => this.changeEventProp("duration", e)} />
                                         <InputGroup.Append>
                                             <InputGroup.Text id="startDatePrepend">
-                                                <span class="d-none d-md-block">minutes</span>
-                                                <span class="d-block d-md-none">mins</span>
+                                                <span className="d-none d-md-block">minutes</span>
+                                                <span className="d-block d-md-none">mins</span>
                                             </InputGroup.Text>
                                         </InputGroup.Append>
                                     </InputGroup>
@@ -134,7 +163,7 @@ export default class CreateEventView extends React.Component {
 
                             {/* Buttons */}
                             <Button className="m-2" type="button" variant="primary" onClick={this.addQuestion} disabled={this.state.status === 'completed'}>Add Question</Button>
-                            <Button className="m-2" type="button" variant="success" onClick={this.submit} disabled={this.state.status === 'completed'}>Create Event</Button>
+                            <Button className="m-2" type="button" variant="success" onClick={this.submit} disabled={this.state.status === 'completed' || hasErrors}>Create Event</Button>
 
                         </Col>
                         <Col />
@@ -192,13 +221,18 @@ export default class CreateEventView extends React.Component {
     changeQuestionProp(id, prop, e) {
         let question = this.state.questions[id];
         let newValue = e.target.value;
+        question.validationErrors = [];
+        if (prop == "title") {
+            if (newValue.trim().length == 0) {
+                question.validationErrors.push("title");
+            }
+        }
         if (prop == "allowMultiple") {
             newValue = e.target.checked;
         }
         if (prop == "min" || prop == "max") {
             newValue = parseInt(newValue);
             if (isNaN(newValue)) newValue = 0;
-            question.validationErrors = [];
             if (prop == "min") {
                 if (question.max <= newValue) {
                     question.validationErrors.push("minmax");
@@ -210,6 +244,11 @@ export default class CreateEventView extends React.Component {
                 }
             }
             newValue = newValue.toString();
+        }
+        if (prop == "type") {
+            if (newValue == "choice") {
+                this.validateChoiceQuestion(question);
+            }
         }
         question[prop] = newValue;
         this.setState(this.state);
@@ -244,6 +283,10 @@ export default class CreateEventView extends React.Component {
                     html = this.renderChoiceQuestion(question);
                     break;
             }
+            let errorClass = "";
+            if (question.validationErrors.includes("title")) {
+                errorClass = "border-danger";
+            }
 
             questions.push(
                 <div>
@@ -251,7 +294,7 @@ export default class CreateEventView extends React.Component {
                         <Col xs={12} sm={6} md={8}>
                             <Form.Group>
                                 <Form.Label>Question Title</Form.Label>
-                                <Form.Control className="w-100" value={question.title} onChange={(e) => this.changeQuestionProp(i, "title", e)} />
+                                <Form.Control className={"w-100 " + errorClass} value={question.title} onChange={(e) => this.changeQuestionProp(i, "title", e)} />
                             </Form.Group>
                         </Col>
                         <Col xs={12} sm={6} md={4}>
@@ -324,21 +367,46 @@ export default class CreateEventView extends React.Component {
     }
 
 
+    validateChoiceQuestion(question) {
+        let vals = {};
+        for (let i in question.choices) {
+            let value = question.choices[i];
+            if (vals[value] == null) {
+                vals[value] = [];
+            }
+            vals[value].push(i);
+        }
+        let repeated = [];
+        for (let val in vals) {
+            if (vals[val].length > 1) {
+                repeated = repeated.concat(vals[val]);
+            }
+        }
+        question.validationErrors = [];
+        if (repeated.length > 0) {
+            question.validationErrors.push('repeated');
+            question.repeatedValues = repeated;
+        }
+    }
+
     changeOptionForChoiceQuestion(questionIndex, choiceIndex, e) {
         let question = this.state.questions[questionIndex];
         question.choices[choiceIndex] = e.target.value;
+        this.validateChoiceQuestion(question);
         this.setState(this.state);
     }
     removeOptionFromChoiceQuestion(questionIndex, choiceIndex) {
         let question = this.state.questions[questionIndex];
         if (question.choices.length > 2) {
             question.choices.splice(choiceIndex, 1);
+            this.validateChoiceQuestion(question);
             this.setState(this.state);
         }
     }
     addOptionToChoiceQuestion(questionIndex) {
         let question = this.state.questions[questionIndex];
         question.choices.push("Option " + (question.choices.length + 1).toString());
+        this.validateChoiceQuestion(question);
         this.setState(this.state);
     }
 
@@ -347,9 +415,15 @@ export default class CreateEventView extends React.Component {
         for (let i in question.choices) {
             let choice = question.choices[i];
             let disabled = question.choices.length <= 2;
+            let errorClass = "";
+            if (question.validationErrors.includes("repeated")) {
+                if (question.repeatedValues.includes(i.toString())) {
+                    errorClass = "border-danger";
+                }
+            }
             options.push(
-                <div className="d-flex mb-1">
-                    <Form.Control className="flex-grow-1" value={choice} onChange={(e) => this.changeOptionForChoiceQuestion(question.id, i, e)} />
+                <div className="d-flex mb-1 ">
+                    <Form.Control className={"flex-grow-1 " + errorClass} value={choice} onChange={(e) => this.changeOptionForChoiceQuestion(question.id, i, e)} />
                     <Button disabled={disabled} variant="danger" onClick={(e) => this.removeOptionFromChoiceQuestion(question.id, i)}>Delete</Button>
                 </div>
             );
