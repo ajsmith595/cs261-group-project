@@ -61,12 +61,17 @@ public class FeedbackAggregator {
         for (int i = 0; i < questionResponses.size(); i++) {
             Question q = questions[i];
             List<UserResponse> responses = questionResponses.get(i);
-            if (q instanceof OpenQuestion)
+            if (q instanceof OpenQuestion) {
                 results[i] = aggregateOpenQuestion((OpenQuestion) q, responses);
-            else if (q instanceof NumericQuestion)
+            }
+            else if (q instanceof NumericQuestion){
+                ((NumericQuestion) q).setMinTime(event.getStartTime().getTime()/1000);
+                ((NumericQuestion) q).setMaxTime((event.getStartTime().getTime()/1000)+event.getDuration()*60);
                 results[i] = aggregateNumericQuestion((NumericQuestion) q, responses, event.getStartTime().getTime());
-            else if (q instanceof ChoiceQuestion)
+            }
+            else if (q instanceof ChoiceQuestion){
                 results[i] = aggregateChoiceQuestion((ChoiceQuestion) q, responses);
+            }
         }
 
         long endTimeInMins = event.getStartTime().getTime() / 1000 / 60 + event.getDuration();

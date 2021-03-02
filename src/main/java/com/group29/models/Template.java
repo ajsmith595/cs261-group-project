@@ -42,9 +42,7 @@ public class Template
     List<Question> questions;
 
 
-    // Private constructor for template
-    // Should only be created by Mongo DB
-    private Template(String id, String userID, List<Question> questions)
+    public Template(String id, String userID, List<Question> questions)
     {
         this.id = id;
         this.userID = userID;
@@ -169,5 +167,60 @@ public class Template
             throw new ClassCastException("Invalid template");
         }
         return questionObjs.toArray(new Question[0]);
+    }
+
+    // Codec class to allow MongoDB to automatically create Template classes
+    public static class TemplateCodec implements Codec<Template> {
+        // Document codec to read raw BSON
+        private Codec<Document> documentCodec;
+
+        /**
+         * Constructor for the codec
+         */
+        public TemplateCodec() {
+            this.documentCodec = new DocumentCodec();
+        }
+
+        /**
+         * Encodes an Template into the writer
+         * 
+         * @param writer         Writer to write into
+         * @param value          Template to write
+         * @param encoderContext Context for the encoding
+         */
+        @Override
+        public void encode(final BsonWriter writer, final Template value, final EncoderContext encoderContext) {
+            documentCodec.encode(writer, value.getTemplateAsDocument(), encoderContext);
+        }
+
+        /**
+         * Decodes an Template from a BSON reader
+         * 
+         * @param reader         The reader to decode
+         * @param decoderContext Context for the decoding
+         * @return
+         */
+        @Override
+        public Template decode(final BsonReader reader, final DecoderContext decoderContext) {
+            // Generates a document from the reader
+            Document doc = documentCodec.decode(reader, decoderContext);
+
+            String id = doc.getObjectId("_id").toHexString();
+            String userID = doc.getObjectId("userID").toHexString();
+            List<Question> questions = doc.getList("questions", Document.class).stream().map(x -> Question.generateQuestionFromDocument(x)).collect(Collectors.toList());
+
+
+            return new Template(id, userID, questions);
+        }
+
+        /**
+         * Gets the class type for this encoder
+         * 
+         * @return The Template class type
+         */
+        @Override
+        public Class<Template> getEncoderClass() {
+            return Template.class;
+        }
     }
 }

@@ -66,6 +66,13 @@ public class NumericQuestion extends Question {
         return this.current_time;
     }
 
+    public void setMinTime(long time) {
+        this.min_time = time;
+    }
+
+    public void setMaxTime(long time) {
+        this.max_time = time;
+    }
 
     @Override
     public Document getQuestionAsDocument()

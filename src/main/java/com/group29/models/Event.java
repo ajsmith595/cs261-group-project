@@ -112,6 +112,13 @@ public class Event {
     }
 
     /**
+     * @param id The template ID
+     */
+    public void setTemplateID(String id){
+        this.templateID = id;
+    }
+
+    /**
      * Gets the event start time
      * 
      * @return the start time in unix format

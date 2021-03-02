@@ -2,6 +2,7 @@ package com.group29.controllers;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Arrays;
 
 import com.group29.models.DatabaseManager;
 import com.group29.models.APIResponse;
@@ -163,7 +164,6 @@ public class APIController {
         String eventCode = req.params(":id").toUpperCase();
 
         Event event = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
-
         if (event != null) {
             if (req.queryParams("force_host") != null || event.getHostID().equals(req.session().attribute("uid"))) {
                 return APIResponse.success(event.getHostViewDocument());
@@ -201,14 +201,14 @@ public class APIController {
             // Attempts to parse event
             System.out.println(req.body());
             Event event = gson.fromJson(req.body(), Event.class);
-
             event.setHostID(req.session().attribute("uid")); // Set it to the current session's ID
             // Generates a new code for the event
             event.generateEventCode();
 
             Question[] questions = Template.parseQuestionsFromJSON(gson, req.body());
-            Template t = new Template(null, req.session().attribute("uid"), questions);
-
+            Template t = new Template(null, req.session().attribute("uid"), Arrays.asList(questions));
+            String templateID = DatabaseManager.getDatabaseManager().addTemplate(t);
+            event.setTemplateID(templateID);
             // Adds it to the database and returns the event code
             DatabaseManager.getDatabaseManager().addEvent(event);
             return APIResponse.success(new Document("eventCode", event.getEventCode()));
