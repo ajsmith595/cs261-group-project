@@ -15,6 +15,9 @@ export default class RegisterView extends React.Component {
             status: 'main'
         };
     }
+    componentDidMount() {
+        document.title = "Register";
+    }
 
     /*
     Sends the state to the server. It first verifies the fields

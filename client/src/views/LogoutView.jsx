@@ -10,6 +10,7 @@ export default class LogoutView extends React.Component {
     }
 
     componentDidMount() {
+        document.title = "Logging out...";
         this.setState({
             status: 'loading'
         });

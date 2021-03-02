@@ -114,7 +114,7 @@ public class Event {
     /**
      * @param id The template ID
      */
-    public void setTemplateID(String id){
+    public void setTemplateID(String id) {
         this.templateID = id;
     }
 
@@ -301,7 +301,9 @@ public class Event {
     public Document getHostViewDocument() {
         Document d = new Document();
         d.append("isHost", true);
+        d.append("eventCode", eventCode);
         d.append("title", title);
+        d.append("startTime", startTime.getTime());
         d.append("duration", duration);
         return d;
     }
@@ -461,7 +463,8 @@ public class Event {
             Date startTime = doc.getDate("startTime");
             int duration = doc.getInteger("duration");
             String eventCode = doc.getString("eventCode");
-            List<Feedback> feedbackList = doc.getList("feedbackList", Document.class).stream().map(x -> Feedback.generateFeedbackFromDocument(x)).collect(Collectors.toList());
+            List<Feedback> feedbackList = doc.getList("feedbackList", Document.class).stream()
+                    .map(x -> Feedback.generateFeedbackFromDocument(x)).collect(Collectors.toList());
 
             // Returns a new event using the data obtained
             return new Event(id, hostID, templateID, title, startTime, duration, eventCode, feedbackList);

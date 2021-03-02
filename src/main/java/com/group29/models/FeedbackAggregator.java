@@ -63,13 +63,12 @@ public class FeedbackAggregator {
             List<UserResponse> responses = questionResponses.get(i);
             if (q instanceof OpenQuestion) {
                 results[i] = aggregateOpenQuestion((OpenQuestion) q, responses);
-            }
-            else if (q instanceof NumericQuestion){
-                ((NumericQuestion) q).setMinTime(event.getStartTime().getTime()/1000);
-                ((NumericQuestion) q).setMaxTime((event.getStartTime().getTime()/1000)+event.getDuration()*60);
-                results[i] = aggregateNumericQuestion((NumericQuestion) q, responses, event.getStartTime().getTime());
-            }
-            else if (q instanceof ChoiceQuestion){
+            } else if (q instanceof NumericQuestion) {
+                ((NumericQuestion) q).setMinTime(event.getStartTime().getTime() / 1000);
+                ((NumericQuestion) q).setMaxTime((event.getStartTime().getTime() / 1000) + event.getDuration() * 60);
+                results[i] = aggregateNumericQuestion((NumericQuestion) q, responses, event.getStartTime().getTime(),
+                        event.getDuration());
+            } else if (q instanceof ChoiceQuestion) {
                 results[i] = aggregateChoiceQuestion((ChoiceQuestion) q, responses);
             }
         }
@@ -219,7 +218,7 @@ public class FeedbackAggregator {
      * @return A numeric question object containing this info
      */
     public NumericQuestion aggregateNumericQuestion(NumericQuestion question, List<UserResponse> responses,
-            long startTime) {
+            long startTime, int duration) {
         double sum = 0;
         double count = 0, min = Double.MAX_VALUE, max = Double.MIN_VALUE;
         ArrayList<Point> points = new ArrayList<>();
@@ -256,14 +255,15 @@ public class FeedbackAggregator {
             }
         }
         pointAverage = this.averageValues(ratings);
-        while (startTime + i * interval < currentTime) {
+        long endTime = Math.min(currentTime, startTime + duration * 60 * 1000);
+        while (startTime + i * interval <= endTime) {
             points.add(new Point((startTime + i * interval) / 1000, pointAverage));
             i++;
         }
         // Add point for current time
         points.add(new Point(currentTime / 1000, pointAverage));
         double average = (count == 0) ? 0 : (sum / count); // Prevent divide by 0 error
-        if(count == 0){
+        if (count == 0) {
             min = -1;
             max = -1;
         }

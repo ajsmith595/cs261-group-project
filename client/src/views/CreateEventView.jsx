@@ -55,6 +55,10 @@ export default class CreateEventView extends React.Component {
         };
     }
 
+    componentDidMount() {
+        document.title = "Create a New Event";
+    }
+
     // Template
     defaultQuestion = {
         type: 'open',
