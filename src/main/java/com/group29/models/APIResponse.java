@@ -1,6 +1,5 @@
 package com.group29.models;
 
-import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
 // Class for API responses
@@ -9,8 +8,7 @@ public class APIResponse {
     // SerializedName when converting to json
     enum ResponseStatus {
         @SerializedName("success")
-        SUCCESS,
-        @SerializedName("error")
+        SUCCESS, @SerializedName("error")
         ERROR;
     };
 
@@ -23,6 +21,7 @@ public class APIResponse {
 
     /**
      * Private constructor, success or error should be used instead
+     * 
      * @param status The status of the response
      */
     private APIResponse(ResponseStatus status) {
@@ -31,6 +30,7 @@ public class APIResponse {
 
     /**
      * Creates a success response with the following data
+     * 
      * @param data The data to respond with
      */
     public static APIResponse success(Object data) {
@@ -39,9 +39,9 @@ public class APIResponse {
         return response;
     }
 
-    
-    /** 
+    /**
      * Creates an error response with the following message
+     * 
      * @param message The error message to respond with
      * @return APIResponse
      */

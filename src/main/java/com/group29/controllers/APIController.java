@@ -14,15 +14,14 @@ import java.util.HashMap;
 import com.group29.JSONTransformer;
 import com.group29.models.Event;
 import com.group29.models.User;
+import com.group29.models.temp.Question;
 import com.group29.models.Feedback;
-
+import com.group29.models.Template;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonObject;
-
 import org.bson.Document;
 
 import spark.Request;
@@ -202,9 +201,16 @@ public class APIController {
             // Generates a new code for the event
             event.generateEventCode();
 
+            Question[] questions = Template.parseQuestionsFromJSON(gson, req.body());
+            Template t = new Template(null, req.session().attribute("uid"), questions);
+
             // Adds it to the database and returns the event code
             DatabaseManager.getDatabaseManager().addEvent(event);
             return APIResponse.success(new Document("eventCode", event.getEventCode()));
+        } catch (ClassCastException e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            return APIResponse.error("Invalid event!");
         } catch (Exception e) {
             // Prints the error to console
             e.printStackTrace();

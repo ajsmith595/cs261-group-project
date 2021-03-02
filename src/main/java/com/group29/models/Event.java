@@ -1,14 +1,8 @@
 package com.group29.models;
 
 import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.stream.Collectors;
-
-import javax.xml.crypto.dsig.keyinfo.KeyValue;
 
 import com.group29.JSONTransformer;
 import com.group29.models.temp.ChoiceQuestion;
@@ -18,7 +12,6 @@ import com.group29.models.temp.Option;
 import com.group29.models.temp.Point;
 import com.group29.models.temp.Question;
 import com.group29.models.temp.QuestionResponse;
-import com.group29.models.temp.Stats;
 import com.group29.models.temp.Trend;
 import com.group29.models.temp.WebSocketData;
 

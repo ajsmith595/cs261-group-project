@@ -1,14 +1,12 @@
 package com.group29.models;
 
 import org.bson.Document;
-import org.bson.BsonType;
 import org.bson.BsonWriter;
 import org.bson.BsonReader;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-import org.bson.codecs.ObjectIdCodec;
 import org.bson.types.ObjectId;
 
 import com.google.gson.annotations.Expose;

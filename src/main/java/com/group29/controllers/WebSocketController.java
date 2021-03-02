@@ -4,15 +4,10 @@ import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 
-import com.group29.JSONTransformer;
 import com.group29.models.DatabaseManager;
 import com.group29.models.Event;
-import com.group29.models.temp.*;
 
 @WebSocket
 public class WebSocketController {
