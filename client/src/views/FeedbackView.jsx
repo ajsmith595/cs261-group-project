@@ -9,12 +9,14 @@ export default class FeedbackView extends React.Component {
         this.state = {
             status: 'show',
             anonymous: false,
-            questions: props.data.questions
+            questions: props.data.questions,
+            timeError: ""
         };
         if (props.data.error) {
             this.state = {
                 status: 'event_error',
-                error: props.data.error
+                error: props.data.error,
+                timeError: ""
             };
         }
 
@@ -50,7 +52,8 @@ export default class FeedbackView extends React.Component {
             responses: responseData
         };
         this.setState({
-            status: 'loading'
+            status: 'loading',
+            timeError: ""
         });
         fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/event/${this.props.eventID}/feedback`,
             {
@@ -84,17 +87,29 @@ export default class FeedbackView extends React.Component {
                 }
                 this.setState({
                     status: 'success',
-                    questions: this.state.questions
+                    questions: this.state.questions,
+                    timeError: ""
                 });
             }
             else {
-                this.setState({
-                    status: 'error'
-                })
+                if(data.message == "Feedback was sent recently") {
+                    this.setState({
+                        status: "show",
+                        questions: this.state.questions,
+                        anonymous: this.state.anonymous,
+                        timeError: "Please wait one minute before sending another piece of feedback"
+                    });
+                } else {
+                    this.setState({
+                        status: 'error',
+                        timeError: ""
+                    })
+                }
             }
         }).catch(err => {
             this.setState({
-                status: 'error'
+                status: 'error',
+                timeError: ""
             })
         });
     }
@@ -167,6 +182,7 @@ export default class FeedbackView extends React.Component {
             <div className="text-center py-2">
                 <h1>Feedback</h1>
                 <hr />
+                {this.renderError()}
                 <Form onSubmit={this.sendStateToServer}>
                     {questions}
                     <Form.Check type="checkbox" id="anonymous_check" >
@@ -195,7 +211,7 @@ export default class FeedbackView extends React.Component {
             let questions = this.state.questions;
             questions[id].value = e.target.value; //Gets the value of the caller
             this.setState({
-                questions: questions
+                questions: questions,
             });
         };
         return func.bind(this);
@@ -210,7 +226,7 @@ export default class FeedbackView extends React.Component {
             let questions = this.state.questions;
             questions[id].value = e; //Requires just e rather than e.target.value
             this.setState({
-                questions: questions
+                questions: questions,
             });
         };
         return func.bind(this);
@@ -306,6 +322,20 @@ export default class FeedbackView extends React.Component {
                 </Row>
             </Form.Group>
         )
+    }
+
+    renderError(){
+        if(this.state.timeError === ""){
+            return <p></p>;
+        }
+        else{
+            return(
+                <div id="Error message">
+                <p>{this.state.timeError}</p>
+                <hr />
+                </div>
+            )
+        }
     }
 
 }

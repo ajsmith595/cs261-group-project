@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java.util.Date;
+import java.util.Calendar;
 
 import com.group29.models.temp.*;
 import com.mongodb.MongoClient;
@@ -289,6 +290,38 @@ public class DatabaseManager {
     }
 
     /**
+     * Checks if a user has sent a feedback to an event within a minute
+     * @param userID The ID of the user to be checked
+     * @param eventCode The event of the feedback
+     * @return Whether a minute has passed since the last feedback was sent by the user
+     */
+    public boolean canSendFeedback(String userID, String eventCode) {
+        // Get the event from the database
+        Event e = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
+        
+        // Return false if the event could not be found
+        if (e == null)
+            return false;
+
+        // Get the current time and a placeholder for the time of the latest feedback
+        long now = Calendar.getInstance().getTimeInMillis();
+        long latest = 0;
+
+        // Iterate through the feedback for all sent by the given user
+        for (Feedback feedback : e.getFeedback()) {
+            if (feedback.getUserID().equals(userID)) {
+                // Update the latest time if needed
+                if (latest < feedback.getTimestamp())
+                    latest = feedback.getTimestamp();
+            }
+        }
+        // Return true if the latest is over a minute ago
+        return now - 1000 * 60 > latest;
+    }
+
+
+
+    /**
      * Gets a list of the feedback for the given event id
      * 
      * @param eventId The event of the feedback
@@ -300,35 +333,6 @@ public class DatabaseManager {
         if (e == null)
             return new ArrayList<>();
         return e.getFeedback();
-        /*
-         * // TODO Actually implement this mess, this is taken from the Event temporary
-         * updateData method List<Feedback> fb = new ArrayList<>();
-         * 
-         * ArrayList<QuestionResponse> all_responses = new ArrayList<>(
-         * Arrays.asList(new QuestionResponse("Very interesting and intriguing", null,
-         * "a"), new QuestionResponse("Something else....", "ajsmith595", "b"), new
-         * QuestionResponse("Pretty boring", "haterman443", "c"), new
-         * QuestionResponse("Clearly well-educated", "KrazyKid69", "d"), new
-         * QuestionResponse("Joy is at a low point here", null, "e"), new
-         * QuestionResponse("Confusing", null, "f")));
-         * 
-         * int index = 1000; for (QuestionResponse qr : all_responses) { fb.add(new
-         * Feedback(Integer.toString(++index), qr.getUsername() == null ? "x" :
-         * qr.getUsername(), qr.getUsername() != null, new ArrayList<>(Arrays.asList(new
-         * Response("r" + index + "0", "0", qr.getMessage()))))); }
-         * 
-         * for (int i = 0; i < 200; i++) { String colour = new String[] {"Red",
-         * "Yellow", "Green"}[(int) Math.floor(3 * Math.random())]; String age = new
-         * String[] {"18-24", "25-39", "40-59", "60+"}[(int) Math.floor(4 *
-         * Math.random())];
-         * 
-         * fb.add(new Feedback(Integer.toString(i), "u" + i, false, new
-         * ArrayList<>(Arrays.asList( new Response("r" + i + "1", "1", colour), new
-         * Response("r" + i + "2", "2", age), new Response("r" + i + "3", "3",
-         * Integer.toString((int) (10 * Math.random()))) )))); }
-         * 
-         * return fb;
-         */
     }
 
 }
