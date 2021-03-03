@@ -25,6 +25,7 @@ export default class HostView extends React.Component {
     }
 
     componentDidMount() {
+        document.title = "Hosting '" + this.props.data.title + "'";
         if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_USE_WEBSOCKETS) {
             let sample = require("../sample_data/HostView.json");
             this.setState(sample);

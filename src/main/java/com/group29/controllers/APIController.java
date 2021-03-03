@@ -2,6 +2,7 @@ package com.group29.controllers;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.group29.models.DatabaseManager;
@@ -75,6 +76,9 @@ public class APIController {
 
         // Get event data
         get("/event/:id", "application/json", APIController.getEvent, new JSONTransformer());
+
+        // Get all events
+        get("/events", "application/json", APIController.getAllEvents, new JSONTransformer());
 
         // Create a new event
         post("/events", APIController.postEvent, new JSONTransformer());
@@ -165,13 +169,22 @@ public class APIController {
 
         Event event = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
         if (event != null) {
-            if (req.queryParams("force_host") != null || event.getHostID().equals(req.session().attribute("uid"))) {
+            if (event.getHostID().equals(req.session().attribute("uid"))) {
                 return APIResponse.success(event.getHostViewDocument());
             }
             return APIResponse.success(event.getAttendeeViewDocument());
         }
 
         return APIResponse.error("Could not match event code");
+    };
+
+    public static Route getAllEvents = (Request req, Response res) -> {
+        ArrayList<Event> events = DatabaseManager.getDatabaseManager().getEventsForUser(req.session().attribute("uid"));
+        ArrayList<Document> docs = new ArrayList<>();
+        for (Event e : events) {
+            docs.add(e.getHostViewDocument());
+        }
+        return APIResponse.success(docs);
     };
 
     /**
@@ -199,7 +212,6 @@ public class APIController {
                     .excludeFieldsWithoutExposeAnnotation().create();
 
             // Attempts to parse event
-            System.out.println(req.body());
             Event event = gson.fromJson(req.body(), Event.class);
             event.setHostID(req.session().attribute("uid")); // Set it to the current session's ID
             // Generates a new code for the event
@@ -297,8 +309,6 @@ public class APIController {
         return APIResponse.error("The feedback could not be added.");
     };
 
-    
-
     // Posts a new template
     public static Route postTemplate = (Request req, Response res) -> {
         // Sets the return type to json
@@ -306,10 +316,8 @@ public class APIController {
         // Catches parsing errors
         try {
             // Creates a GSON parser that can parse dates and excludes id
-            Gson gson = new GsonBuilder()
-                                .excludeFieldsWithoutExposeAnnotation()
-                                .registerTypeAdapter(Question.class, Question.deserialiser)
-                                .create();
+            Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation()
+                    .registerTypeAdapter(Question.class, Question.deserialiser).create();
 
             // Attempts to parse the feedback as well as the id of the event
             Template template = gson.fromJson(req.body(), Template.class);
@@ -327,7 +335,6 @@ public class APIController {
         // Returns an error response
         return APIResponse.error("The template could not be added.");
     };
-
 
     /**
      * GETs the details for a particular template.

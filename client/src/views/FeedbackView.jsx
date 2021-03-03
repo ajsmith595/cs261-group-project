@@ -22,6 +22,9 @@ export default class FeedbackView extends React.Component {
 
 
     }
+    componentDidMount() {
+        document.title = "Feedback on event '" + this.props.data.title + "'";
+    }
     /*
     Sends the state to the server to store and analyse the feedback
     */
@@ -180,7 +183,7 @@ export default class FeedbackView extends React.Component {
         }
         return (
             <div className="text-center py-2">
-                <h1>Feedback</h1>
+                <h1>Feedback on '{this.props.data.title}'</h1>
                 <hr />
                 {this.renderError()}
                 <Form onSubmit={this.sendStateToServer}>

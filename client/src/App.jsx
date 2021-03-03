@@ -31,7 +31,7 @@ function App() {
                             <Link key="my_events_btn" to="/events" className="btn btn-primary m-1">My Events</Link>
                         </Route>
 
-                        <Route path={["/event"]}>
+                        <Route path={["/event", "/events"]}>
                             <Link key="back_btn" to="/" className="btn btn-primary m-1">Back</Link>
                         </Route>
                     </Switch>

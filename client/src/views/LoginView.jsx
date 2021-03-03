@@ -15,6 +15,10 @@ export default class RegisterView extends React.Component {
         };
     }
 
+    componentDidMount() {
+        document.title = "Login";
+    }
+
     /*
     Sends the state to the server. It first verifies the fields
     for them being empty and having a valid email

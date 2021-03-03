@@ -28,3 +28,12 @@
     opacity: 0;
     transition: opacity 300ms linear;
 }
+
+.event-list-item {
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 100ms linear;
+}
+.event-list-item:hover {
+    background-color: #f4f4f4;
+}

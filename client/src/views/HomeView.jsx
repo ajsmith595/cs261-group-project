@@ -13,6 +13,10 @@ export default class HomeView extends React.Component {
         this.handleCodeChange = this.handleCodeChange.bind(this);
     }
 
+    componentDidMount() {
+        document.title = "Home";
+    }
+
     handleCodeChange(e) {
         let value = e.target.value.toUpperCase();
         let newValue = "";
