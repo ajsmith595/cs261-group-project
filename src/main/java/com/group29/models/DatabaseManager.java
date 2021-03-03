@@ -2,7 +2,7 @@ package com.group29.models;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Calendar;
 import java.util.Date;
 
 import com.group29.models.temp.*;
@@ -298,6 +298,37 @@ public class DatabaseManager {
         }
 
         return false;
+    }
+
+    /**
+     * Checks if a user has sent a feedback to an event within a minute
+     * @param userID The ID of the user to be checked
+     * @param eventCode The event of the feedback
+     * @return Whether a minute has passed since the last feedback was sent by the user
+     */
+    public boolean canSendFeedback(String userID, String eventCode) {
+        // Get the event from the database
+        Event e = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
+        
+        // Return false if the event could not be found
+        if (e == null)
+            return false;
+
+        // Get the current time and a placeholder for the time of the latest feedback
+        long now = Calendar.getInstance().getTimeInMillis();
+        long latest = 0;
+
+        // Iterate through the feedback for all sent by the given user
+        for (Feedback feedback : e.getFeedback()) {
+            if (feedback.getUserID().equals(userID)) {
+                // Update the latest time if needed
+                if (latest < feedback.getTimestamp())
+                    latest = feedback.getTimestamp();
+            }
+        }
+
+        // Return true if the latest is over a minute ago
+        return now - 1000 * 60 > latest;
     }
 
     /**
