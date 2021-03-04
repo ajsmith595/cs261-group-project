@@ -297,12 +297,15 @@ public class APIController {
         try {
             // Creates a GSON parser that can parse dates and excludes id
             Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+            String userID = req.session().attribute("uid");
 
             // Attempts to parse the feedback as well as the id of the event
             Feedback feedback = gson.fromJson(req.body(), Feedback.class);
-            feedback.setUserID(req.session().attribute("uid"));
+            feedback.setUserID(userID);
             feedback.setTimestamp(Calendar.getInstance().getTimeInMillis());
-
+            if(!DatabaseManager.getDatabaseManager().canSendFeedback(userID,eventCode)){
+                return APIResponse.error("Feedback was sent recently");
+            }
             // Attempts to add the feedback to the database
             boolean result = DatabaseManager.getDatabaseManager().addFeedback(eventCode, feedback);
 
