@@ -60,10 +60,10 @@ export default class RegisterView extends React.Component {
                     credentials: "include"
                 }
             ).then(response => {
-                if (response.status >= 400) {//Throws an error if the server responds witha error status
+                if (response.status >= 400 || !response.ok) {//Throws an error if the server responds witha error status
                     this.setState({
                         status: 'error'
-                    })
+                    });
                 }
                 response.json().then(data => {
                     if (data.status == "error") {//Custom error sent from server
@@ -79,6 +79,13 @@ export default class RegisterView extends React.Component {
                         this.props.history.push("/");
                     }
                 })
+            }).catch(e => {
+                console.log(e);
+                this.setState({
+                    error: [],
+                    serverError: e.getMessage(),
+                    status: 'main',
+                })
             });
         }
     }
@@ -90,7 +97,7 @@ export default class RegisterView extends React.Component {
         if (this.state.status == 'error') {
             return <div className="text-center">
                 <h1>An error occured</h1>
-                <Button onClick={() => this.setState({ status: 'main' })}></Button>
+                <Button onClick={() => this.setState({ status: 'main' })}>Retry</Button>
             </div>
         }
         return (
@@ -103,12 +110,12 @@ export default class RegisterView extends React.Component {
                         <div id="Error message"><p>{this.renderErrors()}</p></div>
                         <Form id="feedback">
                             <Form.Group>
-                                <Form.Label>Email</Form.Label>
-                                <Form.Control className="mx-auto" onChange={(e) => this.setState({ email: e.target.value })} value={this.state.email} placeholder="Enter email" as="input"></Form.Control>
+                                <Form.Label for="login_email_input">Email</Form.Label>
+                                <Form.Control id="login_email_input" className="mx-auto" onChange={(e) => this.setState({ email: e.target.value })} value={this.state.email} type="email" placeholder="Enter email" as="input"></Form.Control>
                             </Form.Group>
                             <Form.Group>
-                                <Form.Label>Username</Form.Label>
-                                <Form.Control className="mx-auto" onChange={(e) => this.setState({ username: e.target.value })} value={this.state.username} placeholder="Enter username" as="input"></Form.Control>
+                                <Form.Label for="login_username_input">Username</Form.Label>
+                                <Form.Control id="login_username_input" className="mx-auto" onChange={(e) => this.setState({ username: e.target.value })} value={this.state.username} placeholder="Enter username" as="input"></Form.Control>
                             </Form.Group>
                             <hr />
                             <Button className="w-100" type="button" variant="primary" onClick={this.sendStateToServer} disabled={this.state.status === 'success' || this.state.status === 'loading'}>Submit</Button>

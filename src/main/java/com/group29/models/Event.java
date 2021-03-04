@@ -93,6 +93,10 @@ public class Event {
         this.id = id;
     }
 
+    public String getTitle() {
+        return this.title;
+    }
+
     /**
      * Gets the event code for the event
      * 

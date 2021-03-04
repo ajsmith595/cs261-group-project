@@ -26,6 +26,7 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.JsonPrimitive;
 import org.bson.Document;
 
+import edu.stanford.nlp.patterns.Data;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -213,6 +214,13 @@ public class APIController {
 
             // Attempts to parse event
             Event event = gson.fromJson(req.body(), Event.class);
+
+            if (event.getTitle().length() == 0 || event.getDuration() < 5 || event.getDuration() > 60 * 12) {
+                // If the title is empty, or the duration is not between 5 mins and 12 hours,
+                // fail
+                return APIResponse.error("Invalid event!");
+            }
+
             event.setHostID(req.session().attribute("uid")); // Set it to the current session's ID
             // Generates a new code for the event
             event.generateEventCode();
@@ -279,8 +287,12 @@ public class APIController {
     public static Route postFeedback = (Request req, Response res) -> {
         // Gets the event code from the url
         String eventCode = req.params(":id");
-        // Sets the return type to json
-        res.type("application/json");
+
+        Event event = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
+        if (event.getHostID().equals(req.session().attribute("uid"))) {
+            return APIResponse.error("You cannot feedback on your own event");
+        }
+
         // Catches parsing errors
         try {
             // Creates a GSON parser that can parse dates and excludes id
