@@ -12,11 +12,13 @@ import static spark.Spark.*;
 
 import java.security.SecureRandom;
 import java.util.HashMap;
+import java.util.Map;
 
 import com.group29.JSONTransformer;
 import com.group29.models.Event;
 import com.group29.models.User;
 import com.group29.models.temp.Question;
+import com.mongodb.internal.connection.tlschannel.NeedsWriteException;
 import com.group29.models.Feedback;
 import com.group29.models.Template;
 import com.google.gson.Gson;
@@ -83,6 +85,8 @@ public class APIController {
 
         // Create a new event
         post("/events", APIController.postEvent, new JSONTransformer());
+
+        post("/event/:id/edit", APIController.editEvent, new JSONTransformer());
         // Creates new template
         post("/templates", APIController.postTemplate, new JSONTransformer());
         // Gets a template with the given id
@@ -244,6 +248,44 @@ public class APIController {
         return APIResponse.error("Could not create the event.");
     };
 
+    public static Route editEvent = (Request req, Response res) -> {
+        Event e = DatabaseManager.getDatabaseManager().getEventFromCode(req.params(":id"));
+        if (e == null) {
+            return APIResponse.error("Event not found");
+        }
+        if (!e.getHostID().equals(req.session().attribute("uid"))) {
+            return APIResponse.error("Not authorized to edit this event");
+        }
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Date.class,
+                        (JsonDeserializer<Date>) (json, typeOfT,
+                                context) -> new Date(json.getAsJsonPrimitive().getAsLong()))
+                .registerTypeAdapter(Date.class,
+                        (JsonSerializer<Date>) (date, type,
+                                jsonSerializationContext) -> new JsonPrimitive(date.getTime()))
+                .excludeFieldsWithoutExposeAnnotation().create();
+        try {
+            Event newEvent = gson.fromJson(req.body(), Event.class);
+            String title = e.getTitle();
+            Date startTime = e.getStartTime();
+            int duration = e.getDuration();
+            if (newEvent.getTitle() != null && newEvent.getTitle() != "") {
+                title = newEvent.getTitle();
+            }
+            if (newEvent.getStartTime() != null && newEvent.getStartTime().getTime() != 0) {
+                startTime = newEvent.getStartTime();
+            }
+            if (newEvent.getDuration() >= 5 && newEvent.getDuration() <= 12 * 60) {
+                duration = newEvent.getDuration();
+            }
+
+            DatabaseManager.getDatabaseManager().updateEvent(e.getEventCode(), title, startTime, duration);
+            return APIResponse.success("ok");
+        } catch (Exception exception) {
+            return APIResponse.error("Failed to parse");
+        }
+    };
+
     // Gets the user ID from email and password
     public static Route getUser = (Request req, Response res) -> {
         String userId = req.params(":id");
@@ -303,7 +345,7 @@ public class APIController {
             Feedback feedback = gson.fromJson(req.body(), Feedback.class);
             feedback.setUserID(userID);
             feedback.setTimestamp(Calendar.getInstance().getTimeInMillis());
-            if(!DatabaseManager.getDatabaseManager().canSendFeedback(userID,eventCode)){
+            if (!DatabaseManager.getDatabaseManager().canSendFeedback(userID, eventCode)) {
                 return APIResponse.error("Feedback was sent recently");
             }
             // Attempts to add the feedback to the database

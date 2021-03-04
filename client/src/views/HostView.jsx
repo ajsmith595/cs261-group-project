@@ -70,8 +70,9 @@ export default class HostView extends React.Component {
     webSocketDataReceived(event) {
         // When we receive new data, we need to update the display.
         // The following will take the questions, and assign 'previous' values to the mood (smiley face animation), and trend values (trend word font sizes).
-        // TODO: the trends do not take into account the fact that the actual trend word/phrase could change, so not a nice animation for that.
+        // TODO: the trends do not take into account the fact that the actual trend word/phrase could change, so not a nice animation for that.        
         let data = JSON.parse(event.data);
+        document.title = "Hosting '" + data.title + "'";
         let questions = data.questions;
         for (let i in questions) { // Go through the questions, and assign their 'previous' values - this allows for animation.
             let question = questions[i];
@@ -99,7 +100,8 @@ export default class HostView extends React.Component {
         this.setState({
             feedback: questions,
             status: 'show',
-            stats
+            stats,
+            title: data.title
         });
     }
     // If the component is gonna be removed, close the websocket connection.
@@ -420,7 +422,7 @@ export default class HostView extends React.Component {
                         </Col>
                         {time_left_display}
                         <Col lg={4}>
-                            <h1>{this.props.data.title || "Unknown Event"}</h1>
+                            <h1>{this.state.title || this.props.data.title || "Unknown Event"}</h1>
                         </Col>
                         <Col lg={2} className="border">
                             <h2 className="mb-0">{this.state.stats?.total_users}</h2>

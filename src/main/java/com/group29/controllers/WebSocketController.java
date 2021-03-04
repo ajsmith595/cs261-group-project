@@ -28,22 +28,26 @@ public class WebSocketController {
      */
     private static ArrayList<Session> waitingConnections = new ArrayList<>();
 
+    public static void updateEvent(String eventCode) {
+        updateEvent(eventCode, false);
+    }
+
     /**
      * Makes a particular event update its data. This should be done after feedback
      * has successfully been added to the database.
      * 
      * @param eventCode
      */
-    public static void updateEvent(String eventCode) {
+    public static void updateEvent(String eventCode, boolean updateEventDetails) {
         if (eventCode == null) {
             for (Event e : eventMap.values()) {
-                e.updateData();
+                e.updateData(true, updateEventDetails);
                 e.sendDataToClients();
             }
         } else {
             if (eventMap.containsKey(eventCode)) {
                 Event e = eventMap.get(eventCode);
-                e.updateData();
+                e.updateData(true, updateEventDetails);
                 e.sendDataToClients();
             }
         }

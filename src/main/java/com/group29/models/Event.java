@@ -93,6 +93,10 @@ public class Event {
         this.id = id;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getTitle() {
         return this.title;
     }
@@ -122,6 +126,10 @@ public class Event {
         this.templateID = id;
     }
 
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
+
     /**
      * Gets the event start time
      * 
@@ -129,6 +137,10 @@ public class Event {
      */
     public Date getStartTime() {
         return this.startTime;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 
     public int getDuration() {
@@ -174,12 +186,23 @@ public class Event {
      */
 
     public void updateData() {
-        updateData(true);
+        updateData(true, false);
     }
 
     public void updateData(boolean fetchFromDatabase) {
-        if (fetchFromDatabase)
+        updateData(fetchFromDatabase, false);
+    }
+
+    public void updateData(boolean fetchFromDatabase, boolean updateEventDetails) {
+        if (fetchFromDatabase) {
             this.feedbackList = DatabaseManager.getDatabaseManager().getFeedback(this.id);
+            if (updateEventDetails) {
+                Event e = DatabaseManager.getDatabaseManager().getEventFromID(this.id);
+                this.setTitle(e.getTitle());
+                this.setStartTime(e.getStartTime());
+                this.setDuration(e.getDuration());
+            }
+        }
         // Sort feedback based on time stamp
         this.feedbackList.sort(Comparator.comparing(Feedback::getTimestamp));
         WebSocketData results = this.aggregator.collateFeedback(this);

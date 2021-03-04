@@ -196,6 +196,27 @@ public class DatabaseManager {
         return null;
     }
 
+    public boolean updateEvent(String eventCode, String newTitle, Date newStartTime, int newDuration) {
+        // Gets the events collection and creates a query string for the event id
+        MongoCollection<Document> events = mongoDB.getCollection("Events");
+        Document query = new Document("eventCode", eventCode);
+
+        // Loops over events found matching the id, adding the feedback to the first one
+        // found
+        for (Event event : events.find(query, Event.class)) {
+            event.setTitle(newTitle);
+            event.setStartTime(newStartTime);
+            event.setDuration(newDuration);
+
+            // Updates the database and returns true as it was inserted
+            events.findOneAndReplace(query, event.getEventAsDocument());
+            WebSocketController.updateEvent(event.getEventCode(), true);
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Gets the event from the event code
      * 
@@ -303,14 +324,16 @@ public class DatabaseManager {
 
     /**
      * Checks if a user has sent a feedback to an event within a minute
-     * @param userID The ID of the user to be checked
+     * 
+     * @param userID    The ID of the user to be checked
      * @param eventCode The event of the feedback
-     * @return Whether a minute has passed since the last feedback was sent by the user
+     * @return Whether a minute has passed since the last feedback was sent by the
+     *         user
      */
     public boolean canSendFeedback(String userID, String eventCode) {
         // Get the event from the database
         Event e = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
-        
+
         // Return false if the event could not be found
         if (e == null)
             return false;

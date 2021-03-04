@@ -7,6 +7,7 @@ import HostView from './views/HostView.jsx';
 import RegisterView from './views/RegisterView.jsx';
 import LoginView from './views/LoginView.jsx';
 import LogoutView from './views/LogoutView.jsx';
+import EditEventView from './views/EditEventView.jsx';
 import {
     BrowserRouter as Router,
     Switch,
@@ -30,7 +31,9 @@ function App() {
                             <Link key="new_event_btn" to="/event/new" className="btn btn-dark m-1">+ New Event</Link>
                             <Link key="my_events_btn" to="/events" className="btn btn-primary m-1">My Events</Link>
                         </Route>
-
+                        <Route exact path="/event/:id/edit" render={(props) => {
+                            return <Link key="edit_back_btn" to={`/event/${props.match.params.id}`} className="btn btn-primary m-1">Back</Link>
+                        }} />
                         <Route path={["/event", "/events"]}>
                             <Link key="back_btn" to="/" className="btn btn-primary m-1">Back</Link>
                         </Route>
@@ -46,7 +49,14 @@ function App() {
                         <Route path="/">
                             <Link key="logout_btn" to="/logout" className="btn btn-dark float-right m-1">Logout</Link>
                         </Route>
+
                     </Switch>
+                    <Switch>
+                        <Route exact path="/event/:id" render={(props) => {
+                            return <Link key="edit_event_btn" to={`/event/${props.match.params.id}/edit`} className="btn btn-primary float-right m-1">Edit Event</Link>
+                        }} />
+                    </Switch>
+
                 </div>
 
 
@@ -62,6 +72,7 @@ function App() {
                                     <Route exact path="/" component={HomeView} />
                                     <Route exact path="/events" component={EventsView} />
                                     <Route exact path="/event/new" component={CreateEventView} />
+                                    <Route path="/event/:id/edit" component={EditEventView} />
                                     <Route path="/event/:id" component={AttendeeHostView} />
                                     <Route path="/register" component={RegisterView} />
                                     <Route path="/login" component={LoginView} />

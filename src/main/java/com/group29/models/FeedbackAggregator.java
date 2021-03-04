@@ -75,7 +75,7 @@ public class FeedbackAggregator {
 
         long endTimeInMins = event.getStartTime().getTime() / 1000 / 60 + event.getDuration();
         int minsLeft = (int) (endTimeInMins - (new Date()).getTime() / 1000 / 60);
-        return new WebSocketData(results, totalNumberOfResponses, uniqueUsers.size(), minsLeft);
+        return new WebSocketData(results, totalNumberOfResponses, uniqueUsers.size(), minsLeft, event.getTitle());
     }
 
     // From https://xpo6.com/list-of-english-stop-words/
