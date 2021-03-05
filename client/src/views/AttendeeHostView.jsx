@@ -9,6 +9,7 @@ export default class AttendeeHostView extends React.Component {
             status: 'loading'
         };
 
+
     }
     // When the component is ready to receive calls to this.setState
     // Uses a GET request on /api/event/:id to get data about the event.
@@ -24,6 +25,13 @@ export default class AttendeeHostView extends React.Component {
                 });
             }
             else {
+                if (this.props.isHostCallback) {
+                    this.props.isHostCallback(e.data.isHost);
+                }
+                else {
+                    console.log(this.props);
+                    throw new Error("He2");
+                }
                 this.setState({
                     status: e.data.isHost ? 'host' : 'attendee',
                     data: e.data

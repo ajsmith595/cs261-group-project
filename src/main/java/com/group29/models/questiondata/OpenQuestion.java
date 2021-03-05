@@ -1,4 +1,4 @@
-package com.group29.models.temp;
+package com.group29.models.questiondata;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -8,8 +8,7 @@ public class OpenQuestion extends Question {
     protected Trend[] trends;
     protected float current_mood;
 
-    public OpenQuestion(Document doc)
-    {
+    public OpenQuestion(Document doc) {
         super("open", doc.getString("title"));
     }
 
@@ -33,8 +32,7 @@ public class OpenQuestion extends Question {
     }
 
     @Override
-    public Document getQuestionAsDocument()
-    {
+    public Document getQuestionAsDocument() {
         // Creates a blank document
         Document doc = new Document();
 
@@ -43,7 +41,8 @@ public class OpenQuestion extends Question {
         doc.append("title", title);
         doc.append("type", type);
 
-        // TODO: ask about storing other data in db or check if it will just be grabbed live
+        // TODO: ask about storing other data in db or check if it will just be grabbed
+        // live
 
         // Returns this filled document
         return doc;

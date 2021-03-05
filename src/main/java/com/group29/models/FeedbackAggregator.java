@@ -1,8 +1,8 @@
 package com.group29.models;
 
-import com.group29.models.temp.*;
-
 import java.util.*;
+
+import com.group29.models.questiondata.*;
 
 // TODO eventually rewrite to update (not entirely recalculate) data
 public class FeedbackAggregator {

@@ -5,15 +5,15 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import com.group29.JSONTransformer;
-import com.group29.models.temp.ChoiceQuestion;
-import com.group29.models.temp.NumericQuestion;
-import com.group29.models.temp.OpenQuestion;
-import com.group29.models.temp.Option;
-import com.group29.models.temp.Point;
-import com.group29.models.temp.Question;
-import com.group29.models.temp.QuestionResponse;
-import com.group29.models.temp.Trend;
-import com.group29.models.temp.WebSocketData;
+import com.group29.models.questiondata.ChoiceQuestion;
+import com.group29.models.questiondata.NumericQuestion;
+import com.group29.models.questiondata.OpenQuestion;
+import com.group29.models.questiondata.Option;
+import com.group29.models.questiondata.Point;
+import com.group29.models.questiondata.Question;
+import com.group29.models.questiondata.QuestionResponse;
+import com.group29.models.questiondata.Trend;
+import com.group29.models.questiondata.WebSocketData;
 
 import org.eclipse.jetty.websocket.api.Session;
 import java.util.Date;

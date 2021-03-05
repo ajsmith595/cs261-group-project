@@ -1,4 +1,4 @@
-package com.group29.models.temp;
+package com.group29.models.questiondata;
 
 public class QuestionResponse {
     protected String message;

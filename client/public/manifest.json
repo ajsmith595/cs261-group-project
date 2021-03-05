@@ -1,6 +1,6 @@
 {
-    "short_name": "React App",
-    "name": "Create React App Sample",
+    "short_name": "Event Feedback System",
+    "name": "Event Feedback System (CS261)",
     "icons": [
         {
             "src": "favicon.ico",

@@ -1,4 +1,4 @@
-package com.group29.models.temp;
+package com.group29.models.questiondata;
 
 import java.util.List;
 import java.util.Arrays;
@@ -11,12 +11,12 @@ public class ChoiceQuestion extends Question {
     protected Option[] options;
     protected boolean multiple;
 
-    public ChoiceQuestion(Document doc)
-    {
+    public ChoiceQuestion(Document doc) {
         super("choice", doc.getString("title"));
         multiple = doc.getBoolean("multiple");
-        
-        options = doc.getList("options", Document.class).stream().map(x -> new Option(x.getString("name"), x.getInteger("number"))).toArray(Option[]::new);
+
+        options = doc.getList("options", Document.class).stream()
+                .map(x -> new Option(x.getString("name"), x.getInteger("number"))).toArray(Option[]::new);
 
     }
 
@@ -35,8 +35,7 @@ public class ChoiceQuestion extends Question {
     }
 
     @Override
-    public Document getQuestionAsDocument()
-    {
+    public Document getQuestionAsDocument() {
         // Creates a blank document
         Document doc = new Document();
 

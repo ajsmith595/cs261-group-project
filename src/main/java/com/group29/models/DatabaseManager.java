@@ -6,7 +6,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Calendar;
 
-import com.group29.models.temp.*;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
@@ -19,6 +18,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.configuration.CodecRegistries;
 
 import com.group29.controllers.WebSocketController;
+import com.group29.models.questiondata.*;
 
 public class DatabaseManager {
     // Instance of the database manager

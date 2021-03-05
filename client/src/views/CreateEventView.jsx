@@ -1,6 +1,8 @@
 import React from "react";
 import { Redirect } from 'react-router-dom';
 import { Form, Col, Row, Button, InputGroup } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheckCircle, faPlus, faTrash, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default class CreateEventView extends React.Component {
     constructor(props) {
@@ -129,14 +131,14 @@ export default class CreateEventView extends React.Component {
             <div className="text-left align-middle pt-2">
                 <h1 className="text-center">Create Event</h1>
                 <hr />
-                <Form onSubmit={this.submit}>
+                <Form onSubmit={this.submit} className="mb-4">
                     <Row>
                         <Col />
                         <Col xs={12} sm={12} md={10} lg={6}>
                             {/* Title */}
                             <Form.Group>
-                                <Form.Label className="">Title</Form.Label>
-                                <Form.Control className={this.state.validationErrors.includes("title") ? 'border-danger' : ''} type="text" name="title" placeholder="Event Title" onChange={(e) => this.changeEventProp("title", e)} />
+                                <Form.Label className="w-100">Title<span className="float-right text-danger">{this.state.title == "" ? 'Please give your event a title' : ''}</span></Form.Label>
+                                <Form.Control className={this.state.validationErrors.includes("title") ? 'border-danger' : ''} type="text" placeholder="Event Title" value={this.state.title} name="title" onChange={(e) => this.changeEventProp("title", e)} />
                             </Form.Group>
 
                             {/* Date and Time */}
@@ -166,11 +168,15 @@ export default class CreateEventView extends React.Component {
                             </Form.Group>
                             <hr />
 
+                            <h2>Questions <Button className="m-2" type="button" variant="primary" onClick={this.addQuestion} disabled={this.state.status === 'completed'}><FontAwesomeIcon icon={faPlus} /> Add Question</Button></h2>
+
+
+                            <hr />
                             {this.renderQuestions()}
 
                             {/* Buttons */}
-                            <Button className="m-2" type="button" variant="primary" onClick={this.addQuestion} disabled={this.state.status === 'completed'}>Add Question</Button>
-                            <Button className="m-2" type="button" variant="success" onClick={this.submit} disabled={this.state.status === 'completed' || hasErrors}>Create Event</Button>
+
+                            <Button className="w-100 m-2 my-4 float-right" type="button" variant="success" onClick={this.submit} disabled={this.state.status === 'completed' || hasErrors}>Create Event <FontAwesomeIcon icon={faCheckCircle} /></Button>
 
                         </Col>
                         <Col />
@@ -299,7 +305,7 @@ export default class CreateEventView extends React.Component {
                     <Row className="text-left">
                         <Col xs={12} sm={6} md={8}>
                             <Form.Group>
-                                <Form.Label>Question Title</Form.Label>
+                                <Form.Label className="w-100">Question Title<span className="float-right text-danger">{question.title == "" ? 'Please give your question a title' : ''}</span></Form.Label>
                                 <Form.Control className={"w-100 " + errorClass} value={question.title} onChange={(e) => this.changeQuestionProp(i, "title", e)} />
                             </Form.Group>
                         </Col>
@@ -316,16 +322,19 @@ export default class CreateEventView extends React.Component {
                     </Row>
                     {html}
                     <div className="w-100 clearfix">
-                        <Button variant="danger" className="ml-auto float-right" onClick={(e) => this.deleteQuestion(i)}>Delete Question</Button>
+                        <Button variant="danger" className="ml-auto float-right" onClick={(e) => this.deleteQuestion(i)}><FontAwesomeIcon icon={faTrashAlt} /> Delete Question</Button>
                     </div>
                     <hr />
                 </div>
             );
         }
+        if (questions.length == 0) {
+            questions.push(
+                <p className="text-danger">Please add at least one question for your event</p>
+            );
+        }
         return (
-            <div className="py-2">
-                <h2>Questions</h2>
-                <hr />
+            <div>
                 {questions}
             </div >
         );
@@ -347,28 +356,28 @@ export default class CreateEventView extends React.Component {
     // If it's an open question, don't render anything else 
 
     renderOpenQuestion(question) {
-        return null;
+        return <small className="text-muted">This will show the user the question, and give them a text box to answer the question.</small>;
     }
 
     renderNumericQuestion(question) {
         let error = question.validationErrors.includes("minmax");
-        let classes = "";
-        if (error) {
-            classes = "border-danger";
-        }
         return (
-            <Row className="text-left">
-                <Col xs={12} sm={6}>
-                    <Form.Group>
-                        <Form.Label>Minimum Value</Form.Label>
-                        <Form.Control className={classes} type="number" value={question.min || 0} onChange={(e) => this.changeQuestionProp(question.id, "min", e)} />
-                    </Form.Group>
-                </Col>
-                <Col xs={12} sm={6}>
-                    <Form.Label>Maximum Value</Form.Label>
-                    <Form.Control className={classes} type="number" value={question.max || 10} onChange={(e) => this.changeQuestionProp(question.id, "max", e)} />
-                </Col>
-            </Row>
+            <div>
+                <Row className="text-left">
+                    <Col xs={12} sm={6}>
+                        <Form.Group>
+                            <Form.Label className="w-100">Minimum Value <span className="float-right text-danger">{error ? 'Must be less than the maximum' : ''}</span></Form.Label>
+                            <Form.Control className={error ? 'border-danger' : ''} type="number" value={question.min || 0} onChange={(e) => this.changeQuestionProp(question.id, "min", e)} />
+                        </Form.Group>
+                    </Col>
+                    <Col xs={12} sm={6}>
+                        <Form.Label>Maximum Value</Form.Label>
+                        <Form.Control className={error ? 'border-danger' : ''} type="number" value={question.max || 10} onChange={(e) => this.changeQuestionProp(question.id, "max", e)} />
+                    </Col>
+                </Row>
+
+                <small className="text-muted">This will show the user the question, as well as a slider so they can choose an answer between the minimum and maximum values.</small>
+            </div>
         )
     }
 
@@ -430,26 +439,27 @@ export default class CreateEventView extends React.Component {
             options.push(
                 <div className="d-flex mb-1 ">
                     <Form.Control className={"flex-grow-1 " + errorClass} value={choice} onChange={(e) => this.changeOptionForChoiceQuestion(question.id, i, e)} />
-                    <Button disabled={disabled} variant="danger" onClick={(e) => this.removeOptionFromChoiceQuestion(question.id, i)}>Delete</Button>
+                    <Button disabled={disabled} variant="danger" onClick={(e) => this.removeOptionFromChoiceQuestion(question.id, i)}><FontAwesomeIcon icon={faTrashAlt} /></Button>
                 </div>
             );
         }
         return (
             <div className="text-left">
                 <div className="clearfix">
-                    <Button className="mb-1" variant="info" onClick={(e) => this.addOptionToChoiceQuestion(question.id)}>Add Option</Button>
+                    <Button className="mb-1" variant="info" onClick={(e) => this.addOptionToChoiceQuestion(question.id)}><FontAwesomeIcon icon={faPlus} /> Add Option</Button> <span className="text-danger">{question.validationErrors.includes("repeated") ? 'Please remove duplicate options' : ''}</span>
                     <div className="float-right">
                         <Form.Check
                             checked={question.allowMultiple}
                             onChange={(e) => this.changeQuestionProp(question.id, "allowMultiple", e)}
                             type="checkbox"
                             id={`allow-multiple-checkbox-${question.id}`}
-                            label="Allow users to check multiple options?"
+                            label="Allow users to check multiple options"
                         />
                     </div>
 
                 </div>
                 {options}
+                <small className="text-muted">This will show the user the question, as well as a dropdown menu to choose an answer. If <i>Allow users to check multiple options</i> is checked, then the user will be able to check as few or as many answers as they wish.</small>
             </div>
         )
     }

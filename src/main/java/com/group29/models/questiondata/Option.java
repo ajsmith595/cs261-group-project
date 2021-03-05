@@ -1,4 +1,4 @@
-package com.group29.models.temp;
+package com.group29.models.questiondata;
 
 import org.bson.Document;
 
@@ -21,10 +21,10 @@ public class Option {
 
     /**
      * Gets the option as a MongoDB Document
+     * 
      * @return The document containing information about the option
      */
-    public Document getAsDocument()
-    {
+    public Document getAsDocument() {
         Document doc = new Document("name", name);
         doc.append("number", number);
         return doc;

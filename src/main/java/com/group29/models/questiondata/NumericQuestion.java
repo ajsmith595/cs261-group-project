@@ -1,4 +1,4 @@
-package com.group29.models.temp;
+package com.group29.models.questiondata;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -12,8 +12,7 @@ public class NumericQuestion extends Question {
     protected Point[] points;
     protected long current_time;
 
-    public NumericQuestion(Document doc)
-    {
+    public NumericQuestion(Document doc) {
         super("numeric", doc.getString("title"));
         min_value = doc.getInteger("min_value");
         max_value = doc.getInteger("max_value");
@@ -31,8 +30,7 @@ public class NumericQuestion extends Question {
         this.current_time = current_time;
     }
 
-    public NumericQuestion(String title, int min_value, int max_value)
-    {
+    public NumericQuestion(String title, int min_value, int max_value) {
         super("numeric", title);
         this.min_value = min_value;
         this.max_value = max_value;
@@ -75,8 +73,7 @@ public class NumericQuestion extends Question {
     }
 
     @Override
-    public Document getQuestionAsDocument()
-    {
+    public Document getQuestionAsDocument() {
         // Creates a blank document
         Document doc = new Document();
 
@@ -88,7 +85,8 @@ public class NumericQuestion extends Question {
         doc.append("min_value", min_value);
         doc.append("max_value", max_value);
 
-        // TODO: ask about storing other data in db or check if it will just be grabbed live
+        // TODO: ask about storing other data in db or check if it will just be grabbed
+        // live
 
         // Returns this filled document
         return doc;

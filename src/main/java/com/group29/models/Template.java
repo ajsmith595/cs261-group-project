@@ -4,15 +4,6 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import com.google.gson.Gson;
-import com.group29.models.temp.ChoiceQuestion;
-import com.group29.models.temp.NumericQuestion;
-import com.group29.models.temp.OpenQuestion;
-import com.group29.models.temp.Option;
-import com.group29.models.temp.Point;
-import com.group29.models.temp.Question;
-import com.group29.models.temp.QuestionResponse;
-import com.group29.models.temp.Stats;
-import com.group29.models.temp.Trend;
 
 import org.bson.Document;
 
@@ -32,18 +23,24 @@ import org.bson.codecs.ObjectIdCodec;
 import org.bson.types.ObjectId;
 
 import com.google.gson.annotations.Expose;
+import com.group29.models.questiondata.ChoiceQuestion;
+import com.group29.models.questiondata.NumericQuestion;
+import com.group29.models.questiondata.OpenQuestion;
+import com.group29.models.questiondata.Option;
+import com.group29.models.questiondata.Point;
+import com.group29.models.questiondata.Question;
+import com.group29.models.questiondata.QuestionResponse;
+import com.group29.models.questiondata.Stats;
+import com.group29.models.questiondata.Trend;
 
-public class Template
-{
+public class Template {
     private String id;
     @Expose
     private String userID;
     @Expose
     List<Question> questions;
 
-
-    public Template(String id, String userID, List<Question> questions)
-    {
+    public Template(String id, String userID, List<Question> questions) {
         this.id = id;
         this.userID = userID;
         this.questions = questions;
@@ -61,7 +58,6 @@ public class Template
         return this.questions.toArray(new Question[0]);
     }
 
-    
     /**
      * Gets the template as a MongoDB Document
      * 
@@ -80,8 +76,8 @@ public class Template
         if (questions == null)
             questions = new ArrayList<Question>();
 
-        doc.append("questions", (List<Document>) (questions.stream().map(x -> x.getQuestionAsDocument())
-            .collect(Collectors.toList())));
+        doc.append("questions",
+                (List<Document>) (questions.stream().map(x -> x.getQuestionAsDocument()).collect(Collectors.toList())));
 
         // Returns the filled document
         return doc;
@@ -214,8 +210,8 @@ public class Template
 
             String id = doc.getObjectId("_id").toHexString();
             String userID = doc.getObjectId("userID").toHexString();
-            List<Question> questions = doc.getList("questions", Document.class).stream().map(x -> Question.generateQuestionFromDocument(x)).collect(Collectors.toList());
-
+            List<Question> questions = doc.getList("questions", Document.class).stream()
+                    .map(x -> Question.generateQuestionFromDocument(x)).collect(Collectors.toList());
 
             return new Template(id, userID, questions);
         }

@@ -17,7 +17,7 @@ import java.util.Map;
 import com.group29.JSONTransformer;
 import com.group29.models.Event;
 import com.group29.models.User;
-import com.group29.models.temp.Question;
+import com.group29.models.questiondata.Question;
 import com.mongodb.internal.connection.tlschannel.NeedsWriteException;
 import com.group29.models.Feedback;
 import com.group29.models.Template;

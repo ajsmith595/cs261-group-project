@@ -1,4 +1,4 @@
-package com.group29.models.temp;
+package com.group29.models.questiondata;
 
 import java.lang.reflect.Type;
 
@@ -16,14 +16,12 @@ public abstract class Question {
     protected String title;
 
     // Abstract constructor that auto-generates id
-    public Question(String type, String title)
-    {
+    public Question(String type, String title) {
         this(new ObjectId().toHexString(), type, title);
     }
 
     // Abstract constructor to force values to be inserted
-    public Question(String id, String type, String title)
-    {
+    public Question(String id, String type, String title) {
         this.id = id;
         this.type = type;
         this.title = title;
@@ -42,32 +40,30 @@ public abstract class Question {
     }
 
     /**
-     * Generates the given question from a MongoDB Document
-     * Will automatically determine the type of question
+     * Generates the given question from a MongoDB Document Will automatically
+     * determine the type of question
+     * 
      * @param doc The doc containing the question
      * @return The question containted in the doc or null if no type was matched
      */
-    public static final Question generateQuestionFromDocument(Document doc)
-    {
-        switch (doc.getString("type"))
-        {
-        case "choice":
-            return new ChoiceQuestion(doc);
-        case "open":
-            return new OpenQuestion(doc);
-        case "numeric":
-            return new NumericQuestion(doc);
+    public static final Question generateQuestionFromDocument(Document doc) {
+        switch (doc.getString("type")) {
+            case "choice":
+                return new ChoiceQuestion(doc);
+            case "open":
+                return new OpenQuestion(doc);
+            case "numeric":
+                return new NumericQuestion(doc);
         }
         return null;
     }
-    
+
     /**
      * Deserialiser for questions to allow GSON to construct questions automatically
      */
     public static final JsonDeserializer<Question> deserialiser = new JsonDeserializer<Question>() {
         @Override
-        public Question deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-        {
+        public Question deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
             // Convert the gson object to a document
             JsonObject obj = json.getAsJsonObject();
             Document doc = Document.parse(obj.toString());
@@ -79,6 +75,7 @@ public abstract class Question {
 
     /**
      * Gets the question as a MongoDB Document
+     * 
      * @return Document containing the data about the question
      */
     public abstract Document getQuestionAsDocument();

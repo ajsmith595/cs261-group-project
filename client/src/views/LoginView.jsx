@@ -1,6 +1,7 @@
 import React from "react";
-import { Form, Col, Row, Button, ListGroup } from "react-bootstrap";
-import { Redirect } from "react-router-dom";
+import { Form, Col, Row, Button, Card } from "react-bootstrap";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSignInAlt, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 export default class RegisterView extends React.Component {
     constructor(props) {
         super(props);
@@ -9,6 +10,8 @@ export default class RegisterView extends React.Component {
         this.state = {
             email: "",
             username: "",
+            emailErrorActive: false,
+            usernameErrorActive: false,
             serverError: "",
             error: [],
             status: 'main'
@@ -23,7 +26,8 @@ export default class RegisterView extends React.Component {
     Sends the state to the server. It first verifies the fields
     for them being empty and having a valid email
     */
-    sendStateToServer() {
+    sendStateToServer(e) {
+        e.preventDefault();
         var errors = [];
         if (this.state.acceptTerms == false) {
             errors.push("Please accept the Terms");
@@ -100,6 +104,10 @@ export default class RegisterView extends React.Component {
                 <Button onClick={() => this.setState({ status: 'main' })}>Retry</Button>
             </div>
         }
+        let emailError = !(new RegExp(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,15}/g).test(this.state.email));
+        let usernameError = this.state.username === "";
+
+        let disabled = this.state.status === 'success' || this.state.status === 'loading' || usernameError || emailError;
         return (
             <div className="py-2">
                 <h1 className="text-center">Login</h1>
@@ -108,17 +116,17 @@ export default class RegisterView extends React.Component {
                     <Col xs={0} sm={1} md={3}></Col>
                     <Col xs={12} sm={10} md={6}>
                         <div id="Error message"><p>{this.renderErrors()}</p></div>
-                        <Form id="feedback">
+                        <Form id="feedback" onSubmit={(e) => { if (!disabled) { this.sendStateToServer(e) } else { this.setState({ emailErrorActive: true, usernameErrorActive: true }) } }}>
                             <Form.Group>
                                 <Form.Label for="login_email_input">Email</Form.Label>
-                                <Form.Control id="login_email_input" className="mx-auto" onChange={(e) => this.setState({ email: e.target.value })} value={this.state.email} type="email" placeholder="Enter email" as="input"></Form.Control>
+                                <Form.Control id="login_email_input" className={`mx-auto ` + ((emailError && this.state.emailErrorActive) ? 'border-danger' : '')} onChange={(e) => this.setState({ email: e.target.value })} value={this.state.email} type="email" placeholder="Enter email" as="input" onBlur={() => this.setState({ emailErrorActive: true })}></Form.Control>
                             </Form.Group>
                             <Form.Group>
                                 <Form.Label for="login_username_input">Username</Form.Label>
-                                <Form.Control id="login_username_input" className="mx-auto" onChange={(e) => this.setState({ username: e.target.value })} value={this.state.username} placeholder="Enter username" as="input"></Form.Control>
+                                <Form.Control id="login_username_input" className={"mx-auto " + ((usernameError && this.state.usernameErrorActive) ? 'border-danger' : '')} onChange={(e) => this.setState({ username: e.target.value })} value={this.state.username} placeholder="Enter username" as="input" onBlur={() => this.setState({ usernameErrorActive: true })}></Form.Control>
                             </Form.Group>
                             <hr />
-                            <Button className="w-100" type="button" variant="primary" onClick={this.sendStateToServer} disabled={this.state.status === 'success' || this.state.status === 'loading'}>Submit</Button>
+                            <Button className="w-100" type="submit" variant="primary" onClick={(e) => this.sendStateToServer(e)} disabled={disabled}><FontAwesomeIcon icon={faSignInAlt} /> Login</Button>
                         </Form>
                     </Col>
                     <Col xs={0} sm={1} md={3}></Col>
@@ -132,17 +140,23 @@ export default class RegisterView extends React.Component {
     Renders the list of errors, both validation errors and from the server
     */
     renderErrors() {
-        let errors = []
+        let errors = [];
         for (let text in this.state.error) {
-            errors.push(<ListGroup.Item>{this.state.error[text]}</ListGroup.Item>);
+            errors.push(<li>{this.state.error[text]}</li>);
         }
         if (this.state.serverError != "") {
-            errors.push(<ListGroup.Item>{this.state.serverError}</ListGroup.Item>);
+            errors.push(<li>{this.state.serverError}</li>);
         }
+        if (errors.length == 0) return null;
         return (
-            <ListGroup variant="flush">
-                {errors}
-            </ListGroup>
+            <Card className="" style={{ borderColor: '#f5c6cb' }}>
+                <Card.Header style={{ fontVariant: 'small-caps', fontSize: "100%" }} className="alert alert-danger m-0 py-1 px-3"><FontAwesomeIcon icon={faExclamationCircle} /> errors</Card.Header>
+                <Card.Body className="py-2 px-4">
+                    <ul className="list-unstyled m-0">
+                        {errors}
+                    </ul>
+                </Card.Body>
+            </Card>
         )
     }
 }

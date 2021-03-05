@@ -3,6 +3,8 @@ import { Redirect } from 'react-router-dom';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Button, Col, Form, Row } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default class HomeView extends React.Component {
     constructor(props) {
@@ -29,6 +31,7 @@ export default class HomeView extends React.Component {
     }
 
     buttonClick(e) {
+        e.preventDefault();
         if (this.state.code.length > 0) {
             this.setState({
                 completed: true
@@ -49,7 +52,7 @@ export default class HomeView extends React.Component {
                     <Col lg={4} md={6} sm={12}>
                         <Form className="mx-auto" onSubmit={this.buttonClick}>
                             <Form.Control className="form-control m-2" name="code" placeholder="Enter event code" maxLength="6" onChange={this.handleCodeChange} value={this.state.code} />
-                            <Button className="w-100 m-2" type="button" variant="primary" onClick={this.buttonClick} disabled={this.state.completed}>JOIN</Button>
+                            <Button className="w-100 m-2 font-weight-bold" type="button" variant="primary" onClick={this.buttonClick} disabled={this.state.completed || this.state.code === ""}><FontAwesomeIcon icon={faSignInAlt} /> JOIN</Button>
                         </Form>
                     </Col>
                     <Col lg={4} md={3} sm={0}></Col>

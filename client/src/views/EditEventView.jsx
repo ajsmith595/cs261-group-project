@@ -111,7 +111,7 @@ export default class EditEventView extends React.Component {
                             <h1 className="text-center">Edit event</h1>
                             {/* Title */}
                             <Form.Group>
-                                <Form.Label className="">Title</Form.Label>
+                                <Form.Label className="w-100">Title <span className="text-danger float-right">{this.state.validationErrors.includes("title") ? "The title cannot be empty" : ""}</span></Form.Label>
                                 <Form.Control className={this.state.validationErrors.includes("title") ? 'border-danger' : ''} type="text" name="title" value={this.state.title} placeholder="Event Title" onChange={(e) => this.changeEventProp("title", e)} />
                             </Form.Group>
 
