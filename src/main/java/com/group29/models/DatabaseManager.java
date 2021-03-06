@@ -113,6 +113,21 @@ public class DatabaseManager {
     }
 
     /**
+     * Checks if a user exists in the database with the given username
+     * 
+     * @param username The username of the user to be checked
+     * @return True if the user exists
+     */
+    public boolean checkUsername(String username) {
+        // Gets the collection of users and creates a query
+        MongoCollection<Document> users = mongoDB.getCollection("Users");
+        Document query = new Document("username", username);
+
+        // Returns whether at least one user with the given username exists
+        return users.countDocuments(query) > 0;
+    }
+
+    /**
      * Gets the users data from the database
      * 
      * @param email    The email of the user

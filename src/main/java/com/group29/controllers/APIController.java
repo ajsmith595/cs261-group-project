@@ -4,6 +4,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.group29.models.DatabaseManager;
 import com.group29.models.APIResponse;
@@ -211,9 +213,9 @@ public class APIController {
 
             // Attempts to parse event
             Event event = gson.fromJson(req.body(), Event.class);
-
+            long now = Calendar.getInstance().getTimeInMillis();
             if (event == null || event.getTitle() == null || event.getTitle().length() == 0 || event.getDuration() < 5
-                    || event.getDuration() > 60 * 12) {
+                    || event.getDuration() > 60 * 12 || (now > event.getStartTime().getTime())) {
                 // If the title is empty, or the duration is not between 5 mins and 12 hours,
                 // fail
                 return APIResponse.error("Invalid event!");
@@ -297,15 +299,25 @@ public class APIController {
         res.type("application/json");
         // Catches parsing errors
         try {
+            String regex = "[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,15}";
+            Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
             // Creates a GSON parser that can parse dates and excludes id
             Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
             // Attempts to parse the user
             User user = gson.fromJson(req.body(), User.class);
-
+            Matcher matcher = pattern.matcher(user.getEmail());
+            boolean matchFound = matcher.find();
+            if (!matchFound){
+                return APIResponse.error("Please enter a valid email");
+            }
             // Checks if the user already exists
             if (DatabaseManager.getDatabaseManager().checkUser(user.getEmail()))
                 return APIResponse.error("A user with the given email already exists.");
+            
+            // Checks if the user already exists
+            if (DatabaseManager.getDatabaseManager().checkUsername(user.getUsername()))
+                return APIResponse.error("A user with the given username already exists.");
 
             // Adds it to the database and returns the user id
             DatabaseManager.getDatabaseManager().addUser(user);
