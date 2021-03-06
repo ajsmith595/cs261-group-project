@@ -89,7 +89,7 @@ export default class CreateEventView extends React.Component {
     }
 
     changeEventProp(prop, e) {
-        let newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != prop && e != prop + "_min" && e != prop + "_max");
+        let newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != prop && e != prop + "_min" && e != prop + "_max" && e != prop + "_before");
         if (prop == "title") {
             if (e.target.value.trim().length == 0) {
                 newValidationErrors.push("title");
@@ -102,6 +102,13 @@ export default class CreateEventView extends React.Component {
             else if (parseInt(e.target.value) > 60 * 12) {
                 newValidationErrors.push("duration_max");
             }
+        }else if (prop == "datetime") {
+            let d = new Date();
+            let d2 = new Date(e.target.value);
+            if (d > d2) {
+                newValidationErrors.push("datetime_before");
+            }
+
         }
         this.setState({
             [prop]: e.target.value,
@@ -144,8 +151,8 @@ export default class CreateEventView extends React.Component {
                             {/* Date and Time */}
                             <Form.Row>
                                 <Form.Group as={Col} xs={12} sm={6} lg={7}>
-                                    <Form.Label>Start Date/Time</Form.Label>
-                                    <Form.Control type="datetime-local" value={this.state.datetime} onChange={(e) => this.changeEventProp("datetime", e)} />
+                                    <Form.Label>Start Date/Time<span className="float-right text-danger">{this.state.validationErrors.includes("datetime_before") ? 'Event must start in the future'  : ''}</span></Form.Label>
+                                    <Form.Control type="datetime-local" value={this.state.datetime} className={this.state.validationErrors.includes("datetime_before") ? 'border-danger' : ''} onChange={(e) => this.changeEventProp("datetime", e)} />
                                 </Form.Group>
                                 <Form.Group as={Col} xs={12} sm={6} lg={5}>
                                     <Form.Label className="w-100">Duration<span className="float-right text-danger">{this.state.validationErrors.includes("duration_min") ? 'Must be at least 5 mins' : (this.state.validationErrors.includes("duration_max") ? 'Must be at most 12 hours' : '')}</span></Form.Label>
@@ -189,45 +196,53 @@ export default class CreateEventView extends React.Component {
 
 
     submit(e) {
-
+        let newValidationErrors = [];
         let startTime = this.state.datetime;
         if (!(startTime instanceof Date)) {
             startTime = new Date(startTime);
         }
-        startTime = startTime.getTime();
-        let obj_to_send = {
-            title: this.state.title,
-            startTime: startTime,
-            duration: this.state.duration,
-            questions: this.state.questions
-        };
-        fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/events`, {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(obj_to_send),
-            credentials: "include"
-        }).then(e => e.json()).then(data => {
-            if (data.status == 'success') {
-                this.setState({
-                    status: 'success',
-                    eventCode: data.data.eventCode
-                });
-                this.props.history.push(`/event/${data.data.eventCode}`);
-            }
-            else {
-                this.setState({
-                    status: 'error',
-                    error: data.message
-                })
-            }
-        }).catch(e => {
+        let d = new Date();
+        if (d > startTime) {
+            newValidationErrors.push("datetime_before");
             this.setState({
-                status: 'error'
+                validationErrors: newValidationErrors
             })
-        });
+        } else{
+            startTime = startTime.getTime();
+            let obj_to_send = {
+                title: this.state.title,
+                startTime: startTime,
+                duration: this.state.duration,
+                questions: this.state.questions
+            };
+            fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/events`, {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(obj_to_send),
+                credentials: "include"
+            }).then(e => e.json()).then(data => {
+                if (data.status == 'success') {
+                    this.setState({
+                        status: 'success',
+                        eventCode: data.data.eventCode
+                    });
+                    this.props.history.push(`/event/${data.data.eventCode}`);
+                }
+                else {
+                    this.setState({
+                        status: 'error',
+                        error: data.message
+                    })
+                }
+            }).catch(e => {
+                this.setState({
+                    status: 'error'
+                })
+            });
+        }
     }
 
     // Changes a particular question property e.g. title, question type, etc.

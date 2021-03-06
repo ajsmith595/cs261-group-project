@@ -34,9 +34,6 @@ export default class RegisterView extends React.Component {
         if (this.state.acceptTerms == false) {
             errors.push("Please accept the Terms");
         }
-        if (this.state.username == "") {
-            errors.push("Please enter a username");
-        }
         //Tests the email against a regular expression
         /* The expression requires:
             at least 1 character before the @
@@ -46,6 +43,9 @@ export default class RegisterView extends React.Component {
         */
         if (!(new RegExp(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,15}/g).test(this.state.email))) {
             errors.push("Please enter a valid email");
+        }
+        if (!(new RegExp(/[a-z0-9]{4,16}/g).test(this.state.username))) {
+            errors.push("Please enter a username that is alphanumeric and between 4 to 16 characters");
         }
         if (errors != "") {
             this.setState({// Stores the set of errors to be shown to the user
@@ -98,7 +98,8 @@ export default class RegisterView extends React.Component {
     */
     render() {
         let emailError = !(new RegExp(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,15}/g).test(this.state.email));
-        let usernameError = this.state.username == "";
+        let usernameError = !(new RegExp(/[a-z0-9]{4,16}/g).test(this.state.username));
+        console.log("test");
         let disabled = this.state.status === 'success' || this.state.status == "loading" || emailError || usernameError || !this.state.acceptTerms;
         return (
             <div className="py-2">
@@ -127,7 +128,7 @@ export default class RegisterView extends React.Component {
                                 <Form.Check.Label>I agree to the terms.</Form.Check.Label>
                             </Form.Check>
                             <hr />
-                            <Button className="w-100" type="submit" variant="primary" onClick={(e) => this.sendStateToServer(e)} disabled={disabled}><FontAwesomeIcon icon={faUser} /> Register</Button>
+                            <Button className="w-100" type="submit" variant="primary" onClick={(e) => this.sendStateToServer(e)}><FontAwesomeIcon icon={faUser} /> Register</Button>
                         </Form>
                     </Col>
 
