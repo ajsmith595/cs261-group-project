@@ -147,7 +147,7 @@ public class FeedbackAggregator {
         // Sort words (could be done in Counter, using TreeMap or similar, but bad
         // practice as TreeMap should sort as a total order between keys only)
         List<Map.Entry<String, Integer>> counts = new ArrayList<>(wordCounts.getEntries());
-        counts.sort(Map.Entry.<String, Integer>comparingByKey().reversed());
+        counts.sort(Map.Entry.<String, Integer>comparingByValue().reversed());
         // Calculate common words, and copy into array
         int trend_length = 3;
         int loop = Math.min(counts.size(), trend_length);
