@@ -51,7 +51,7 @@ export default class HomeView extends React.Component {
                     <Col lg={4} md={3} sm={0}></Col>
                     <Col lg={4} md={6} sm={12}>
                         <Form className="mx-auto" onSubmit={this.buttonClick}>
-                            <Form.Control className="form-control m-2" name="code" placeholder="Enter event code" maxLength="6" onChange={this.handleCodeChange} value={this.state.code} />
+                            <Form.Control className="form-control m-2" name="code" placeholder="Enter event code" maxLength="7" onChange={this.handleCodeChange} value={this.state.code} />
                             <Button className="w-100 m-2 font-weight-bold" type="button" variant="primary" onClick={this.buttonClick} disabled={this.state.completed || this.state.code === ""}><FontAwesomeIcon icon={faSignInAlt} /> JOIN</Button>
                         </Form>
                     </Col>

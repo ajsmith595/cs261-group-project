@@ -26,6 +26,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 import org.bson.Document;
 
 import edu.stanford.nlp.patterns.Data;
@@ -120,17 +121,11 @@ public class APIController {
 
         Event e = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
 
-        if (e == null) { // If the event doesn't exist...
-            Document d = new Document();
-            d.append("token", ""); // Give them an empty token
-            return d;
-        }
+        if (e == null)
+            return APIResponse.error("No event found");
 
-        if (!e.getHostID().equals(req.session().attribute("uid"))) { // If it's not the host
-            Document d = new Document();
-            d.append("token", ""); // Give them an empty token
-            return d;
-        }
+        if (!e.getHostID().equals(req.session().attribute("uid")))
+            return APIResponse.error("Not authenticated");
 
         char[] possibleChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
 
@@ -143,9 +138,7 @@ public class APIController {
         } while (webSocketTokens.containsKey(webSocketToken)); // Keep generating until it's unique
 
         webSocketTokens.put(webSocketToken, eventCode);
-        Document webSocketTokenContainer = new Document();
-        webSocketTokenContainer.append("token", webSocketToken);
-        return webSocketTokenContainer;
+        return APIResponse.success(webSocketToken);
     };
 
     /**
@@ -219,7 +212,8 @@ public class APIController {
             // Attempts to parse event
             Event event = gson.fromJson(req.body(), Event.class);
 
-            if (event.getTitle().length() == 0 || event.getDuration() < 5 || event.getDuration() > 60 * 12) {
+            if (event == null || event.getTitle() == null || event.getTitle().length() == 0 || event.getDuration() < 5
+                    || event.getDuration() > 60 * 12) {
                 // If the title is empty, or the duration is not between 5 mins and 12 hours,
                 // fail
                 return APIResponse.error("Invalid event!");
@@ -237,8 +231,8 @@ public class APIController {
             DatabaseManager.getDatabaseManager().addEvent(event);
             return APIResponse.success(new Document("eventCode", event.getEventCode()));
         } catch (ClassCastException e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            return APIResponse.error("Invalid event!");
+        } catch (JsonSyntaxException e) {
             return APIResponse.error("Invalid event!");
         } catch (Exception e) {
             // Prints the error to console

@@ -230,7 +230,6 @@ public class FeedbackAggregator {
         long currentTime = c.getTime().getTime();
         for (UserResponse ur : responses) {
             Response r = ur.response;
-            // System.out.println("ur Time: " +ur.timestamp);
             // For each response, carry out aggregate functions
             Object response = r.getResponse();
             if (response instanceof Double) {

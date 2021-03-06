@@ -44,7 +44,15 @@ export default class HostView extends React.Component {
         fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/event/${this.props.eventID}/token`, {
             credentials: "include"
         }).then(e => e.json()).then(data => {
-            this.socket.send(data.token); // authenticate with the token
+            if (data.status === "success") {
+                this.socket.send(data.data);
+            }
+            else {
+                this.setState({
+                    status: 'closed'
+                });
+                this.socket.close();
+            }
         }).catch(e => {
             // If something failed, we should close the connection - the client can always reload the page/click the reconnect button to reconnect
             this.setState({
