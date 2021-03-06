@@ -9,6 +9,7 @@ import java.util.Calendar;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.FindIterable;
 
@@ -58,6 +59,10 @@ public class DatabaseManager {
         // database
         mongoClient = new MongoClient("localhost:27017", options);
         mongoDB = mongoClient.getDatabase("App");
+        mongoDB.createCollection("Events");
+        IndexOptions io = new IndexOptions();
+        io.unique(true);
+        mongoDB.getCollection("Events").createIndex(new Document("eventCode", 1), io);
     }
 
     /**
