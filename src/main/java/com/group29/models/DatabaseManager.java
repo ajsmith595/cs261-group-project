@@ -59,7 +59,16 @@ public class DatabaseManager {
         // database
         mongoClient = new MongoClient("localhost:27017", options);
         mongoDB = mongoClient.getDatabase("App");
-        mongoDB.createCollection("Events");
+        boolean hasEvents = false;
+        for (String name : mongoDB.listCollectionNames()) {
+            if (name.equals("Events")) {
+                hasEvents = true;
+                break;
+            }
+        }
+        if (!hasEvents) {
+            mongoDB.createCollection("Events");
+        }
         IndexOptions io = new IndexOptions();
         io.unique(true);
         mongoDB.getCollection("Events").createIndex(new Document("eventCode", 1), io);
