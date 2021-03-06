@@ -70,8 +70,6 @@ public class Event {
         this.feedbackList.sort(Comparator.comparing(Feedback::getTimestamp));
         this.clients = new ArrayList<Session>();
         this.aggregator = FeedbackAggregator.getFeedbackAggregator();
-        // System.out.println(this.aggregator.collateFeedback(this));
-        // System.out.println("test");
         this.updateData(false);
     }
 
@@ -351,8 +349,8 @@ public class Event {
         Random random = new Random();
         StringBuilder sb = new StringBuilder();
 
-        // Generates 5 random hexadecimal characters
-        for (int i = 0; i < 5; i++) {
+        // Generates 7 random hexadecimal characters
+        for (int i = 0; i < 7; i++) {
             int val = random.nextInt(16);
             if (val < 10)
                 sb.append((char) ('0' + val));

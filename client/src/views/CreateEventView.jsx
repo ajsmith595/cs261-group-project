@@ -150,7 +150,7 @@ export default class CreateEventView extends React.Component {
                                 <Form.Group as={Col} xs={12} sm={6} lg={5}>
                                     <Form.Label className="w-100">Duration<span className="float-right text-danger">{this.state.validationErrors.includes("duration_min") ? 'Must be at least 5 mins' : (this.state.validationErrors.includes("duration_max") ? 'Must be at most 12 hours' : '')}</span></Form.Label>
                                     <InputGroup>
-                                        <Form.Control type="number" min="5" className={(this.state.validationErrors.includes("duration_min") || this.state.validationErrors.includes("duration_max")) ? 'border-danger' : ''} value={this.state.duration} onChange={(e) => this.changeEventProp("duration", e)} />
+                                        <Form.Control type="number" min="5" max={60 * 12} className={(this.state.validationErrors.includes("duration_min") || this.state.validationErrors.includes("duration_max")) ? 'border-danger' : ''} value={this.state.duration} onChange={(e) => this.changeEventProp("duration", e)} />
                                         <InputGroup.Append>
                                             <InputGroup.Text id="startDatePrepend">
                                                 <span className="d-none d-md-block">minutes</span>

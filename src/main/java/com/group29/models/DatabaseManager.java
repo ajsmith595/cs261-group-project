@@ -255,7 +255,6 @@ public class DatabaseManager {
      * @return The id of the added template (also now stored inside of the template)
      */
     public String addTemplate(Template template) {
-        System.out.println("JKHJKHKJHKJH");
         // Gets the events collection and the event as a document
         MongoCollection templates = mongoDB.getCollection("Templates");
         Document obj = template.getTemplateAsDocument();
