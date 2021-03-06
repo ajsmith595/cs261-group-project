@@ -24,6 +24,9 @@ export default class HostView extends React.Component {
         this.socket = null;
     }
 
+    /**
+     * Creates the web sockets when the component mounts
+     */
     componentDidMount() {
         document.title = "Hosting '" + this.props.data.title + "'";
         if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_USE_WEBSOCKETS) {
@@ -39,6 +42,10 @@ export default class HostView extends React.Component {
             this.socket.addEventListener('close', this.webSocketClose);
         }
     }
+
+    /**
+     * Handles the opening of the web socket
+     */    
     webSocketOpen(e) {
         // When the WebSocket first connects, the server expects the client to 'authenticate' with a token. We need to get the token, and then send it to the websocket.
         fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/event/${this.props.eventID}/token`, {
@@ -61,12 +68,20 @@ export default class HostView extends React.Component {
             this.socket.close();
         });
     }
+
+    /**
+     * Handles the closing of the web socket
+     */  
     webSocketClose(e) {
         this.setState({
             status: 'closed'
         });
         this.socket.close(); // Make sure it's closed
     }
+
+    /**
+     * Handles the when the websocket gives an error
+     */  
     webSocketError(e) {
         // If the WebSocket errors, show the error to the user.
         this.setState({
@@ -75,6 +90,10 @@ export default class HostView extends React.Component {
         });
         this.socket.close();
     }
+
+    /**
+     * Handles when the web socket receives data
+     */  
     webSocketDataReceived(event) {
         // When we receive new data, we need to update the display.
         // The following will take the questions, and assign 'previous' values to the mood (smiley face animation), and trend values (trend word font sizes).
@@ -112,16 +131,21 @@ export default class HostView extends React.Component {
             title: data.title
         });
     }
-    // If the component is gonna be removed, close the websocket connection.
+
+    /**
+     * If the component is gonna be removed, close the websocket connection.
+     */
     componentWillUnmount() {
         if (this.socket) {
             this.socket.close();
-            //TODO: unbind all the event handlers
         }
     }
 
-
-    // The view for a particular NUMERIC question e.g. rate the event from 1->10
+    /**
+     * The view for a particular NUMERIC question e.g. rate the event from 1->10
+     * 
+     * @param question The question being rendered
+     */
     numericView(question) {
         let actualData = [];
         for (let point of question.points) {
@@ -191,8 +215,6 @@ export default class HostView extends React.Component {
             }
         };
         //#endregion Chart JS Configuration
-
-        // TODO: change the 'TIME LEFT' to something else - we should have event-level stats like "TIME LEFT" and "NO ATTENDEES" at the top of the page, at some point
         return (
             <Col className="p-3 border border-secondary" sm={12} lg={6}>
                 <Row>
@@ -231,7 +253,11 @@ export default class HostView extends React.Component {
         );
     }
 
-    // The view for one particular OPEN question (open textbox e.g. general feedback)
+    /**
+     * The view for one particular OPEN question (open textbox e.g. general feedback)
+     * 
+     * @param question The question being rendered
+     */
     openView(question) {
         let recent_responses = (
             <Transition
@@ -323,8 +349,11 @@ export default class HostView extends React.Component {
 
     }
 
-
-    // The view for a particular CHOICE question (e.g. what's your favourite colour? Red/Green/Blue)
+    /**
+     * The view for a particular CHOICE question (e.g. what's your favourite colour? Red/Green/Blue)
+     * 
+     * @param question The question being rendered
+     */
     choiceView(question) {
 
 
@@ -372,10 +401,14 @@ export default class HostView extends React.Component {
         );
     }
 
+    /**
+     * Renders the host view
+     */
     render() {
         if (this.state.status === 'show') {
             let feedback = this.state.feedback;
             let divs = [];
+            // Loads the information of each question
             for (let question of feedback) {
                 switch (question.type) {
                     case 'numeric':
@@ -391,7 +424,6 @@ export default class HostView extends React.Component {
                         break;
                 }
             }
-            // TODO: change this 'props.event' so it uses the new input data.
             let time_left_display;
             if (this.props.data.duration < this.state.stats.mins_left || !this.state.stats) {
                 time_left_display = (
@@ -469,6 +501,9 @@ export default class HostView extends React.Component {
         }
     }
 
+    /**
+     * Handles reconnecting to the web server
+     */
     reconnect() {
         this.setState({
             status: 'loading'

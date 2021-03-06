@@ -18,14 +18,17 @@ export default class RegisterView extends React.Component {
         };
     }
 
+    /**
+     * Sets the title to Login
+     */
     componentDidMount() {
         document.title = "Login";
     }
 
     /*
-    Sends the state to the server. It first verifies the fields
-    for them being empty and having a valid email
-    */
+     * Sends the state to the server. It first verifies the fields
+     * for them being empty and having a valid email
+     */
     sendStateToServer(e) {
         e.preventDefault();
         var errors = [];
@@ -95,8 +98,8 @@ export default class RegisterView extends React.Component {
     }
 
     /* 
-    Renders the Login View
-    */
+     * Renders the Login View
+     */
     render() {
         if (this.state.status == 'error') {
             return <div className="text-center">
@@ -137,8 +140,8 @@ export default class RegisterView extends React.Component {
 
 
     /* 
-    Renders the list of errors, both validation errors and from the server
-    */
+     * Renders the list of errors, both validation errors and from the server
+     */
     renderErrors() {
         let errors = [];
         for (let text in this.state.error) {

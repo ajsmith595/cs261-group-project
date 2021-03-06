@@ -1,6 +1,4 @@
 import React from "react";
-import { Redirect } from 'react-router-dom';
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -15,10 +13,18 @@ export default class HomeView extends React.Component {
         this.handleCodeChange = this.handleCodeChange.bind(this);
     }
 
+    /**
+     * Sets the title to Home
+     */
     componentDidMount() {
         document.title = "Home";
     }
 
+    /**
+     * Stores the new code value when the user changes it
+     * 
+     * @param e 
+     */
     handleCodeChange(e) {
         let value = e.target.value.toUpperCase();
         let newValue = "";
@@ -30,6 +36,11 @@ export default class HomeView extends React.Component {
         this.setState({ code: newValue });
     }
 
+    /**
+     * Goes to the event of the code given
+     * 
+     * @param  e The elent pressed 
+     */
     buttonClick(e) {
         e.preventDefault();
         if (this.state.code.length > 0) {
@@ -42,6 +53,9 @@ export default class HomeView extends React.Component {
 
 
 
+    /**
+     * Renders the home view
+     */
     render() {
         return (
             <div className="text-center align-middle pt-2">

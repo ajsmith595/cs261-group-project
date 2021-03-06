@@ -12,14 +12,22 @@ export default class EditEventView extends React.Component {
         };
     }
 
+    /**
+     * Changes the value of an event detail
+     * 
+     * @param prop The property being changed
+     * @param e The element that called the function
+     */
     changeEventProp(prop, e) {
+        // Removes related errors to the prop being checked
         let newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != prop && e != prop + "_min" && e != prop + "_max");
-
+        // Checks title is not empty
         if (prop == "title") {
             if (e.target.value.length == 0) {
                 newValidationErrors.push("title");
             }
         }
+        // Checks duration is between 5 minutes and 12 hours
         else if (prop == "duration") {
             let value = parseInt(e.target.value);
             if (isNaN(value) || value < 5) {
@@ -29,11 +37,15 @@ export default class EditEventView extends React.Component {
                 newValidationErrors.push("duration_max");
             }
         }
+        // Updates the state
         this.setState({
             [prop]: e.target.value,
             validationErrors: newValidationErrors
         });
     }
+    /**
+     * Fetches the event data
+     */
     componentDidMount() {
         document.title = "Edit event";
         fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/event/${this.props.match.params.id}`, {
@@ -63,6 +75,9 @@ export default class EditEventView extends React.Component {
         });
     }
 
+    /**
+     * Submits and posts the edited form data
+     */
     submit() {
         let startTime = this.state.startTime;
         if (!(startTime instanceof Date)) {
@@ -82,6 +97,7 @@ export default class EditEventView extends React.Component {
             method: "POST",
             body: JSON.stringify(data)
         }).then(res => res.json()).then(e => {
+            // Goes to the event after editing it
             if (e.status == "success") {
                 this.props.history.push(`/event/${this.props.match.params.id}`);
             }
@@ -96,6 +112,10 @@ export default class EditEventView extends React.Component {
             });
         });
     }
+
+    /**
+     * Renders the edit event page 
+     */
     render() {
         if (this.state.status === "loading") {
             return <h1 className="text-center">Loading...</h1>

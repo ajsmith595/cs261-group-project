@@ -9,8 +9,11 @@ export default class EventsView extends React.Component {
         };
 
     }
-    // When the component is ready to receive calls to this.setState
-    // Uses a GET request on /api/event/:id to get data about the event.
+
+    /**
+     * When the component is ready to receive calls to this.setState
+     * Uses a GET request on /api/event/:id to get data about the event.
+     */
     componentDidMount() {
         document.title = "My Events";
         fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + "/api/events", {
@@ -31,6 +34,10 @@ export default class EventsView extends React.Component {
             }
         })
     }
+
+    /**
+     * Renders the events view page
+     */
     render() {
         if (this.state.status == 'loading') {
             return (
@@ -43,6 +50,7 @@ export default class EventsView extends React.Component {
             );
         }
         else {
+            // Gets the data for each event and presents it to the user
             let events = [];
 
             for (let event of this.state.data) {

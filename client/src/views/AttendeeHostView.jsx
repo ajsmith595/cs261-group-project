@@ -11,8 +11,11 @@ export default class AttendeeHostView extends React.Component {
 
 
     }
-    // When the component is ready to receive calls to this.setState
-    // Uses a GET request on /api/event/:id to get data about the event.
+
+    /**
+     * When the component is ready to receive calls to this.setState
+     * Uses a GET request on /api/event/:id to get data about the event.
+     */
     componentDidMount() {
         document.title = "Joining Event " + this.props.match.params.id.toUpperCase();
         fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + "/api/event/" + this.props.match.params.id, {
@@ -39,6 +42,12 @@ export default class AttendeeHostView extends React.Component {
             }
         })
     }
+    /**
+     * Loads either the attendee or host, depending on the
+     * user which is logged in
+     * 
+     * @returns the corresponding attendee or host view
+     */
     render() {
         if (this.state.status == 'loading') {
             return (

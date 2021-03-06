@@ -1,6 +1,5 @@
 import React from "react";
 import { Form, Col, Row, Button, Card } from "react-bootstrap";
-import { Redirect } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 export default class RegisterView extends React.Component {
@@ -19,15 +18,19 @@ export default class RegisterView extends React.Component {
             usernameErrorActive: false,
         };
     }
+
+    /**
+     * Sets the title to Register
+     */
     componentDidMount() {
         document.title = "Register";
     }
 
     /*
-    Sends the state to the server. It first verifies the fields
-    for them being empty and having a valid email, and
-    if they have accepted the terms
-    */
+     * Sends the state to the server. It first verifies the fields
+     * for them being empty and having a valid email, and
+     * if they have accepted the terms
+     */
     sendStateToServer(e) {
         e.preventDefault();
         var errors = [];
@@ -94,8 +97,8 @@ export default class RegisterView extends React.Component {
     }
 
     /* 
-    Renders the Registration View
-    */
+     * Renders the Registration View
+     */
     render() {
         let emailError = !(new RegExp(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,15}/g).test(this.state.email));
         let usernameError = !(new RegExp(/[a-z0-9]{4,16}/g).test(this.state.username));
@@ -139,8 +142,8 @@ export default class RegisterView extends React.Component {
     }
 
     /*
-    Returns the Form input for the email field
-    */
+     * Returns the Form input for the email field
+     */
     renderEmail() {
         return (
             <Form.Group controlId={"email"}>
@@ -157,8 +160,8 @@ export default class RegisterView extends React.Component {
     }
 
     /*
-    Returns the Form input for the username field
-    */
+     * Returns the Form input for the username field
+     */
     renderUsername() {
         return (
             <Form.Group controlId={"username"}>
@@ -175,8 +178,8 @@ export default class RegisterView extends React.Component {
     }
 
     /* 
-    Renders the list of errors, both validation errors and from the server
-    */
+     * Renders the list of errors, both validation errors and from the server
+     */
     renderErrors() {
         let errors = [];
         for (let text in this.state.error) {

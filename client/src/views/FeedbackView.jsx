@@ -1,7 +1,6 @@
 import React from "react";
 import { Form, Col, Row, Button } from "react-bootstrap";
 import Multiselect from "react-multi-select-component";
-// import '../feedback.css';
 export default class FeedbackView extends React.Component {
     constructor(props) {
         super(props);
@@ -22,12 +21,17 @@ export default class FeedbackView extends React.Component {
 
 
     }
+
+    /**
+     * Sets the title when mounted
+     */
     componentDidMount() {
         document.title = "Feedback on event '" + this.props.data.title + "'";
     }
-    /*
-    Sends the state to the server to store and analyse the feedback
-    */
+
+    /**
+     * Sends the feedback data to the server to store and analyse
+     */
     sendStateToServer() {
         let responseData = [];
         for (let qid in this.state.questions) {
@@ -95,6 +99,8 @@ export default class FeedbackView extends React.Component {
                 });
             }
             else {
+                // If error is due to too recent feedback
+                // It gives the error and keeps the filled in feedback
                 if(data.message == "Feedback was sent recently") {
                     this.setState({
                         status: "show",
@@ -117,9 +123,9 @@ export default class FeedbackView extends React.Component {
         });
     }
 
-    /*
-    Renders the feedback-view
-    */
+    /**
+     * Renders the feedback-view
+     */
     render() {
         if (this.state.status === 'loading') {
             return (
@@ -161,6 +167,7 @@ export default class FeedbackView extends React.Component {
                 </Row>
             );
         }
+        // Gets the rendered question data
         let questions = [];
         for (let id in this.state.questions) {
             let question = this.state.questions[id];
@@ -206,9 +213,9 @@ export default class FeedbackView extends React.Component {
     }
 
     /*
-    Changes the given questions value based on given ID
-    And which element called the function
-    */
+     * Changes the given questions value based on given ID
+     * And which element called the function
+     */
     changeQuestion(id) {
         let func = (e) => {
             let questions = this.state.questions;
@@ -221,8 +228,8 @@ export default class FeedbackView extends React.Component {
     }
 
     /*
-    Changes the given questions value based on given ID
-    for the 'multiple-choice question type'
+     * Changes the given questions value based on given ID
+     * for the 'multiple-choice question type'
     */
     changeMultiQuestion(id) {
         let func = (e) => {
@@ -236,8 +243,8 @@ export default class FeedbackView extends React.Component {
     }
 
     /*
-    Renders the long form text question
-    Includes a 'text-area' to enter the response
+     * Renders the long form text question
+     * Includes a 'text-area' to enter the response
     */
     renderLongQuestion(question) {
         return (
@@ -255,10 +262,10 @@ export default class FeedbackView extends React.Component {
     }
 
     /*
-    Renders the long form text question
-    Includes a range slider to enter the response
-    and shows the value of the response to the user
-    */
+     * Renders the long form text question
+     * Includes a range slider to enter the response
+     * and shows the value of the response to the user
+     */
     renderRangeQuestion(question) {
         return (
             <Form.Group controlId={"formQuestion_" + question.id}>
@@ -277,10 +284,10 @@ export default class FeedbackView extends React.Component {
     }
 
     /*
-    Renders the long form text question
-    Gives the user a list of options to choose from
-    The user can only choose at most one response
-    */
+     * Renders the long form text question
+     * Gives the user a list of options to choose from
+     * The user can only choose at most one response
+     */
     renderChoiceQuestion(question) {
         let options = [];
         for (let choice in question.choices) {
@@ -304,10 +311,10 @@ export default class FeedbackView extends React.Component {
     }
 
     /*
-    Renders the long form text question
-    Gives the user a list of options to choose from
-    The user can choose any amount of answers
-    */
+     * Renders the long form text question
+     * Gives the user a list of options to choose from
+     * The user can choose any amount of answers
+     */
     renderMultipleChoiceQuestion(question) {
         let options = [];
         for (let choice in question.choices) {
@@ -327,6 +334,9 @@ export default class FeedbackView extends React.Component {
         )
     }
 
+    /**
+     * Renders the time related error if it exists
+     */
     renderError(){
         if(this.state.timeError === ""){
             return <p></p>;

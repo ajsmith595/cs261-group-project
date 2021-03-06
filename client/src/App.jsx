@@ -32,6 +32,10 @@ class App extends React.Component {
             isHost: false
         }
     }
+
+    /**
+     * Renders the related page to the URL the user enters
+     */
     render() {
         return (
             <Jumbotron className="py-2 mb-0 min-vh-100" style={{ overflowX: 'hidden' }}>

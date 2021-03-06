@@ -9,6 +9,9 @@ export default class LogoutView extends React.Component {
         };
     }
 
+    /**
+     * Attempts to logout the user
+     */
     componentDidMount() {
         document.title = "Logging out...";
         this.setState({
@@ -26,6 +29,10 @@ export default class LogoutView extends React.Component {
         });
         this.props.history.push("/login");
     }
+
+    /**
+     * Renders the logout page
+     */
     render() {
         if (this.state.status == 'loading') {
             return (

@@ -1,8 +1,7 @@
 import React from "react";
-import { Redirect } from 'react-router-dom';
 import { Form, Col, Row, Button, InputGroup } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle, faPlus, faTrash, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle, faPlus, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 export default class CreateEventView extends React.Component {
     constructor(props) {
@@ -22,6 +21,7 @@ export default class CreateEventView extends React.Component {
         let isoString = currentDateTime.toISOString();
         isoString = isoString.substring(0, isoString.length - 1);
 
+        // Sets the starting state for event creation
         this.state = {
             status: 'main',
             error: '',
@@ -73,7 +73,10 @@ export default class CreateEventView extends React.Component {
         validationErrors: []
     }
 
-    // Adds a question to the list when add question button pressed
+    /**
+     * Adds a question to the list when add question button pressed
+     * 
+     */
     addQuestion = (e) => {
         e.preventDefault();
         this.setState(state => {
@@ -88,13 +91,22 @@ export default class CreateEventView extends React.Component {
         });
     }
 
+    /**
+     * Changes the value of an event detail
+     * 
+     * @param prop The property being changed
+     * @param e The element that called the function
+     */
     changeEventProp(prop, e) {
+        // Removes related errors to the prop being checked
         let newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != prop && e != prop + "_min" && e != prop + "_max" && e != prop + "_before");
+        // Checks title is not empty
         if (prop == "title") {
             if (e.target.value.trim().length == 0) {
                 newValidationErrors.push("title");
             }
         }
+        // Checks duration is between 5 minutes and 12 hours
         else if (prop == "duration") {
             if (parseInt(e.target.value) < 5 || isNaN(parseInt(e.target.value))) {
                 newValidationErrors.push("duration_min");
@@ -102,6 +114,7 @@ export default class CreateEventView extends React.Component {
             else if (parseInt(e.target.value) > 60 * 12) {
                 newValidationErrors.push("duration_max");
             }
+        // Checks the start date is in the future
         }else if (prop == "datetime") {
             let d = new Date();
             let d2 = new Date(e.target.value);
@@ -110,12 +123,16 @@ export default class CreateEventView extends React.Component {
             }
 
         }
+        // Updates the state with the new errors
         this.setState({
             [prop]: e.target.value,
             validationErrors: newValidationErrors
         });
     }
 
+    /**
+     * Renders the Create event page
+     */
     render() {
         if (this.state.status == 'error') {
             return (
@@ -128,6 +145,7 @@ export default class CreateEventView extends React.Component {
         if (this.state.validationErrors.length > 0 || this.state.questions.length == 0) {
             hasErrors = true;
         }
+        // Checks for validation errors in each question
         for (let qid in this.state.questions) {
             let q = this.state.questions[qid];
             if (q.validationErrors.length > 0) {
@@ -195,12 +213,16 @@ export default class CreateEventView extends React.Component {
     }
 
 
+    /**
+     * Submits the event to the server
+     */
     submit(e) {
         let newValidationErrors = [];
         let startTime = this.state.datetime;
         if (!(startTime instanceof Date)) {
             startTime = new Date(startTime);
         }
+        // Ensures the time is still in the future
         let d = new Date();
         if (d > startTime) {
             newValidationErrors.push("datetime_before");
@@ -215,6 +237,7 @@ export default class CreateEventView extends React.Component {
                 duration: this.state.duration,
                 questions: this.state.questions
             };
+            // Sends the data to the server
             fetch((process.env.REACT_APP_HTTP_ADDRESS || "") + `/api/events`, {
                 method: "POST",
                 headers: {
@@ -229,9 +252,10 @@ export default class CreateEventView extends React.Component {
                         status: 'success',
                         eventCode: data.data.eventCode
                     });
+                    // Redirects to the event
                     this.props.history.push(`/event/${data.data.eventCode}`);
                 }
-                else {
+                else { //Stores the error to show to the user
                     this.setState({
                         status: 'error',
                         error: data.message
@@ -245,7 +269,13 @@ export default class CreateEventView extends React.Component {
         }
     }
 
-    // Changes a particular question property e.g. title, question type, etc.
+    /**
+     * Changes a particular question property e.g. title, question type, etc.
+     * 
+     * @param id The id of the question
+     * @param prop The property being changed
+     * @param e The element that called the function
+     */
     changeQuestionProp(id, prop, e) {
         let question = this.state.questions[id];
         let newValue = e.target.value;
@@ -281,6 +311,11 @@ export default class CreateEventView extends React.Component {
         this.setState(this.state);
     }
 
+    /**
+     * Deletes the question
+     * 
+     * @param i The number of the question being deleted
+     */
     deleteQuestion(i) {
         let copy = this.state.questions.slice();
 
@@ -292,6 +327,9 @@ export default class CreateEventView extends React.Component {
         }
     }
 
+    /**
+     * Renders all of the questions added to the form 
+     */
     renderQuestions() {
         let questions = [];
         for (let i in this.state.questions) {
@@ -299,6 +337,7 @@ export default class CreateEventView extends React.Component {
             question.id = i;
 
             let html = null;
+            // Renders the question based on its type
             switch (question.type) {
                 case 'open':
                     html = this.renderOpenQuestion(question);
@@ -355,6 +394,11 @@ export default class CreateEventView extends React.Component {
         );
     }
 
+    /**
+     * Changes the question
+     * 
+     * @param id The id of the question
+     */
     changeQuestion(id) {
         let func = (e) => {
             let questions = this.state.questions;
@@ -366,14 +410,22 @@ export default class CreateEventView extends React.Component {
         return func.bind(this);
     }
 
-
-
-    // If it's an open question, don't render anything else 
-
+    /**
+     * Renders the open question specific data
+     * 
+     * @param question The question being rendered
+     * @returns 
+     */
     renderOpenQuestion(question) {
         return <small className="text-muted">This will show the user the question, and give them a text box to answer the question.</small>;
     }
 
+    /**
+     * Renders the numeric question specific data
+     * 
+     * @param question The question being rendered
+     * @returns 
+     */
     renderNumericQuestion(question) {
         let error = question.validationErrors.includes("minmax");
         return (
@@ -396,7 +448,11 @@ export default class CreateEventView extends React.Component {
         )
     }
 
-
+    /**
+     * Validates the choice question data
+     * 
+     * @param question The choice question being validated
+     */
     validateChoiceQuestion(question) {
         let vals = {};
         for (let i in question.choices) {
@@ -406,6 +462,7 @@ export default class CreateEventView extends React.Component {
             }
             vals[value].push(i);
         }
+        // Prevents repeated question answers
         let repeated = [];
         for (let val in vals) {
             if (vals[val].length > 1) {
@@ -419,12 +476,26 @@ export default class CreateEventView extends React.Component {
         }
     }
 
+    /**
+     * Changes the value of a specific choice of a choice question
+     * 
+     * @param questionIndex index of the question
+     * @param choiceIndex index of the specific choice
+     * @param e The element that called the function
+     */
     changeOptionForChoiceQuestion(questionIndex, choiceIndex, e) {
         let question = this.state.questions[questionIndex];
         question.choices[choiceIndex] = e.target.value;
         this.validateChoiceQuestion(question);
         this.setState(this.state);
     }
+    
+    /**
+     * Delets  a specific choice of a choice question
+     * 
+     * @param questionIndex index of the question
+     * @param choiceIndex index of the specific choice
+     */
     removeOptionFromChoiceQuestion(questionIndex, choiceIndex) {
         let question = this.state.questions[questionIndex];
         if (question.choices.length > 2) {
@@ -433,6 +504,12 @@ export default class CreateEventView extends React.Component {
             this.setState(this.state);
         }
     }
+
+    /**
+     * Adds a new choice to a choice question
+     * 
+     * @param questionIndex index of the question
+     */
     addOptionToChoiceQuestion(questionIndex) {
         let question = this.state.questions[questionIndex];
         question.choices.push("Option " + (question.choices.length + 1).toString());
@@ -440,6 +517,12 @@ export default class CreateEventView extends React.Component {
         this.setState(this.state);
     }
 
+    /**
+     * Renders the choice question specific data
+     * 
+     * @param question The question being rendered
+     * @returns 
+     */
     renderChoiceQuestion(question) {
         let options = [];
         for (let i in question.choices) {
