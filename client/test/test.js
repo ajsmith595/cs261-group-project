@@ -25,7 +25,7 @@ async function runTests() {
         return `t${timestamp}${num}`;
     }
 
-    let allTests = [
+    let tests = [
         test_5_1_1_1,
         test_5_1_1_4,
         test_5_1_2_1,
@@ -38,7 +38,7 @@ async function runTests() {
     ];
 
     let numberOfUsersToCreate = 0;
-    for (let x of allTests) {
+    for (let x of tests) {
         numberOfUsersToCreate += x.usersRequired;
     }
 
@@ -65,48 +65,39 @@ async function runTests() {
         requests[i].cookie = response.headers.get("set-cookie");
     }
 
-    let regularTests = allTests.filter((e) => !e.after);
-    let afterTests = allTests.filter((e) => e.after);
+    // Segment them out.
+    tests.sort((a, b) => a.timeRequired - b.timeRequired);
 
-    for (let j = 0; j < 2; j++) {
-        let tests = [regularTests, afterTests][j];
-        if (j == 0) {
-            console.log("BEGINNING REGULAR TESTS");
-        } else {
-            console.log("BEGINNING AFTER TESTS");
-        }
-        // Segment them out.
-        tests.sort((a, b) => a.timeRequired - b.timeRequired);
-
-        let maxTextLength = 0;
+    let maxTextLength = 0;
+    for (let test of tests) {
+        test.text = `${test.description} (${test.name}):`;
+        if (test.text.length > maxTextLength) maxTextLength = test.text.length;
+        test.promise = test(requests.splice(0, test.usersRequired));
+    }
+    try {
         for (let test of tests) {
-            test.text = `${test.description} (${test.name}):`;
-            if (test.text.length > maxTextLength)
-                maxTextLength = test.text.length;
-            test.promise = test(requests.splice(0, test.usersRequired));
-        }
-        try {
-            for (let test of tests) {
-                test.result = await test.promise;
-                let text = test.text.padEnd(maxTextLength, " ");
-                if (!test.result || !test.result.ok) {
-                    if (!test.result) {
-                        console.log(`${text} \x1b[30m\x1b[43mNO RESULT\x1b[0m`);
-                    } else {
-                        console.log(
-                            `${text} \x1b[41m\x1b[37mFAIL: ${test.result.message}\x1b[0m`
-                        );
-                    }
-                } else {
-                    console.log(`${text} \x1b[42m\x1b[30mSUCCESS\x1b[0m`);
-                }
-            }
-        } catch (e) {
-            console.log(e);
-            console.log(
-                "An error occured whilst running the tests. This usually happens if the server has just started. Rerun the script for actual results."
+            let text = test.text.padEnd(maxTextLength, " ");
+            process.stdout.write(
+                `${text} \u001b[37m\u001b[40mWAITING\x1b[0m\r`
             );
+            test.result = await test.promise;
+            if (!test.result || !test.result.ok) {
+                if (!test.result) {
+                    console.log(`${text} \x1b[30m\x1b[43mNO RESULT\x1b[0m`);
+                } else {
+                    console.log(
+                        `${text} \x1b[41m\x1b[37mFAIL: ${test.result.message}\x1b[0m`
+                    );
+                }
+            } else {
+                console.log(`${text} \x1b[42m\x1b[30mSUCCESS\x1b[0m`);
+            }
         }
+    } catch (e) {
+        console.log(e);
+        console.log(
+            "An error occured whilst running the tests. This usually happens if the server has just started. Rerun the script for actual results."
+        );
     }
 }
 

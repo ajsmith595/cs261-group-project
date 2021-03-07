@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Calendar;
-
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Updates;
+import com.mongodb.client.result.UpdateResult;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.FindIterable;
 
@@ -19,7 +19,6 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.configuration.CodecRegistries;
 
 import com.group29.controllers.WebSocketController;
-import com.group29.models.questiondata.*;
 
 public class DatabaseManager {
     // Instance of the database manager
@@ -239,7 +238,7 @@ public class DatabaseManager {
 
             // Updates the database and returns true as it was inserted
             events.findOneAndReplace(query, event.getEventAsDocument());
-            WebSocketController.updateEvent(event.getEventCode(), true);
+            WebSocketController.updateEventDetails(event.getEventCode());
             return true;
         }
 
@@ -332,26 +331,12 @@ public class DatabaseManager {
     public boolean addFeedback(String eventCode, Feedback feedback) {
         // Gets the events collection and creates a query string for the event id
         MongoCollection<Document> events = mongoDB.getCollection("Events");
-        Document query = new Document("eventCode", eventCode);
 
-        // Loops over events found matching the id, adding the feedback to the first one
-        // found
-        for (Event event : events.find(query, Event.class)) {
-            long startTime = event.getStartTime().getTime();
-            long endTime = startTime + event.getDuration() * 60 * 1000;
-            long currentTime = (new Date()).getTime();
-            if (startTime > currentTime || endTime < currentTime) {
-                continue;
-            }
-
-            // Updates the database and returns true as it was inserted
-
-            // Adds the feedback to the event
-            event.addFeedback(feedback);
-            events.findOneAndReplace(query, event.getEventAsDocument());
-            WebSocketController.updateEvent(event.getEventCode());
+        UpdateResult ur = events.updateOne(new Document("eventCode", eventCode),
+                Updates.addToSet("feedbackList", feedback));
+        WebSocketController.setEventAsModified(eventCode);
+        if (ur.getMatchedCount() > 0)
             return true;
-        }
 
         return false;
     }

@@ -70,7 +70,9 @@ module.exports = async function test_5_1_1_4(users) {
             message: "Valid username validation failed: should have succeeded",
         };
     }
-    if (!(await test("test123", `test_${timestamp}_duplicate@test.com`))) {
+    if (
+        !(await test(`t${timestamp}`, `test_${timestamp}_duplicate@test.com`))
+    ) {
         return {
             ok: false,
             message:

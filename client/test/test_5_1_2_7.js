@@ -43,8 +43,6 @@ module.exports = async function test_5_1_2_7(users) {
     });
     ws.send(token);
 
-    await sleepMs(200); // wait 200ms
-
     async function tryWords(testWords, numberOfUsers, shouldBeTrends = true) {
         let body = JSON.stringify({
             anonymous: false,
@@ -62,7 +60,6 @@ module.exports = async function test_5_1_2_7(users) {
                     },
                 }
             );
-            await sleepMs(20); // Wait between requests, since the server struggles a little
         }
         let failure = null;
         for (let user of userSplice) {
@@ -79,7 +76,7 @@ module.exports = async function test_5_1_2_7(users) {
         if (wsData == null) {
             return {
                 ok: false,
-                message: "WebSocket data was not supplied within 3 seconds",
+                message: `WebSocket data was not supplied within 3 seconds (${eventCode})`,
             };
         }
         let trends = [];

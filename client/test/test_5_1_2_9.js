@@ -39,8 +39,6 @@ module.exports = async function test_5_1_2_9(users) {
     });
     ws.send(token);
 
-    await sleepMs(200); // wait 200ms
-
     let total = 0;
     let totalNum = 0;
     for (let user of users) {
@@ -57,7 +55,6 @@ module.exports = async function test_5_1_2_9(users) {
                 cookie: user.cookie,
             },
         });
-        await sleepMs(20); // Wait between requests, since the server struggles a little
     }
     let failure = null;
     for (let user of users) {

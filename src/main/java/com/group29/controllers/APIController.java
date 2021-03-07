@@ -14,13 +14,11 @@ import static spark.Spark.*;
 
 import java.security.SecureRandom;
 import java.util.HashMap;
-import java.util.Map;
 
 import com.group29.JSONTransformer;
 import com.group29.models.Event;
 import com.group29.models.User;
 import com.group29.models.questiondata.Question;
-import com.mongodb.internal.connection.tlschannel.NeedsWriteException;
 import com.group29.models.Feedback;
 import com.group29.models.Template;
 import com.google.gson.Gson;
@@ -31,7 +29,6 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import org.bson.Document;
 
-import edu.stanford.nlp.patterns.Data;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -248,8 +245,8 @@ public class APIController {
     };
 
     /**
-     * Saves the changes from when a user edits one of their events
-     * Only allows the host to edit an event
+     * Saves the changes from when a user edits one of their events Only allows the
+     * host to edit an event
      */
     public static Route editEvent = (Request req, Response res) -> {
         // Gets the original event
@@ -313,22 +310,29 @@ public class APIController {
         // Catches parsing errors
         try {
             // Regex for checking email is valid
-            String regex = "[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,15}";
-            Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+            String emailRegex = "^[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,15}$";
+            Pattern emailPattern = Pattern.compile(emailRegex, Pattern.CASE_INSENSITIVE);
+            String usernameRegex = "^[a-z0-9]{4,16}$";
+            Pattern usernamePattern = Pattern.compile(usernameRegex, Pattern.CASE_INSENSITIVE);
             // Creates a GSON parser that can parse dates and excludes id
             Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
             // Attempts to parse the user
             User user = gson.fromJson(req.body(), User.class);
-            Matcher matcher = pattern.matcher(user.getEmail());
-            boolean matchFound = matcher.find();
-            if (!matchFound){
+            Matcher emailMatcher = emailPattern.matcher(user.getEmail());
+            Matcher usernameMatcher = usernamePattern.matcher(user.getUsername());
+            boolean emailMatchFound = emailMatcher.find();
+            if (!emailMatchFound) {
                 return APIResponse.error("Please enter a valid email");
+            }
+            boolean usernameMatchFound = usernameMatcher.find();
+            if (!usernameMatchFound) {
+                return APIResponse.error("Please enter a valid username");
             }
             // Checks if the user already exists
             if (DatabaseManager.getDatabaseManager().checkUser(user.getEmail()))
                 return APIResponse.error("A user with the given email already exists.");
-            
+
             // Checks if the user already exists
             if (DatabaseManager.getDatabaseManager().checkUsername(user.getUsername()))
                 return APIResponse.error("A user with the given username already exists.");
@@ -346,8 +350,8 @@ public class APIController {
     };
 
     /**
-     * Stores the new feedback an attendee has sent
-     * For the event they are participating in
+     * Stores the new feedback an attendee has sent For the event they are
+     * participating in
      */
     public static Route postFeedback = (Request req, Response res) -> {
         // Gets the event code from the url

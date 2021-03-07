@@ -100,8 +100,8 @@ export default class RegisterView extends React.Component {
      * Renders the Registration View
      */
     render() {
-        let emailError = !(new RegExp(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,15}/g).test(this.state.email));
-        let usernameError = !(new RegExp(/[a-z0-9]{4,16}/g).test(this.state.username));
+        let emailError = !(new RegExp(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,15}$/g).test(this.state.email));
+        let usernameError = !(new RegExp(/^[a-z0-9]{4,16}$/g).test(this.state.username));
         console.log("test");
         let disabled = this.state.status === 'success' || this.state.status == "loading" || emailError || usernameError || !this.state.acceptTerms;
         return (

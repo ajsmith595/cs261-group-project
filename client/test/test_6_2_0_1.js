@@ -40,8 +40,6 @@ module.exports = async function test_6_2_0_1(users) {
     });
     ws.send(token);
 
-    await sleepMs(200); // wait 200ms
-
     for (let user of users) {
         user.request = fetch(`${SERVER_HOST}/api/event/${eventCode}/feedback`, {
             method: "POST",
@@ -53,7 +51,6 @@ module.exports = async function test_6_2_0_1(users) {
                 cookie: user.cookie,
             },
         });
-        await sleepMs(20);
     }
     let failure = null;
     for (let user of users) {

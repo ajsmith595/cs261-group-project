@@ -31,13 +31,11 @@ module.exports = async function test_5_1_2_8(users) {
         };
     }
 
+    ws.send(token);
     let wsData = null;
     ws.on("message", (data) => {
         wsData = JSON.parse(data);
     });
-    ws.send(token);
-
-    await sleepMs(200); // wait 200ms
 
     let body = JSON.stringify({
         anonymous: false,
@@ -51,7 +49,6 @@ module.exports = async function test_5_1_2_8(users) {
                 cookie: user.cookie,
             },
         });
-        await sleepMs(20); // Wait between requests, since the server struggles a little
     }
     let failure = null;
     for (let user of users) {
@@ -79,7 +76,7 @@ module.exports = async function test_5_1_2_8(users) {
     if (wsData.questions[0].currentMood <= 0) {
         return {
             ok: false,
-            message: "A negative mood was obtained with positive messages",
+            message: `A negative mood was obtained with positive messages (${eventCode})`,
         };
     }
     return {

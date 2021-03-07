@@ -5,6 +5,7 @@ import org.eclipse.jetty.websocket.api.annotations.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.group29.models.DatabaseManager;
 import com.group29.models.Event;
@@ -18,6 +19,7 @@ public class WebSocketController {
      * <code>Event</code> instance, so needs to be maintained.
      */
     private static HashMap<String, Event> eventMap = new HashMap<>();
+    private static ReentrantLock eventMapLock = new ReentrantLock();
 
     /**
      * Contains a list of sessions which we are waiting on to send us an
@@ -28,28 +30,71 @@ public class WebSocketController {
      */
     private static ArrayList<Session> waitingConnections = new ArrayList<>();
 
-    public static void updateEvent(String eventCode) {
-        updateEvent(eventCode, false);
-    }
-
     /**
      * Makes a particular event update its data. This should be done after feedback
      * has successfully been added to the database.
      * 
      * @param eventCode The event's code
      */
-    public static void updateEvent(String eventCode, boolean updateEventDetails) {
-        if (eventCode == null) {
+    public static void sendEventData() {
+        sendEventData(false);
+    }
+
+    /**
+     * Makes a particular event update its data. This should be done after feedback
+     * has successfully been added to the database.
+     * 
+     */
+    public static void sendEventData(boolean force) {
+        ArrayList<String> emptyEvents = new ArrayList<>(); // Represents events which can be 'closed'
+        eventMapLock.lock();
+        try {
             for (Event e : eventMap.values()) {
-                e.updateData(true, updateEventDetails);
-                e.sendDataToClients();
+                e.sendData(force);
+                if (e.getNumberOfClients() == 0)
+                    emptyEvents.add(e.getEventCode());
             }
-        } else {
-            if (eventMap.containsKey(eventCode)) {
-                Event e = eventMap.get(eventCode);
-                e.updateData(true, updateEventDetails);
-                e.sendDataToClients();
+            for (String e : emptyEvents) {
+                eventMap.remove(e); // Cleanup unused events.
             }
+        } finally {
+            eventMapLock.unlock();
+        }
+    }
+
+    /**
+     * Updates the title, start time and duration of a particular event from the
+     * database
+     * 
+     * @param eventCode
+     */
+    public static void updateEventDetails(String eventCode) {
+        eventMapLock.lock();
+        try {
+            Event e = eventMap.get(eventCode);
+            if (e != null) {
+                e.updateEventDetails();
+            }
+        } finally {
+            eventMapLock.unlock();
+        }
+    }
+
+    /**
+     * Sets an event as modified, so that it will send data to WebSocket clients on
+     * the next update
+     * 
+     * @param eventCode
+     */
+    public static void setEventAsModified(String eventCode) {
+        eventMapLock.lock();
+        try {
+            Event e = eventMap.get(eventCode);
+            if (e != null) {
+                e.setAsModified();
+            }
+        } finally {
+            eventMapLock.unlock();
         }
     }
 
@@ -66,17 +111,15 @@ public class WebSocketController {
     /**
      * When a WebSocket connection is disconnected
      * 
-     * @param session The WebSocket connection
+     * @param session    The WebSocket connection
      * @param statusCode The status of the socket
-     * @param reason The reason for the disconnect
+     * @param reason     The reason for the disconnect
      */
     @OnWebSocketClose
     public void disconnected(Session session, int statusCode, String reason) {
         if (waitingConnections.contains(session)) {
             waitingConnections.remove(session); // Remove it from the waiting list if it's in one.
         } else {
-            // TODO: Signal all `Event` instances to remove this session, if it's in their
-            // list of clients
         }
     }
 
@@ -86,7 +129,7 @@ public class WebSocketController {
      * 
      * @param session The WebSocket connection
      * @param message The message beind sent
-     * @throws IOException 
+     * @throws IOException
      */
     @OnWebSocketMessage
     public void message(Session session, String message) {
@@ -98,16 +141,24 @@ public class WebSocketController {
             if (eventCode == null) {
                 session.close(); // Close the connection if it's invalid
             } else {
-                if (!eventMap.containsKey(eventCode)) { // If the event is NOT already known...
-                    Event e = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode); // get the event data
-                    if (e == null) { // If it's null, close the connection - something's gone wrong somewhere.
-                        session.close();
-                        return;
+                eventMapLock.lock();
+                try {
+                    if (!eventMap.containsKey(eventCode)) { // If the event is NOT already known...
+                        Event e = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode); // get the event
+                                                                                                    // data
+                        if (e == null) { // If it's null, close the connection - something's gone wrong somewhere.
+                            session.close();
+                            return;
+                        } else {
+                            e.addClient(session);
+                            eventMap.put(eventCode, e); // Add the event to the map
+                        }
                     } else {
-                        eventMap.put(eventCode, e); // Add the event to the map
+                        eventMap.get(eventCode).addClient(session); // Add the client to the relevant Event.
                     }
+                } finally {
+                    eventMapLock.unlock();
                 }
-                eventMap.get(eventCode).addClient(session); // Add the client to the relevant Event.
             }
         }
     }

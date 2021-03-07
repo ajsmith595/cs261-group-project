@@ -19,6 +19,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.Comparator;
 
 import java.lang.StringBuilder;
@@ -55,17 +56,20 @@ public class Event {
     private WebSocketData data;
     private HashMap<String, List<Point>> ratingHistory = new HashMap<>();
     private FeedbackAggregator aggregator;
+    private boolean modified = true;
+    private ReentrantLock dataModificationLock;
+    private ReentrantLock clientModificationLock;
 
     /**
      * Constructs an event object
      * 
-     * @param id The ID of the event
-     * @param hostID The ID of the host
-     * @param templateID The ID of the template for the event
-     * @param title The title of the event
-     * @param startTime The start time of the event
-     * @param duration The duration of the event
-     * @param eventCode the code to join the event
+     * @param id           The ID of the event
+     * @param hostID       The ID of the host
+     * @param templateID   The ID of the template for the event
+     * @param title        The title of the event
+     * @param startTime    The start time of the event
+     * @param duration     The duration of the event
+     * @param eventCode    the code to join the event
      * @param feedbackList The list of feedback for the event
      */
     private Event(String id, String hostID, String templateID, String title, Date startTime, int duration,
@@ -81,7 +85,8 @@ public class Event {
         this.feedbackList.sort(Comparator.comparing(Feedback::getTimeStamp));
         this.clients = new ArrayList<Session>();
         this.aggregator = FeedbackAggregator.getFeedbackAggregator();
-        this.updateData(false);
+        this.dataModificationLock = new ReentrantLock();
+        this.clientModificationLock = new ReentrantLock();
     }
 
     /**
@@ -208,73 +213,117 @@ public class Event {
      * @param s The session of the client
      */
     public void addClient(Session s) {
-        clients.add(s);
+        this.generateData(false);
+        clientModificationLock.lock();
+
         try {
+            clients.add(s);
             s.getRemote().sendString((new JSONTransformer()).render(this.data)); // immediately send data to client
         } catch (Exception e) {
             System.out.println("Error occured: " + e.getMessage());
+        } finally {
+            clientModificationLock.unlock();
         }
     }
 
-    // private static ArrayList<QuestionResponse> all_responses = new ArrayList<>(
-    // Arrays.asList(new QuestionResponse[] { new QuestionResponse("Very interesting
-    // and intriguing", null, "a"),
-    // new QuestionResponse("Something else....", "ajsmith595", "b"),
-    // new QuestionResponse("Pretty boring", "haterman443", "c"),
-    // new QuestionResponse("Clearly well-educated", "KrazyKid69", "d"),
-    // new QuestionResponse("Joy is at a low point here", null, "e"),
-    // new QuestionResponse("Confusing", null, "f") }));
-    // private static int index = 0;
+    /**
+     * Gets the number of clients this event is serving
+     * 
+     * @return
+     */
+    public int getNumberOfClients() {
+        clientModificationLock.lock();
+        try {
+            int num = clients.size();
+            return num;
+        } finally {
+            clientModificationLock.unlock();
+        }
+    }
 
     /**
-     * Updates the data of the event. Currently randomly generated sample data, but
-     * in the future should be linked to the DB
+     * Sets the event as modified. Use this if the event has had feedback added to
+     * it
      */
-    public void updateData() {
-        updateData(true, false);
+    public void setAsModified() {
+        dataModificationLock.lock();
+        try {
+            this.modified = true;
+        } finally {
+            dataModificationLock.unlock();
+        }
+    }
+
+    /**
+     * Generates the new WebSocket data for the event
+     * 
+     * @param updateFromDB If true, the event will fetch new data from the database
+     */
+    public void generateData(boolean updateFromDB) {
+        dataModificationLock.lock();
+        try {
+            if (updateFromDB)
+                this.feedbackList = DatabaseManager.getDatabaseManager().getFeedback(this.id);
+            // Sort feedback based on time stamp
+            this.feedbackList.sort(Comparator.comparing(Feedback::getTimeStamp));
+            WebSocketData results = this.aggregator.collateFeedback(this);
+            this.data = results;
+        } finally {
+            dataModificationLock.unlock();
+        }
+    }
+
+    /**
+     * Sends data to clients if it has been modified, or if the force flag is true.
+     * 
+     * @param force If true, it will send the data even if the event has not been
+     *              modified
+     */
+    public void sendData(boolean force) {
+        sendData(force, true);
     }
 
     /**
      * Updates the data for the of the event
      * 
-     * @param fetchFromDatabase whether it needs to fetch event feedback from
-     *                          the database
+     * @param fetchFromDatabase  whether it needs to fetch event feedback from the
+     *                           database
+     * @param updateEventDetails whether it needs to update the details of the event
      */
-    public void updateData(boolean fetchFromDatabase) {
-        updateData(fetchFromDatabase, false);
+    public void sendData(boolean force, boolean updateFromDB) {
+        if (force || modified) {
+
+            this.generateData(modified || updateFromDB); // If it's been modified, we need to get the new data from
+                                                         // the DB
+            this.sendDataToClients();
+            modified = false;
+
+        }
     }
 
     /**
-     * Updates the data for the of the event
-     * 
-     * @param fetchFromDatabase whether it needs to fetch event feedback from
-     *                          the database
-     * @param updateEventDetails whether it needs to update the details of the
-     *                           event
+     * Fetches the new event details (title, startTime and duration) from the
+     * database.
      */
-    public void updateData(boolean fetchFromDatabase, boolean updateEventDetails) {
-        if (fetchFromDatabase) {
-            this.feedbackList = DatabaseManager.getDatabaseManager().getFeedback(this.id);
-            if (updateEventDetails) {
-                Event e = DatabaseManager.getDatabaseManager().getEventFromID(this.id);
-                this.setTitle(e.getTitle());
-                this.setStartTime(e.getStartTime());
-                this.setDuration(e.getDuration());
-            }
+    public void updateEventDetails() {
+        try {
+            dataModificationLock.lock();
+            Event e = DatabaseManager.getDatabaseManager().getEventFromID(this.id);
+            this.setTitle(e.getTitle());
+            this.setStartTime(e.getStartTime());
+            this.setDuration(e.getDuration());
+        } finally {
+            dataModificationLock.unlock();
         }
-        // Sort feedback based on time stamp
-        this.feedbackList.sort(Comparator.comparing(Feedback::getTimeStamp));
-        WebSocketData results = this.aggregator.collateFeedback(this);
-        this.data = results;
     }
 
     /**
      * Send the current event data to every WebSocket client. Should be called after
      * updating the data
      */
-    public void sendDataToClients() {
-
+    private void sendDataToClients() {
         String data = (new JSONTransformer()).render(this.data);
+        clientModificationLock.lock();
         try {
             ArrayList<Session> closedSessions = new ArrayList<Session>();
             for (Session s : clients) {
@@ -287,9 +336,12 @@ public class Event {
             for (Session s : closedSessions) {
                 clients.remove(s);
             }
+
         } catch (Exception e) {
             System.out.println("Something went wrong: " + e.getMessage() + " => " + e.getCause() + " => "
                     + e.getStackTrace().toString());
+        } finally {
+            clientModificationLock.unlock();
         }
     }
 
@@ -337,6 +389,9 @@ public class Event {
         }
 
         Document questionDoc = new Document();
+        if (this.data == null) {
+            this.generateData(false);
+        }
         Question[] questions = this.data.getQuestions();
         for (int i = 0; i < questions.length; i++) {
             Question q = questions[i];
@@ -345,29 +400,29 @@ public class Event {
             d2.append("type", q.getType());
             d2.append("id", i);
             switch (q.getType()) {
-                case "open":
-                    d2.append("value", "");
-                    break;
-                case "choice":
-                    ChoiceQuestion cq = (ChoiceQuestion) q;
-                    ArrayList<String> options = new ArrayList<>();
-                    for (Option o : cq.getOptions()) {
-                        options.add(o.getName());
-                    }
-                    d2.append("multiple", cq.getMultiple());
-                    if (cq.getMultiple()) {
-                        d2.append("value", new int[0]);
-                    } else {
-                        d2.append("value", -1);
-                    }
-                    d2.append("choices", options.toArray());
-                    break;
-                case "numeric":
-                    NumericQuestion nq = (NumericQuestion) q;
-                    d2.append("min", nq.getMinValue());
-                    d2.append("max", nq.getMaxValue());
-                    d2.append("value", Math.round((nq.getMaxValue() + nq.getMinValue()) / 2f));
-                    break;
+            case "open":
+                d2.append("value", "");
+                break;
+            case "choice":
+                ChoiceQuestion cq = (ChoiceQuestion) q;
+                ArrayList<String> options = new ArrayList<>();
+                for (Option o : cq.getOptions()) {
+                    options.add(o.getName());
+                }
+                d2.append("multiple", cq.getMultiple());
+                if (cq.getMultiple()) {
+                    d2.append("value", new int[0]);
+                } else {
+                    d2.append("value", -1);
+                }
+                d2.append("choices", options.toArray());
+                break;
+            case "numeric":
+                NumericQuestion nq = (NumericQuestion) q;
+                d2.append("min", nq.getMinValue());
+                d2.append("max", nq.getMaxValue());
+                d2.append("value", Math.round((nq.getMaxValue() + nq.getMinValue()) / 2f));
+                break;
             }
             questionDoc.append(Integer.toString(i), d2);
         }

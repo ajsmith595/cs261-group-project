@@ -117,11 +117,19 @@ public class Program {
 
         Timer t = new Timer();
         t.schedule(new TimerTask() {
+            int i = 0;
+
             @Override
             public void run() {
-                WebSocketController.updateEvent(null); // update all events every 5 seconds
+                if (i == 60) {
+                    i = 0;
+                    WebSocketController.sendEventData(true); // Force send to all clients every minute
+                } else {
+                    WebSocketController.sendEventData();
+                }
+                i++;
             }
-        }, 0, 1000 * 60);
+        }, 0, 1000); // Update events every second
 
         asyncInject(); // 404 fix
 

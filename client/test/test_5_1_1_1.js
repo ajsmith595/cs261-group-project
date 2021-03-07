@@ -30,11 +30,17 @@ module.exports = async function test_5_1_1_1(users) {
         }),
     });
     if (!eventRequest.ok) {
-        throw new Error("Could not create new event!");
+        return {
+            ok: false,
+            message: "Could not create new event",
+        };
     }
     let response = await eventRequest.json();
     if (response.status != "success") {
-        throw new Error("Could not create new event (no success status)!");
+        return {
+            ok: false,
+            message: "Could not create new event (no success status)!",
+        };
     }
 
     await sleep(2); // Wait 2 seconds so feedback is valid

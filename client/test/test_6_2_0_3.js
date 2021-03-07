@@ -74,33 +74,22 @@ module.exports = async function test_6_2_0_3(users) {
         requests = [];
         for (let j = 0; j < 50; j++) {
             requests.push(
-                new Promise((resolve, reject) => {
-                    const controller = new AbortController();
-                    const signal = controller.signal;
-                    let call = fetch(`${SERVER_HOST}/api/events`, {
-                        signal,
-                        method: "POST",
-                        headers: {
-                            cookie: host.cookie,
-                        },
-                        body: JSON.stringify({
-                            title: "Test Event",
-                            startTime: eventStartTime,
-                            duration: 60,
-                            questions: [
-                                {
-                                    type: "open",
-                                    title: "Test Question 1",
-                                },
-                            ],
-                        }),
-                    });
-                    call.then((e) => resolve(e));
-                    call.catch((e) => reject(e));
-                    setTimeout(() => {
-                        controller.abort();
-                        reject("Timeout");
-                    }, 10000);
+                fetch(`${SERVER_HOST}/api/events`, {
+                    method: "POST",
+                    headers: {
+                        cookie: host.cookie,
+                    },
+                    body: JSON.stringify({
+                        title: "Test Event",
+                        startTime: eventStartTime,
+                        duration: 60,
+                        questions: [
+                            {
+                                type: "open",
+                                title: "Test Question 1",
+                            },
+                        ],
+                    }),
                 })
             );
         }
@@ -117,7 +106,7 @@ module.exports = async function test_6_2_0_3(users) {
             } catch (e) {}
         }
     }
-    await sleep(2); // Wait 2 seconds for the server to handle all the event adds.
+    await sleep(3); // Wait 3 seconds for the server to handle all the event adds.
     t0 = performance.now();
     response = await (
         await fetch(`${SERVER_HOST}/api/event/${eventCode}`, {
@@ -129,7 +118,7 @@ module.exports = async function test_6_2_0_3(users) {
     if (response.status != "success") {
         return {
             ok: false,
-            message: "Event GET failed",
+            message: `Event GET failed (${eventCode})`,
         };
     }
     t1 = performance.now();
