@@ -266,6 +266,12 @@ public class DatabaseManager {
         return null;
     }
 
+    /**
+     * Gets the events for a specific user
+     * 
+     * @param uid The user's ID
+     * @return The events that the user os the host of
+     */
     public ArrayList<Event> getEventsForUser(String uid) {
         // Gets the events collection and creates a query string for host ID
         MongoCollection<Document> events = mongoDB.getCollection("Events");
@@ -374,8 +380,8 @@ public class DatabaseManager {
         for (Feedback feedback : e.getFeedback()) {
             if (feedback.getUserID().equals(userID)) {
                 // Update the latest time if needed
-                if (latest < feedback.getTimestamp())
-                    latest = feedback.getTimestamp();
+                if (latest < feedback.getTimeStamp())
+                    latest = feedback.getTimeStamp();
             }
         }
         // Return true if the latest is over a minute ago

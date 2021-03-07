@@ -51,6 +51,9 @@ public class IndexController {
         get("/events", IndexController.getIndex); // list of current user's events
     };
 
+    /**
+     * Gets the index page
+     */
     public static Route getIndex = (Request req, Response res) -> {
         return new VelocityTemplateEngine().render(new ModelAndView(Map.of(), "client/static/index.html"));
     };

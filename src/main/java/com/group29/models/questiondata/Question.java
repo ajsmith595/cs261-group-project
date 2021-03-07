@@ -15,26 +15,53 @@ public abstract class Question {
     protected String type;
     protected String title;
 
-    // Abstract constructor that auto-generates id
+    /**
+     * Abstract constructor that auto-generates id
+     * 
+     * @param type The type of the question
+     * @param title The title of the question
+     */
     public Question(String type, String title) {
         this(new ObjectId().toHexString(), type, title);
     }
 
     // Abstract constructor to force values to be inserted
+    /**
+     * Abstract constructor that auto-generates id
+     * 
+     * @param id The id of the question
+     * @param type The type of the question
+     * @param title The title of the question
+     */
     public Question(String id, String type, String title) {
         this.id = id;
         this.type = type;
         this.title = title;
     }
 
+    /**
+     * Gets the ID of the question
+     * 
+     * @return the ID
+     */
     public String getID() {
         return this.id;
     }
 
+    /**
+     * Gets the type of the question
+     * 
+     * @return the type
+     */
     public String getType() {
         return this.type;
     }
 
+    /**
+     * Gets the title of the question
+     * 
+     * @return the title
+     */
     public String getTitle() {
         return this.title;
     }

@@ -20,7 +20,7 @@ export default class EditEventView extends React.Component {
      */
     changeEventProp(prop, e) {
         // Removes related errors to the prop being checked
-        let newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != prop && e != prop + "_min" && e != prop + "_max");
+        let newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != prop && e != prop + "Min" && e != prop + "Max");
         // Checks title is not empty
         if (prop == "title") {
             if (e.target.value.length == 0) {
@@ -31,10 +31,10 @@ export default class EditEventView extends React.Component {
         else if (prop == "duration") {
             let value = parseInt(e.target.value);
             if (isNaN(value) || value < 5) {
-                newValidationErrors.push("duration_min");
+                newValidationErrors.push("durationMin");
             }
             else if (value > 12 * 60) {
-                newValidationErrors.push("duration_max");
+                newValidationErrors.push("durationMax");
             }
         }
         // Updates the state
@@ -142,9 +142,9 @@ export default class EditEventView extends React.Component {
                                     <Form.Control type="datetime-local" value={this.state.startTime} onChange={(e) => this.changeEventProp("startTime", e)} />
                                 </Form.Group>
                                 <Form.Group as={Col} xs={12} sm={6} lg={5}>
-                                    <Form.Label className="w-100">Duration<span className="float-right text-danger">{this.state.validationErrors.includes("duration_min") ? 'Must be at least 5 mins' : (this.state.validationErrors.includes("duration_max") ? 'Must be at most 12 hours' : '')}</span></Form.Label>
+                                    <Form.Label className="w-100">Duration<span className="float-right text-danger">{this.state.validationErrors.includes("durationMin") ? 'Must be at least 5 mins' : (this.state.validationErrors.includes("durationMax") ? 'Must be at most 12 hours' : '')}</span></Form.Label>
                                     <InputGroup>
-                                        <Form.Control type="number" min="5" max={60 * 12} className={(this.state.validationErrors.includes("duration_min") || this.state.validationErrors.includes("duration_max")) ? 'border-danger' : ''} value={this.state.duration} onChange={(e) => this.changeEventProp("duration", e)} />
+                                        <Form.Control type="number" min="5" max={60 * 12} className={(this.state.validationErrors.includes("durationMin") || this.state.validationErrors.includes("durationMax")) ? 'border-danger' : ''} value={this.state.duration} onChange={(e) => this.changeEventProp("duration", e)} />
                                         <InputGroup.Append>
                                             <InputGroup.Text id="startDatePrepend">
                                                 <span className="d-none d-md-block">minutes</span>

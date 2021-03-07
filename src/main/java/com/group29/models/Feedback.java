@@ -22,51 +22,94 @@ public class Feedback {
     private boolean anonymous;
     @Expose
     private List<Response> responses;
-    // Timestamp in milliseconds?
-    private long timestamp;
+    private long timeStamp;
 
-    private Feedback(String id, String userID, boolean anonymous, List<Response> responses, long timestamp) {
+    /**
+     * Constructs a Feedback object
+     * 
+     * @param id The ID of the feedback
+     * @param userID the ID of the user who sent the feedback
+     * @param anonymous Whether the feedback is anonymous or not
+     * @param responses The list of response information for the feedback
+     * @param timeStamp the time the feedback was submitted
+     */
+    private Feedback(String id, String userID, boolean anonymous, List<Response> responses, long timeStamp) {
         this.id = id;
         this.userID = userID;
         this.anonymous = anonymous;
         this.responses = responses;
-        this.timestamp = timestamp;
+        this.timeStamp = timeStamp;
     }
 
+    /**
+     * Constructs a Feedback object from a Document
+     * 
+     * @param doc The document
+     */
     public static Feedback generateFeedbackFromDocument(Document doc) {
         // Grabs the information from the document
         // String id = doc.getObjectId("_id").toHexString();
         String userID = doc.getString("userID");
         boolean anonymous = doc.getBoolean("anonymous");
-        long timestamp = doc.getLong("timestamp");
+        long timeStamp = doc.getLong("timeStamp");
         List<Response> responses = doc.getList("responses", Document.class).stream()
                 .map(x -> Response.generateResponseFromDocument(x)).collect(Collectors.toList());
         // Returns a new event using the data obtained
-        return new Feedback(null, userID, anonymous, responses, timestamp);
+        return new Feedback(null, userID, anonymous, responses, timeStamp);
     }
 
+    /**
+     * Sets the UserID of the Feedback
+     * 
+     * @param userID the ID of the user
+     */
     public void setUserID(String userID) {
         this.userID = userID;
     }
 
+    /**
+     * Gets the responses of the Feedback
+     * 
+     * @return The list of responses
+     */
     public List<Response> getResponses() {
         return this.responses;
     }
 
+    /**
+     * Gets the UserID of the Feedback
+     * 
+     * @return The userID
+     */
     public String getUserID() {
         return this.userID;
     }
 
+    /**
+     * Gets whether the feedback is anonymous
+     * 
+     * @return whether the feedback is anonymous
+     */
     public boolean getAnonymous() {
         return this.anonymous;
     }
 
-    public long getTimestamp() {
-        return this.timestamp;
+    /**
+     * Gets the time stamp of the feedback
+     * 
+     * @return the time stamp
+     */
+    public long getTimeStamp() {
+        return this.timeStamp;
     }
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    /**
+     * Sets the time stamp of the feedback
+     * 
+     * @param timeStamp The new time
+     */
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
     /**
@@ -84,7 +127,7 @@ public class Feedback {
             doc.append("_id", new ObjectId(id));
         doc.append("userID", userID);
         doc.append("anonymous", anonymous);
-        doc.append("timestamp", timestamp);
+        doc.append("timeStamp", timeStamp);
         if (responses != null)
             doc.append("responses", (List<Document>) (responses.stream().map(x -> x.getResponseAsDocument())
                     .collect(Collectors.toList())));

@@ -15,12 +15,21 @@ public class SentimentAnalyser {
     private static final SentimentAnalyser sentimentAnalyser = new SentimentAnalyser();
     private final StanfordCoreNLP nlpPipeline;
 
+    /**
+     * Constructs the SentimentAnalyser object
+     */
     public SentimentAnalyser() {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, parse, sentiment");
         nlpPipeline = new StanfordCoreNLP(props);
     }
 
+    /**
+     * Analyses a message for the sentiment
+     * 
+     * @param message The message being analysed
+     * @return The sentiment as a float 
+     */
     public float analyse(String message) {
         Annotation annotation = nlpPipeline.process(message);
         float[] results = new float[5];
@@ -51,6 +60,9 @@ public class SentimentAnalyser {
         return (total / 2)-1;
     }
 
+    /**
+     * Gets the SentimentAnalyser
+     */
     public static SentimentAnalyser getSentimentAnalyser() {
         return sentimentAnalyser;
     }

@@ -148,8 +148,8 @@ public class APIController {
      * associated event code if valid. Will also remove it from the map, so it
      * cannot be reused. Will return <code>null</code> if the token is invalid.
      * 
-     * @param token
-     * @return
+     * @param token The web socket token
+     * @return The event code or null if not valid
      */
     public static String checkWebSocketToken(String token) {
         if (webSocketTokens.containsKey(token)) {
@@ -178,6 +178,9 @@ public class APIController {
         return APIResponse.error("Could not match event code");
     };
 
+    /**
+     * Gets all events for the user
+     */
     public static Route getAllEvents = (Request req, Response res) -> {
         ArrayList<Event> events = DatabaseManager.getDatabaseManager().getEventsForUser(req.session().attribute("uid"));
         ArrayList<Document> docs = new ArrayList<>();
@@ -244,7 +247,12 @@ public class APIController {
         return APIResponse.error("Could not create the event.");
     };
 
+    /**
+     * Saves the changes from when a user edits one of their events
+     * Only allows the host to edit an event
+     */
     public static Route editEvent = (Request req, Response res) -> {
+        // Gets the original event
         Event e = DatabaseManager.getDatabaseManager().getEventFromCode(req.params(":id"));
         if (e == null) {
             return APIResponse.error("Event not found");
@@ -261,6 +269,7 @@ public class APIController {
                                 jsonSerializationContext) -> new JsonPrimitive(date.getTime()))
                 .excludeFieldsWithoutExposeAnnotation().create();
         try {
+            // Gets the new event details from the request
             Event newEvent = gson.fromJson(req.body(), Event.class);
             String title = e.getTitle();
             Date startTime = e.getStartTime();
@@ -282,7 +291,9 @@ public class APIController {
         }
     };
 
-    // Gets the user ID from email and password
+    /**
+     * Gets the user ID from email and password
+     */
     public static Route getUser = (Request req, Response res) -> {
         String userId = req.params(":id");
         User user = DatabaseManager.getDatabaseManager().getUserFromID(userId);
@@ -293,12 +304,15 @@ public class APIController {
         return APIResponse.error("The user requested could not be found");
     };
 
-    // Registers a new user
+    /**
+     * Registers a new user
+     */
     public static Route createUser = (Request req, Response res) -> {
         // Sets the return type to json
         res.type("application/json");
         // Catches parsing errors
         try {
+            // Regex for checking email is valid
             String regex = "[a-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,15}";
             Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
             // Creates a GSON parser that can parse dates and excludes id
@@ -331,7 +345,10 @@ public class APIController {
         return APIResponse.error("Could not create the user.");
     };
 
-    // Posts a new feedback
+    /**
+     * Stores the new feedback an attendee has sent
+     * For the event they are participating in
+     */
     public static Route postFeedback = (Request req, Response res) -> {
         // Gets the event code from the url
         String eventCode = req.params(":id");
@@ -350,7 +367,7 @@ public class APIController {
             // Attempts to parse the feedback as well as the id of the event
             Feedback feedback = gson.fromJson(req.body(), Feedback.class);
             feedback.setUserID(userID);
-            feedback.setTimestamp(Calendar.getInstance().getTimeInMillis());
+            feedback.setTimeStamp(Calendar.getInstance().getTimeInMillis());
             if (!DatabaseManager.getDatabaseManager().canSendFeedback(userID, eventCode)) {
                 return APIResponse.error("Feedback was sent recently");
             }
@@ -369,7 +386,9 @@ public class APIController {
         return APIResponse.error("The feedback could not be added.");
     };
 
-    // Posts a new template
+    /**
+     * Creates a new template for an event
+     */
     public static Route postTemplate = (Request req, Response res) -> {
         // Sets the return type to json
         res.type("application/json");
@@ -431,6 +450,9 @@ public class APIController {
         return APIResponse.success(new Document());
     };
 
+    /**
+     * Logs a user out
+     */
     public static Route logoutUser = (Request req, Response res) -> {
         req.session().removeAttribute("uid");
         return APIResponse.success(new Document());

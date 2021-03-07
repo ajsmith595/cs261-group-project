@@ -17,16 +17,32 @@ public class Response {
     @Expose
     private Object response;
 
-    private Response(String questionID, Object response)
-    {
+    /**
+     * Constructs a response object
+     * 
+     * @param questionID The ID of the question the response is for
+     * @param response The response data for the question
+     *                 Type is based on question type
+     */
+    private Response(String questionID, Object response) {
         this.questionID = questionID;
         this.response = response;
     }
 
+    /**
+     * Gets the question ID
+     * 
+     * @return The question ID
+     */
     public String getQuestionID() {
         return this.questionID;
     }
 
+    /**
+     * Gets the response
+     * 
+     * @return the response
+     */
     public Object getResponse() {
         return this.response;
     }

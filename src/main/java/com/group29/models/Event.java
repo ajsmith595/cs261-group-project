@@ -56,7 +56,18 @@ public class Event {
     private HashMap<String, List<Point>> ratingHistory = new HashMap<>();
     private FeedbackAggregator aggregator;
 
-    // Used to reconstruct an already created event
+    /**
+     * Constructs an event object
+     * 
+     * @param id The ID of the event
+     * @param hostID The ID of the host
+     * @param templateID The ID of the template for the event
+     * @param title The title of the event
+     * @param startTime The start time of the event
+     * @param duration The duration of the event
+     * @param eventCode the code to join the event
+     * @param feedbackList The list of feedback for the event
+     */
     private Event(String id, String hostID, String templateID, String title, Date startTime, int duration,
             String eventCode, List<Feedback> feedbackList) {
         this.id = id;
@@ -67,7 +78,7 @@ public class Event {
         this.duration = duration;
         this.eventCode = eventCode;
         this.feedbackList = feedbackList;
-        this.feedbackList.sort(Comparator.comparing(Feedback::getTimestamp));
+        this.feedbackList.sort(Comparator.comparing(Feedback::getTimeStamp));
         this.clients = new ArrayList<Session>();
         this.aggregator = FeedbackAggregator.getFeedbackAggregator();
         this.updateData(false);
@@ -85,16 +96,26 @@ public class Event {
     /**
      * Sets the id of the event
      * 
-     * @param id The id to set it to
+     * @param id The ID to set it to
      */
     public void setID(String id) {
         this.id = id;
     }
 
+    /**
+     * Sets the title of the event
+     * 
+     * @param title the title of the event
+     */
     public void setTitle(String title) {
         this.title = title;
     }
 
+    /**
+     * Gets the title of the event
+     * 
+     * @return the title
+     */
     public String getTitle() {
         return this.title;
     }
@@ -102,7 +123,7 @@ public class Event {
     /**
      * Gets the event code for the event
      * 
-     * @return String
+     * @return The event code
      */
     public String getEventCode() {
         return this.eventCode;
@@ -111,19 +132,26 @@ public class Event {
     /**
      * Gets the host's ID
      * 
-     * @return
+     * @return Gets the Host ID
      */
     public String getHostID() {
         return this.hostID;
     }
 
     /**
+     * Sets the event's template ID
+     * 
      * @param id The template ID
      */
     public void setTemplateID(String id) {
         this.templateID = id;
     }
 
+    /**
+     * Sets the start time of the event
+     * 
+     * @param startTime the start time of the event
+     */
     public void setStartTime(Date startTime) {
         this.startTime = startTime;
     }
@@ -137,14 +165,29 @@ public class Event {
         return this.startTime;
     }
 
+    /**
+     * Sets the duration of the event
+     * 
+     * @param duration the duration of the event
+     */
     public void setDuration(int duration) {
         this.duration = duration;
     }
 
+    /**
+     * Gets the duration of the event
+     * 
+     * @return the Duration
+     */
     public int getDuration() {
         return this.duration;
     }
 
+    /**
+     * Gets the template ID of the event
+     * 
+     * @return the template ID
+     */
     public String getTemplateID() {
         return this.templateID;
     }
@@ -159,6 +202,11 @@ public class Event {
         this.hostID = hostID;
     }
 
+    /**
+     * Adds a new client to the event
+     * 
+     * @param s The session of the client
+     */
     public void addClient(Session s) {
         clients.add(s);
         try {
@@ -182,15 +230,28 @@ public class Event {
      * Updates the data of the event. Currently randomly generated sample data, but
      * in the future should be linked to the DB
      */
-
     public void updateData() {
         updateData(true, false);
     }
 
+    /**
+     * Updates the data for the of the event
+     * 
+     * @param fetchFromDatabase whether it needs to fetch event feedback from
+     *                          the database
+     */
     public void updateData(boolean fetchFromDatabase) {
         updateData(fetchFromDatabase, false);
     }
 
+    /**
+     * Updates the data for the of the event
+     * 
+     * @param fetchFromDatabase whether it needs to fetch event feedback from
+     *                          the database
+     * @param updateEventDetails whether it needs to update the details of the
+     *                           event
+     */
     public void updateData(boolean fetchFromDatabase, boolean updateEventDetails) {
         if (fetchFromDatabase) {
             this.feedbackList = DatabaseManager.getDatabaseManager().getFeedback(this.id);
@@ -202,7 +263,7 @@ public class Event {
             }
         }
         // Sort feedback based on time stamp
-        this.feedbackList.sort(Comparator.comparing(Feedback::getTimestamp));
+        this.feedbackList.sort(Comparator.comparing(Feedback::getTimeStamp));
         WebSocketData results = this.aggregator.collateFeedback(this);
         this.data = results;
     }
@@ -246,7 +307,6 @@ public class Event {
      * 
      * @return Object
      */
-    // Gets all the feedback from the event
     public List<Feedback> getFeedback() {
         return this.feedbackList;
     }
@@ -400,10 +460,20 @@ public class Event {
         return doc;
     }
 
+    /**
+     * Gets the rating history
+     * 
+     * @return the rating history
+     */
     public HashMap<String, List<Point>> getRatingHistory() {
         return ratingHistory;
     }
 
+    /**
+     * Prints out the information of the question data
+     * 
+     * @param questions the questions being printed out
+     */
     private void printQuestions(Question[] questions) {
         for (Question q : questions) {
             if (q instanceof OpenQuestion) {

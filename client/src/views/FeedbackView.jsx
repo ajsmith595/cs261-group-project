@@ -13,7 +13,7 @@ export default class FeedbackView extends React.Component {
         };
         if (props.data.error) {
             this.state = {
-                status: 'event_error',
+                status: 'eventError',
                 error: props.data.error,
                 timeError: ""
             };
@@ -156,7 +156,7 @@ export default class FeedbackView extends React.Component {
                 </Row>
             );
         }
-        else if (this.state.status == 'event_error') {
+        else if (this.state.status == 'eventError') {
             return (
                 <Row>
                     <Col xs={0} sm={1} md={3} />
@@ -195,7 +195,7 @@ export default class FeedbackView extends React.Component {
                 {this.renderError()}
                 <Form onSubmit={this.sendStateToServer}>
                     {questions}
-                    <Form.Check type="checkbox" id="anonymous_check" >
+                    <Form.Check type="checkbox" id="anonymousCheck" >
                         <Form.Check.Input type="checkbox" checked={this.state.anonymous} onChange={(e) => this.setState({ anonymous: e.target.checked })} />
                         <Form.Check.Label>Submit the feedback anonymously (the host will not see your username)</Form.Check.Label>
                     </Form.Check>

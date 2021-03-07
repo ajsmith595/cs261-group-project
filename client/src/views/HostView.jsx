@@ -104,25 +104,25 @@ export default class HostView extends React.Component {
         for (let i in questions) { // Go through the questions, and assign their 'previous' values - this allows for animation.
             let question = questions[i];
             if (question.type === 'open') {
-                question.previous_mood = 0;
+                question.previousMood = 0;
                 if (this.state.feedback) {
-                    question.previous_mood = this.state.feedback[i].current_mood;
+                    question.previousMood = this.state.feedback[i].currentMood;
                 }
 
                 for (let j in question.trends) {
                     let trend = question.trends[j];
-                    trend.previous_proportion = 30;
+                    trend.previousProportion = 30;
                     if (this.state.feedback && this.state.feedback[i].trends[j]) {
-                        trend.previous_mood = this.state.feedback[i].trends[j].proportion;
+                        trend.previousMood = this.state.feedback[i].trends[j].proportion;
                     }
 
                 }
             }
         }
         let stats = {
-            mins_left: data.mins_left,
-            total_responses: data.total_responses,
-            total_users: data.total_users
+            minsLeft: data.minsLeft,
+            totalResponses: data.totalResponses,
+            totalUsers: data.totalUsers
         };
         this.setState({
             feedback: questions,
@@ -155,8 +155,8 @@ export default class HostView extends React.Component {
             });
         }
         actualData.push({
-            t: new Date(question.stats.current_time * 1000),
-            y: question.stats.current_value
+            t: new Date(question.stats.currentTime * 1000),
+            y: question.stats.currentValue
         });
 
         //#region Chart JS Configuration
@@ -177,15 +177,15 @@ export default class HostView extends React.Component {
             scales: {
                 yAxes: [{
                     ticks: {
-                        suggestedMin: question.min_value,
-                        suggestedMax: question.max_value
+                        suggestedMin: question.minValue,
+                        suggestedMax: question.maxValue
                     }
                 }],
                 xAxes: [
                     {
                         ticks: {
-                            min: new Date(question.min_time * 1000),
-                            max: new Date(question.max_time * 1000)
+                            min: new Date(question.minTime * 1000),
+                            max: new Date(question.maxTime * 1000)
                         },
                         type: 'time',
                         time: {
@@ -201,7 +201,7 @@ export default class HostView extends React.Component {
                         type: "line",
                         mode: "vertical",
                         scaleID: "x-axis-0",
-                        value: new Date(question.current_time * 1000),
+                        value: new Date(question.currentTime * 1000),
                         borderColor: "black",
                         borderWidth: 1,
                         borderDash: [4, 4],
@@ -222,11 +222,11 @@ export default class HostView extends React.Component {
                     <Col xs={12} sm={2} className="">
                         <Row>
                             <Col className="border py-2 px-1">
-                                <h4 className="mb-0">{question.stats.max_value}</h4>
+                                <h4 className="mb-0">{question.stats.maxValue}</h4>
                                 <small>BEST</small>
                             </Col>
                             <Col className="border py-2 px-1">
-                                <h4 className="mb-0">{question.stats.min_value}</h4>
+                                <h4 className="mb-0">{question.stats.minValue}</h4>
                                 <small>WORST</small>
                             </Col>
                         </Row>
@@ -237,11 +237,11 @@ export default class HostView extends React.Component {
                     <Col xs={12} sm={2}>
                         <Row>
                             <Col className="border py-2 px-1">
-                                <h4 className="mb-0">{question.stats.overall_average?.toFixed(2)}</h4>
+                                <h4 className="mb-0">{question.stats.overallAverage?.toFixed(2)}</h4>
                                 <small>OVERALL</small>
                             </Col>
                             <Col className="border py-2 px-1">
-                                <h4 className="mb-0">{question.stats.current_value.toFixed(2)}</h4>
+                                <h4 className="mb-0">{question.stats.currentValue.toFixed(2)}</h4>
                                 <small>CURRENT</small>
                             </Col>
                         </Row>
@@ -259,9 +259,9 @@ export default class HostView extends React.Component {
      * @param question The question being rendered
      */
     openView(question) {
-        let recent_responses = (
+        let recentResponses = (
             <Transition
-                items={question.recent_responses}
+                items={question.recentResponses}
                 keys={item => item.id}
                 from={{ opacity: 0 }}
                 enter={{ opacity: 1 }}
@@ -280,7 +280,7 @@ export default class HostView extends React.Component {
         for (let trend of question.trends) { // Keep the height constant, and just change the scaling of the text. Easier to manage and better performance
             trends.push(
                 <div className="w-100" style={{ height: "33%" }}>
-                    <Spring from={{ proportion: trend.previous_proportion }} to={{ proportion: trend.proportion }}>
+                    <Spring from={{ proportion: trend.previousProportion }} to={{ proportion: trend.proportion }}>
                         {props => ( // Animates the proportion so that the text will animate large <--> small                        
                             <p style={{ transform: "scale(" + Math.min(Math.max(props.proportion / 100 * 4, 0.5), 2) + ")" }}>{trend.phrase}</p>
                         )}
@@ -289,14 +289,14 @@ export default class HostView extends React.Component {
             );
         }
 
-        return (<Spring from={{ current_mood: question.previous_mood }} to={{ current_mood: question.current_mood }}>
+        return (<Spring from={{ currentMood: question.previousMood }} to={{ currentMood: question.currentMood }}>
             {props => { // Transition the face!
-                let mood = props.current_mood
+                let mood = props.currentMood
                 let y = 65 - mood * 5; // adjusts the line depending on the mood. Makes it so that the mouth looks somewhat in a normal position
-                let sweep_flag = mood > 0 ? 0 : 1; // Makes the curve go up or down -> happy or sad
+                let sweepFlag = mood > 0 ? 0 : 1; // Makes the curve go up or down -> happy or sad
                 let radius = Math.abs(24 / (Math.abs(mood) < 0.01 ? 0.01 : mood)); // if the mood is 0, make it realllyyy small instead - prevent division by 0.
-                let colour_interpolator = interpolate(["#D2222D", "#FFBF00", "#389338"]);
-                let colour = colour_interpolator((mood + 1) / 2); // interpolate between red -> yellow -> green
+                let colourInterpolator = interpolate(["#D2222D", "#FFBF00", "#389338"]);
+                let colour = colourInterpolator((mood + 1) / 2); // interpolate between red -> yellow -> green
                 return (
                     <Col className="p-2 border border-secondary d-flex flex-column" sm={12} lg={6}>
                         <h3>{question.title}</h3>
@@ -307,7 +307,7 @@ export default class HostView extends React.Component {
                                     <hr className="w-100" />
                                     <div className="text-left flex-grow-1 position-relative overflow-hidden" style={{ minHeight: "100px" }} >
                                         <div className="position-absolute">
-                                            {recent_responses}
+                                            {recentResponses}
                                         </div>
                                     </div>
                                 </div>
@@ -333,7 +333,7 @@ export default class HostView extends React.Component {
                                             <circle cx="40" cy="40" r="4" fill="black" />
                                             <circle cx="60" cy="40" r="4" fill="black" />
 
-                                            <path d={`M 30 ${y} A ${radius} ${radius} 0 0 ${sweep_flag} 70 ${y}`} stroke="black"
+                                            <path d={`M 30 ${y} A ${radius} ${radius} 0 0 ${sweepFlag} 70 ${y}`} stroke="black"
                                                 strokeWidth="5" fill="none" />
 
                                         </svg>
@@ -424,29 +424,29 @@ export default class HostView extends React.Component {
                         break;
                 }
             }
-            let time_left_display;
-            if (this.props.data.duration < this.state.stats.mins_left || !this.state.stats) {
-                time_left_display = (
+            let timeLeftDisplay;
+            if (this.props.data.duration < this.state.stats.minsLeft || !this.state.stats) {
+                timeLeftDisplay = (
                     <Col xs={12} lg={2} className="border">
                         <h1 className="font-weight-bold lead h-100 d-flex justify-content-center align-items-center">THIS EVENT HAS NOT STARTED</h1>
                     </Col>
                 );
-            } else if (this.state.stats.mins_left <= 0) {
-                time_left_display = (
+            } else if (this.state.stats.minsLeft <= 0) {
+                timeLeftDisplay = (
                     <Col xs={12} lg={2} className="border">
                         <h1 className="font-weight-bold lead h-100 d-flex justify-content-center align-items-center">THIS EVENT HAS ENDED</h1>
                     </Col>
                 );
             } else {
                 let time;
-                if (this.state.stats?.mins_left > 60) {
-                    time = <h2 className="mb-0">{Math.floor(this.state.stats?.mins_left / 60)}h {this.state.stats?.mins_left % 60}m</h2>;
+                if (this.state.stats?.minsLeft > 60) {
+                    time = <h2 className="mb-0">{Math.floor(this.state.stats?.minsLeft / 60)}h {this.state.stats?.minsLeft % 60}m</h2>;
                 }
                 else {
-                    time = <h2 className="mb-0">{this.state.stats?.mins_left}<small>mins</small></h2>;
+                    time = <h2 className="mb-0">{this.state.stats?.minsLeft}<small>mins</small></h2>;
                 }
 
-                time_left_display = (
+                timeLeftDisplay = (
                     <Col xs={12} lg={2} className="border">
                         {time}
                         <small>TIME LEFT</small>
@@ -460,16 +460,16 @@ export default class HostView extends React.Component {
                             <h2 className="mb-0">{this.props.eventID}</h2>
                             <small>EVENT CODE</small>
                         </Col>
-                        {time_left_display}
+                        {timeLeftDisplay}
                         <Col lg={4}>
                             <h1>{this.state.title || this.props.data.title || "Unknown Event"}</h1>
                         </Col>
                         <Col lg={2} className="border">
-                            <h2 className="mb-0">{this.state.stats?.total_users}</h2>
+                            <h2 className="mb-0">{this.state.stats?.totalUsers}</h2>
                             <small>ATTENDEES</small>
                         </Col>
                         <Col lg={2} className="border">
-                            <h2 className="mb-0">{this.state.stats?.total_responses}</h2>
+                            <h2 className="mb-0">{this.state.stats?.totalResponses}</h2>
                             <small>RESPONSES</small>
                         </Col>
                     </Row>

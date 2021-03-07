@@ -19,6 +19,14 @@ public class User {
     private String username;
     private String currentEventID;
 
+    /**
+     * Constructs a user object
+     * 
+     * @param id The ID of the user
+     * @param email The email of the user
+     * @param username The username of the user
+     * @param currentEventID the event they are currently viewing
+     */
     public User(String id, String email, String username, String currentEventID) {
         this.id = id;
         this.email = email;
@@ -26,18 +34,38 @@ public class User {
         this.currentEventID = currentEventID;
     }
 
+    /**
+     * Gets the ID of the user
+     * 
+     * @return the ID
+     */
     public String getID() {
         return id;
     }
 
+    /**
+     * Gets the email of the user
+     * 
+     * @return the email
+     */
     public String getEmail() {
         return email;
     }
 
+    /**
+     * Gets the username of the user
+     * 
+     * @return the username
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Sets the ID of the user
+     * 
+     * @param id The ID of the user
+     */
     public void setID(String id) {
         this.id = id;
     }

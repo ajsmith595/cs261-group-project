@@ -4,7 +4,6 @@ import java.util.*;
 
 import com.group29.models.questiondata.*;
 
-// TODO eventually rewrite to update (not entirely recalculate) data
 public class FeedbackAggregator {
     // Instance of the feedback aggregator
     private static final FeedbackAggregator feedbackAggregator = new FeedbackAggregator();
@@ -51,7 +50,7 @@ public class FeedbackAggregator {
             for (Response r : fb.getResponses()) {
                 String key = "feedback_response_" + feedbackNumber + "_" + responseNumber;
                 questionResponses.get(Integer.parseInt(r.getQuestionID()))
-                        .add(new UserResponse(fb.getUserID(), r, fb.getAnonymous(), key, fb.getTimestamp()));
+                        .add(new UserResponse(fb.getUserID(), r, fb.getAnonymous(), key, fb.getTimeStamp()));
                 responseNumber++;
             }
             feedbackNumber++;
@@ -107,7 +106,7 @@ public class FeedbackAggregator {
             "what", "whatever", "when", "whence", "whenever", "where", "whereafter", "whereas", "whereby", "wherein",
             "whereupon", "wherever", "whether", "which", "while", "whither", "who", "whoever", "whole", "whom", "whose",
             "why", "will", "with", "within", "without", "would", "yet", "you", "your", "yours", "yourself",
-            "yourselves", ""));
+            "yourselves", "i", ""));
 
     /**
      * Analyses an open question
@@ -200,6 +199,12 @@ public class FeedbackAggregator {
         return new OpenQuestion(question.getTitle(), qrs, trends, avg);
     }
 
+    /**
+     * Calculates the average of the rating values
+     * 
+     * @param ratings The HashMap of ratings
+     * @return the Average rating value
+     */
     private double averageValues(HashMap<String, Double> ratings) {
         int size = ratings.size();
         long sum = 0;
@@ -223,7 +228,7 @@ public class FeedbackAggregator {
         double count = 0, min = Double.MAX_VALUE, max = Double.MIN_VALUE;
         ArrayList<Point> points = new ArrayList<>();
         HashMap<String, Double> ratings = new HashMap<>();
-        int interval = 300000;
+        int interval = 300000; //Time interval for points for the graph
         int i = 0;
         double pointAverage = 0;
         Calendar c = Calendar.getInstance();
@@ -242,9 +247,9 @@ public class FeedbackAggregator {
                 if (rank > max)
                     max = rank;
                 // points.add(new Point(ur.timestamp / 1000, responseAsDouble));
-                if (ur.timestamp > startTime + i * interval) {
+                if (ur.timeStamp > startTime + i * interval) {
                     pointAverage = this.averageValues(ratings);
-                    while (startTime + i * interval < ur.timestamp) {
+                    while (startTime + i * interval < ur.timeStamp) {
                         // System.out.println("new Point: " + (startTime + i*interval));
                         points.add(new Point((startTime + i * interval) / 1000, pointAverage));
                         i++;
@@ -339,14 +344,23 @@ class UserResponse {
     public Response response;
     public String key;
     public boolean anonymous;
-    public long timestamp;
+    public long timeStamp;
 
-    public UserResponse(String userID, Response response, boolean anonymous, String key, long timestamp) {
+    /**
+     * Constructs the UserResponse object
+     * 
+     * @param userID The user's ID
+     * @param response The response of the user
+     * @param anonymous whether the response is anonymous or not
+     * @param key The key for the response
+     * @param timeStamp The time of the response
+     */
+    public UserResponse(String userID, Response response, boolean anonymous, String key, long timeStamp) {
         this.userID = userID;
         this.response = response;
         this.anonymous = anonymous;
         this.key = key;
-        this.timestamp = timestamp;
+        this.timeStamp = timeStamp;
     }
 }
 
@@ -360,19 +374,40 @@ class Counter<T> {
     private final HashMap<T, Integer> counts = new HashMap<>();
     private int total;
 
+    /**
+     * Gets the count for the given key
+     * 
+     * @param key The key for the hashmap
+     * @return the count for the key
+     */
     public int get(T key) {
         return counts.getOrDefault(key, 0);
     }
 
+    /**
+     * Increments the value for the given key
+     * 
+     * @param key The key to be incremented
+     */
     public void inc(T key) {
         counts.put(key, get(key) + 1);
         total++;
     }
 
+    /**
+     * Gets the total of all values stored in the counter
+     * 
+     * @return the total
+     */
     public int getTotal() {
         return total;
     }
 
+    /**
+     * Gets the set of entries for the HashMap
+     * 
+     * @return A set of the entries
+     */
     public Set<Map.Entry<T, Integer>> getEntries() {
         return counts.entrySet();
     }

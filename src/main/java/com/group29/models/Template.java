@@ -40,20 +40,42 @@ public class Template {
     @Expose
     List<Question> questions;
 
+    /**
+     * Constructs a template object
+     * 
+     * @param id The ID of the template
+     * @param userID The ID of the user
+     * @param questions The questions of the template
+     */
     public Template(String id, String userID, List<Question> questions) {
         this.id = id;
         this.userID = userID;
         this.questions = questions;
     }
 
+    /**
+     * Gets the ID of the template
+     * 
+     * @return the template ID
+     */
     public String getID() {
         return id;
     }
 
+    /**
+     * Sets the ID of the template
+     * 
+     * @param id The new ID of the template
+     */
     public void setID(String id) {
         this.id = id;
     }
 
+    /**
+     * Gets the questions for the template
+     * 
+     * @return the array of questions
+     */
     public Question[] getQuestions() {
         return this.questions.toArray(new Question[0]);
     }

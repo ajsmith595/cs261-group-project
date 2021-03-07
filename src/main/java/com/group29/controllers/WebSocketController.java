@@ -36,7 +36,7 @@ public class WebSocketController {
      * Makes a particular event update its data. This should be done after feedback
      * has successfully been added to the database.
      * 
-     * @param eventCode
+     * @param eventCode The event's code
      */
     public static void updateEvent(String eventCode, boolean updateEventDetails) {
         if (eventCode == null) {
@@ -56,7 +56,7 @@ public class WebSocketController {
     /**
      * When a WebSocket connection is first made
      * 
-     * @param session
+     * @param session The WebSocket connection
      */
     @OnWebSocketConnect
     public void connected(Session session) {
@@ -66,7 +66,9 @@ public class WebSocketController {
     /**
      * When a WebSocket connection is disconnected
      * 
-     * @param session
+     * @param session The WebSocket connection
+     * @param statusCode The status of the socket
+     * @param reason The reason for the disconnect
      */
     @OnWebSocketClose
     public void disconnected(Session session, int statusCode, String reason) {
@@ -82,9 +84,9 @@ public class WebSocketController {
      * When a WebSocket connection sends a message. This will be the auth token,
      * given the WebSocket is following what we assume.
      * 
-     * @param session
-     * @param message
-     * @throws IOException
+     * @param session The WebSocket connection
+     * @param message The message beind sent
+     * @throws IOException 
      */
     @OnWebSocketMessage
     public void message(Session session, String message) {

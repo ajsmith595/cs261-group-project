@@ -99,7 +99,7 @@ export default class CreateEventView extends React.Component {
      */
     changeEventProp(prop, e) {
         // Removes related errors to the prop being checked
-        let newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != prop && e != prop + "_min" && e != prop + "_max" && e != prop + "_before");
+        let newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != prop && e != prop + "Min" && e != prop + "Max" && e != prop + "Before");
         // Checks title is not empty
         if (prop == "title") {
             if (e.target.value.trim().length == 0) {
@@ -109,17 +109,17 @@ export default class CreateEventView extends React.Component {
         // Checks duration is between 5 minutes and 12 hours
         else if (prop == "duration") {
             if (parseInt(e.target.value) < 5 || isNaN(parseInt(e.target.value))) {
-                newValidationErrors.push("duration_min");
+                newValidationErrors.push("durationMin");
             }
             else if (parseInt(e.target.value) > 60 * 12) {
-                newValidationErrors.push("duration_max");
+                newValidationErrors.push("durationMax");
             }
         // Checks the start date is in the future
         }else if (prop == "datetime") {
             let d = new Date();
             let d2 = new Date(e.target.value);
             if (d > d2) {
-                newValidationErrors.push("datetime_before");
+                newValidationErrors.push("datetimeBefore");
             }
 
         }
@@ -169,13 +169,13 @@ export default class CreateEventView extends React.Component {
                             {/* Date and Time */}
                             <Form.Row>
                                 <Form.Group as={Col} xs={12} sm={6} lg={7}>
-                                    <Form.Label>Start Date/Time<span className="float-right text-danger">{this.state.validationErrors.includes("datetime_before") ? 'Event must start in the future'  : ''}</span></Form.Label>
-                                    <Form.Control type="datetime-local" value={this.state.datetime} className={this.state.validationErrors.includes("datetime_before") ? 'border-danger' : ''} onChange={(e) => this.changeEventProp("datetime", e)} />
+                                    <Form.Label>Start Date/Time<span className="float-right text-danger">{this.state.validationErrors.includes("datetimeBefore") ? 'Event must start in the future'  : ''}</span></Form.Label>
+                                    <Form.Control type="datetime-local" value={this.state.datetime} className={this.state.validationErrors.includes("datetimeBefore") ? 'border-danger' : ''} onChange={(e) => this.changeEventProp("datetime", e)} />
                                 </Form.Group>
                                 <Form.Group as={Col} xs={12} sm={6} lg={5}>
-                                    <Form.Label className="w-100">Duration<span className="float-right text-danger">{this.state.validationErrors.includes("duration_min") ? 'Must be at least 5 mins' : (this.state.validationErrors.includes("duration_max") ? 'Must be at most 12 hours' : '')}</span></Form.Label>
+                                    <Form.Label className="w-100">Duration<span className="float-right text-danger">{this.state.validationErrors.includes("durationMin") ? 'Must be at least 5 mins' : (this.state.validationErrors.includes("durationMax") ? 'Must be at most 12 hours' : '')}</span></Form.Label>
                                     <InputGroup>
-                                        <Form.Control type="number" min="5" max={60 * 12} className={(this.state.validationErrors.includes("duration_min") || this.state.validationErrors.includes("duration_max")) ? 'border-danger' : ''} value={this.state.duration} onChange={(e) => this.changeEventProp("duration", e)} />
+                                        <Form.Control type="number" min="5" max={60 * 12} className={(this.state.validationErrors.includes("durationMin") || this.state.validationErrors.includes("durationMax")) ? 'border-danger' : ''} value={this.state.duration} onChange={(e) => this.changeEventProp("duration", e)} />
                                         <InputGroup.Append>
                                             <InputGroup.Text id="startDatePrepend">
                                                 <span className="d-none d-md-block">minutes</span>
@@ -225,13 +225,13 @@ export default class CreateEventView extends React.Component {
         // Ensures the time is still in the future
         let d = new Date();
         if (d > startTime) {
-            newValidationErrors.push("datetime_before");
+            newValidationErrors.push("datetimeBefore");
             this.setState({
                 validationErrors: newValidationErrors
             })
         } else{
             startTime = startTime.getTime();
-            let obj_to_send = {
+            let objToSend = {
                 title: this.state.title,
                 startTime: startTime,
                 duration: this.state.duration,
@@ -244,7 +244,7 @@ export default class CreateEventView extends React.Component {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(obj_to_send),
+                body: JSON.stringify(objToSend),
                 credentials: "include"
             }).then(e => e.json()).then(data => {
                 if (data.status == 'success') {
