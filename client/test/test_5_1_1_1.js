@@ -11,7 +11,7 @@ module.exports = async function test_5_1_1_1(users) {
     let host = users[0];
     let attendee = users[1];
 
-    let timeNow = new Date().getTime() + 1000 * 2; // Time + 2 seconds
+    let startTime = new Date().getTime() + 1000 * 2; // Time + 2 seconds
     let eventRequest = await fetch(`${SERVER_HOST}/api/events`, {
         method: "POST",
         headers: {
@@ -19,7 +19,7 @@ module.exports = async function test_5_1_1_1(users) {
         },
         body: JSON.stringify({
             title: "Test Event",
-            startTime: timeNow,
+            startTime,
             duration: 60,
             questions: [
                 {

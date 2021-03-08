@@ -29,6 +29,7 @@ public class WebSocketController {
      * will be closed.
      */
     private static ArrayList<Session> waitingConnections = new ArrayList<>();
+    private static ReentrantLock waitingConnectionsLock = new ReentrantLock();
 
     /**
      * Makes a particular event update its data. This should be done after feedback
@@ -105,7 +106,12 @@ public class WebSocketController {
      */
     @OnWebSocketConnect
     public void connected(Session session) {
-        waitingConnections.add(session); // Wait for it to send a token
+        waitingConnectionsLock.lock();
+        try {
+            waitingConnections.add(session); // Wait for it to send a token
+        } finally {
+            waitingConnectionsLock.unlock();
+        }
     }
 
     /**
@@ -117,9 +123,13 @@ public class WebSocketController {
      */
     @OnWebSocketClose
     public void disconnected(Session session, int statusCode, String reason) {
-        if (waitingConnections.contains(session)) {
-            waitingConnections.remove(session); // Remove it from the waiting list if it's in one.
-        } else {
+        waitingConnectionsLock.lock();
+        try {
+            if (waitingConnections.contains(session)) {
+                waitingConnections.remove(session); // Remove it from the waiting list if it's in one.
+            }
+        } finally {
+            waitingConnectionsLock.unlock();
         }
     }
 
@@ -135,31 +145,35 @@ public class WebSocketController {
     public void message(Session session, String message) {
         // If the WebSocket session is not waiting to be added to an event, do nothing!
         // (they're already in an event)
-        if (waitingConnections.contains(session)) {
-            String eventCode = APIController.checkWebSocketToken(message); // Will return null if invalid
-            waitingConnections.remove(session); // Remove the WebSocket from the waiting list, no matter what
-            if (eventCode == null) {
-                session.close(); // Close the connection if it's invalid
-            } else {
-                eventMapLock.lock();
-                try {
-                    if (!eventMap.containsKey(eventCode)) { // If the event is NOT already known...
-                        Event e = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode); // get the event
-                                                                                                    // data
-                        if (e == null) { // If it's null, close the connection - something's gone wrong somewhere.
-                            session.close();
-                            return;
+        waitingConnectionsLock.lock();
+        try {
+            if (waitingConnections.contains(session)) {
+                String eventCode = APIController.checkWebSocketToken(message); // Will return null if invalid
+                waitingConnections.remove(session); // Remove the WebSocket from the waiting list, no matter what
+                if (eventCode == null) {
+                    session.close(); // Close the connection if it's invalid
+                } else {
+                    eventMapLock.lock();
+                    try {
+                        if (!eventMap.containsKey(eventCode)) { // If the event is NOT already known...
+                            Event e = DatabaseManager.getDatabaseManager().getEventFromCode(eventCode);
+                            // get the event data
+                            if (e == null) { // If it's null, close the connection - something's gone wrong somewhere.
+                                session.close();
+                            } else {
+                                e.addClient(session);
+                                eventMap.put(eventCode, e); // Add the event to the map
+                            }
                         } else {
-                            e.addClient(session);
-                            eventMap.put(eventCode, e); // Add the event to the map
+                            eventMap.get(eventCode).addClient(session); // Add the client to the relevant Event.
                         }
-                    } else {
-                        eventMap.get(eventCode).addClient(session); // Add the client to the relevant Event.
+                    } finally {
+                        eventMapLock.unlock();
                     }
-                } finally {
-                    eventMapLock.unlock();
                 }
             }
+        } finally {
+            waitingConnectionsLock.unlock();
         }
     }
 

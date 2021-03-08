@@ -71,7 +71,7 @@ module.exports = async function test_6_2_0_1(users) {
     if (wsData == null) {
         return {
             ok: false,
-            message: `No WebSocket data received (${eventCode})`,
+            message: `WebSocket data was not supplied within 3 seconds (${eventCode})`,
         };
     }
     if (wsData.totalResponses < users.length) {

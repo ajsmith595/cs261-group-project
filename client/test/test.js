@@ -8,6 +8,8 @@ const test_5_1_2_7 = require("./test_5_1_2_7");
 const test_5_1_2_8 = require("./test_5_1_2_8");
 const test_5_1_2_9 = require("./test_5_1_2_9");
 const test_5_1_2_10 = require("./test_5_1_2_10");
+const test_5_1_2_11 = require("./test_5_1_2_11");
+const test_5_1_3_2 = require("./test_5_1_3_2");
 const test_6_2_0_1 = require("./test_6_2_0_1");
 const test_6_2_0_3 = require("./test_6_2_0_3");
 
@@ -16,6 +18,17 @@ runTests();
 // feedback only every minute at most
 
 async function runTests() {
+    try {
+        let checkRequest = await fetch(`${SERVER_HOST}`);
+        if (!checkRequest.ok) {
+            console.log("Server not open!");
+            return;
+        }
+    } catch (e) {
+        console.log("Server not open!");
+        return;
+    }
+
     let timestamp = Math.floor(new Date().getTime() / 1000);
 
     function getEmail(num) {
@@ -33,6 +46,8 @@ async function runTests() {
         test_5_1_2_8,
         test_5_1_2_9,
         test_5_1_2_10,
+        test_5_1_2_11,
+        test_5_1_3_2,
         test_6_2_0_1,
         test_6_2_0_3,
     ];
@@ -62,6 +77,10 @@ async function runTests() {
 
     for (let i in requests) {
         let response = await requests[i].request;
+        let json = await response.json();
+        if (json.status !== "success") {
+            console.error("Error occurred when creating user: " + json.message);
+        }
         requests[i].cookie = response.headers.get("set-cookie");
     }
 
@@ -95,9 +114,7 @@ async function runTests() {
         }
     } catch (e) {
         console.log(e);
-        console.log(
-            "An error occured whilst running the tests. This usually happens if the server has just started. Rerun the script for actual results."
-        );
+        console.log("An error occured whilst running the tests.");
     }
 }
 

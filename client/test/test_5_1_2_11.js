@@ -6,17 +6,17 @@ const {
     sleepMs,
 } = require("./common");
 /**
- * Giving feedback from 5 attendees, making sure the numerical average is calculated correctly.
+ * Check the choice questions give correct feedback
  * @param {Array} users
  */
-module.exports = async function test_5_1_2_9(users) {
+module.exports = async function test_5_1_2_11(users) {
     let host = users.splice(0, 1)[0];
     let data = await getWebSocketPromise(host, [
         {
-            type: "numeric",
+            type: "choice",
             title: "Test Question 1",
-            min: 0,
-            max: 10,
+            allowMultiple: false,
+            choices: ["Option 1", "Option 2", "Option 3"],
         },
     ]);
     if (!data.ok) {
@@ -39,17 +39,15 @@ module.exports = async function test_5_1_2_9(users) {
     });
     ws.send(token);
 
-    let total = 0;
-    let totalNum = 0;
+    let choicesChosen = [0, 0, 0];
     for (let user of users) {
-        let random = Math.floor(Math.random() * 11); // 0 - 10
-        totalNum++;
-        total += random;
+        let val = Math.floor(Math.random() * 3);
+        choicesChosen[val]++;
         user.request = fetch(`${SERVER_HOST}/api/event/${eventCode}/feedback`, {
             method: "POST",
             body: JSON.stringify({
                 anonymous: false,
-                responses: [{ questionID: "0", response: random }],
+                responses: [{ questionID: "0", response: val }],
             }),
             headers: {
                 cookie: user.cookie,
@@ -73,29 +71,28 @@ module.exports = async function test_5_1_2_9(users) {
 
     await sleep(3); // Wait 3 seconds for new data
     await ws.close();
+
     if (wsData == null) {
         return {
             ok: false,
             message: `WebSocket data was not supplied within 3 seconds (${eventCode})`,
         };
     }
-    let average = wsData.questions[0].stats.overallAverage;
-    average = Math.round(average * 10) / 10;
-
-    let actualAverage = total / totalNum;
-    actualAverage = Math.round(actualAverage * 10) / 10;
-
-    if (actualAverage != average) {
+    let options = wsData.questions[0].options;
+    if (
+        options[0].number != choicesChosen[0] ||
+        options[1].number != choicesChosen[1] ||
+        options[2].number != choicesChosen[2]
+    ) {
         return {
             ok: false,
-            message: `The overall average value is incorrect; ${average} was returned, but the actual average is ${actualAverage} (${eventCode})`,
+            message: "Incorrect values for bar chart",
         };
     }
     return {
         ok: true,
     };
 };
-
-module.exports.usersRequired = 6;
-module.exports.timeRequired = 5;
-module.exports.description = "Correct average calculated";
+module.exports.usersRequired = 21;
+module.exports.timeRequired = 10;
+module.exports.description = "Correct bar chart";

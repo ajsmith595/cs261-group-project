@@ -370,6 +370,18 @@ public class APIController {
 
             // Attempts to parse the feedback as well as the id of the event
             Feedback feedback = gson.fromJson(req.body(), Feedback.class);
+            if (feedback.getResponses() == null || feedback.getResponses().size() == 0) {
+                return APIResponse.error("Feedback is empty!");
+            }
+            Template template = DatabaseManager.getDatabaseManager().getTemplate(event.getTemplateID());
+            if (feedback.getResponses().size() != template.getQuestions().length) {
+                return APIResponse.error("Wrong number of responses!");
+            }
+            for (com.group29.models.Response r : feedback.getResponses()) {
+                if (r.getQuestionID() == null || r.getQuestionID() == "" || r.getResponse() == null) {
+                    return APIResponse.error("Invalid feedback");
+                }
+            }
             feedback.setUserID(userID);
             feedback.setTimeStamp(Calendar.getInstance().getTimeInMillis());
             if (!DatabaseManager.getDatabaseManager().canSendFeedback(userID, eventCode)) {

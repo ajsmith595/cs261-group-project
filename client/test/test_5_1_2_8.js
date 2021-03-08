@@ -31,11 +31,11 @@ module.exports = async function test_5_1_2_8(users) {
         };
     }
 
-    ws.send(token);
     let wsData = null;
     ws.on("message", (data) => {
         wsData = JSON.parse(data);
     });
+    ws.send(token);
 
     let body = JSON.stringify({
         anonymous: false,
@@ -70,7 +70,7 @@ module.exports = async function test_5_1_2_8(users) {
     if (wsData == null) {
         return {
             ok: false,
-            message: "WebSocket did not receive any data",
+            message: `WebSocket data was not supplied within 3 seconds (${eventCode})`,
         };
     }
     if (wsData.questions[0].currentMood <= 0) {

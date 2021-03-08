@@ -11,7 +11,6 @@ const { SERVER_HOST, sleep } = require("./common");
  */
 module.exports = async function test_5_1_2_1(users) {
     let host = users[0];
-    let timeNow = new Date().getTime();
     let timeTomorrow = new Date();
     timeTomorrow.setDate(timeTomorrow.getDate() + 1);
     timeTomorrow = timeTomorrow.getTime();
@@ -39,7 +38,12 @@ module.exports = async function test_5_1_2_1(users) {
                 }),
             })
         ).json();
-        if ((eventRequest.status == "success") != accept) return false;
+        if ((eventRequest.status == "success") != accept) {
+            if (accept) {
+                console.log(eventRequest);
+            }
+            return false;
+        }
         return true;
     }
 
