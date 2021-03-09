@@ -36,6 +36,17 @@ export default class EditEventView extends React.Component {
             else if (value > 12 * 60) {
                 newValidationErrors.push("durationMax");
             }
+        } else if (prop == "date" || prop == "time") {
+            newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != "datetimeInvalid");
+            let d;
+            if (prop == "date") {
+                d = Date.parse(e.target.value);
+            } else {
+                d = Date.parse(this.state.date);
+            }
+            if (!d) {
+                newValidationErrors.push("datetimeInvalid");
+            }
         }
         // Updates the state
         this.setState({
@@ -52,13 +63,13 @@ export default class EditEventView extends React.Component {
             credentials: "include"
         }).then(res => res.json()).then(e => {
             if (e.status == 'success' && e.data.isHost) {
-                let date = (new Date(e.data.startTime)).toISOString();
-                date = date.substring(0, date.length - 1);
+                let datetime = new Date(e.data.startTime)
                 document.title = "Edit '" + e.data.title + "'";
                 this.setState({
                     status: 'main',
                     title: e.data.title,
-                    startTime: date,
+                    date: datetime.toISOString().substring(0, 10),
+                    time: datetime.toTimeString().substring(0, 5),
                     duration: e.data.duration
                 });
             }
@@ -79,10 +90,17 @@ export default class EditEventView extends React.Component {
      * Submits and posts the edited form data
      */
     submit() {
-        let startTime = this.state.startTime;
-        if (!(startTime instanceof Date)) {
-            startTime = new Date(startTime);
+
+        let startTime = Date.parse(this.state.date);
+        if (!startTime) {
+            let newValidationErrors = ["datetimeInvalid"];
+            this.setState({
+                validationErrors: newValidationErrors
+            })
+            return;
         }
+        startTime = new Date(startTime);
+        startTime.setHours(this.state.time.substr(0, 2), this.state.time.substr(3, 2));
         startTime = startTime.getTime();
         let data = {
             title: this.state.title,
@@ -139,7 +157,10 @@ export default class EditEventView extends React.Component {
                             <Form.Row>
                                 <Form.Group as={Col} xs={12} sm={6} lg={7}>
                                     <Form.Label>Start Date/Time</Form.Label>
-                                    <Form.Control type="datetime-local" value={this.state.startTime} onChange={(e) => this.changeEventProp("startTime", e)} />
+                                    <InputGroup>
+                                        <Form.Control type="date" value={this.state.date} className={this.state.validationErrors.includes("datetimeInvalid") ? 'border-danger' : ''} onChange={(e) => this.changeEventProp("date", e)} />
+                                        <Form.Control type="time" value={this.state.time} className={this.state.validationErrors.includes("datetimeInvalid") ? 'border-danger' : ''} onChange={(e) => this.changeEventProp("time", e)} />
+                                    </InputGroup>
                                 </Form.Group>
                                 <Form.Group as={Col} xs={12} sm={6} lg={5}>
                                     <Form.Label className="w-100">Duration<span className="float-right text-danger">{this.state.validationErrors.includes("durationMin") ? 'Must be at least 5 mins' : (this.state.validationErrors.includes("durationMax") ? 'Must be at most 12 hours' : '')}</span></Form.Label>

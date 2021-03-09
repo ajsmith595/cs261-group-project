@@ -61,7 +61,7 @@
             <version>4.2.0</version>
             <classifier>models</classifier>
         </dependency>
-<!-- Not sure this dependency is required but exec -->
+        <!-- Not sure this dependency is required but exec -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
@@ -78,7 +78,17 @@
             </resource>
             <resource>
                 <directory>client/build</directory>
+                <excludes>
+                    <exclude>service-worker.js</exclude>
+                </excludes>
                 <targetPath>${basedir}/target/classes/client/static</targetPath>
+            </resource>
+            <resource>
+                <directory>client/build</directory>
+                <includes>
+                    <include>service-worker.js</include>
+                </includes>
+                <targetPath>${basedir}/target/classes/client</targetPath>
             </resource>
         </resources>
         <pluginManagement>
