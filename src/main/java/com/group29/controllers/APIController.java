@@ -215,7 +215,8 @@ public class APIController {
             Event event = gson.fromJson(req.body(), Event.class);
             long now = Calendar.getInstance().getTimeInMillis();
             if (event == null || event.getTitle() == null || event.getTitle().length() == 0 || event.getDuration() < 5
-                    || event.getDuration() > 60 * 12 || (now > event.getStartTime().getTime())) {
+                    || event.getDuration() > 60 * 12 || event.getStartTime() == null
+                    || (now > event.getStartTime().getTime())) {
                 // If the title is empty, or the duration is not between 5 mins and 12 hours,
                 // fail
                 return APIResponse.error("Invalid event!");
