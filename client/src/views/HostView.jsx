@@ -1,7 +1,6 @@
 import React from "react";
 import { Button, Row, Col } from 'react-bootstrap';
 import { Bar, Line } from 'react-chartjs-2';
-import interpolate from 'color-interpolate';
 import { Spring, Transition } from 'react-spring/renderprops';
 import 'chartjs-plugin-annotation';
 export default class HostView extends React.Component {
@@ -295,8 +294,8 @@ export default class HostView extends React.Component {
                 let y = 65 - mood * 5; // adjusts the line depending on the mood. Makes it so that the mouth looks somewhat in a normal position
                 let sweepFlag = mood > 0 ? 0 : 1; // Makes the curve go up or down -> happy or sad
                 let radius = Math.abs(24 / (Math.abs(mood) < 0.01 ? 0.01 : mood)); // if the mood is 0, make it realllyyy small instead - prevent division by 0.
-                let colourInterpolator = interpolate(["#D2222D", "#FFBF00", "#389338"]);
-                let colour = colourInterpolator((mood + 1) / 2); // interpolate between red -> yellow -> green
+                let interp = (mood+1)/2;
+                let colour = "hsl(" + Math.round(interp * 128) + ", 75%, 50%)"; // interpolate between red -> yellow -> green
                 return (
                     <Col className="p-2 border border-secondary d-flex flex-column" sm={12} lg={6}>
                         <h3>{question.title}</h3>
