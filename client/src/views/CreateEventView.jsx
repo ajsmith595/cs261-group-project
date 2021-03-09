@@ -18,15 +18,14 @@ export default class CreateEventView extends React.Component {
         } else {
             currentDateTime.setHours(currentDateTime.getHours() + 1);
         }
-        let isoString = currentDateTime.toISOString();
-        isoString = isoString.substring(0, isoString.length - 1);
 
         // Sets the starting state for event creation
         this.state = {
             status: 'main',
             error: '',
             title: "",
-            datetime: isoString,
+            date: currentDateTime.toISOString().substring(0, 10),
+            time: currentDateTime.toTimeString().substring(0, 5),
             duration: 60,
             description: "",
             validationErrors: ["title"],
@@ -114,13 +113,33 @@ export default class CreateEventView extends React.Component {
             else if (parseInt(e.target.value) > 60 * 12) {
                 newValidationErrors.push("durationMax");
             }
-        // Checks the start date is in the future
-        }else if (prop == "datetime") {
+            // Checks the start date is in the future
+        } else if (prop == "date" || prop == "time") {
+            newValidationErrors = this.state.validationErrors.slice(0).filter(e => e != "datetimeBefore");
             let d = new Date();
-            let d2 = new Date(e.target.value);
-            if (d > d2) {
+            let d2;
+            if (prop == "date") {
+                d2 = Date.parse(e.target.value);
+            } else {
+                d2 = Date.parse(this.state.date);
+            }
+            if (d2) {
+                d2 = new Date(d2);
+                console.log(d2);
+                let time = this.state.time;
+                if (prop == "time") {
+                    time = e.target.value;
+                }
+                d2.setHours(time.substr(0, 2), time.substr(3, 2));
+                if (d > d2) {
+                    newValidationErrors.push("datetimeBefore");
+                }
+            }
+            else {
                 newValidationErrors.push("datetimeBefore");
             }
+
+
 
         }
         // Updates the state with the new errors
@@ -159,7 +178,7 @@ export default class CreateEventView extends React.Component {
                 <Form onSubmit={this.submit} className="mb-4">
                     <Row>
                         <Col />
-                        <Col xs={12} sm={12} md={10} lg={6}>
+                        <Col xs={12} sm={12} md={10} lg={8} xl={6}>
                             {/* Title */}
                             <Form.Group>
                                 <Form.Label className="w-100">Title<span className="float-right text-danger">{this.state.title == "" ? 'Please give your event a title' : ''}</span></Form.Label>
@@ -168,11 +187,14 @@ export default class CreateEventView extends React.Component {
 
                             {/* Date and Time */}
                             <Form.Row>
-                                <Form.Group as={Col} xs={12} sm={6} lg={7}>
-                                    <Form.Label>Start Date/Time<span className="float-right text-danger">{this.state.validationErrors.includes("datetimeBefore") ? 'Event must start in the future'  : ''}</span></Form.Label>
-                                    <Form.Control type="datetime-local" value={this.state.datetime} className={this.state.validationErrors.includes("datetimeBefore") ? 'border-danger' : ''} onChange={(e) => this.changeEventProp("datetime", e)} />
+                                <Form.Group as={Col} xs={12} sm={8} lg={8}>
+                                    <Form.Label className="w-100">Start Date/Time<span className="float-right text-danger">{this.state.validationErrors.includes("datetimeBefore") ? 'Event must start in the future' : ''}</span></Form.Label>
+                                    <InputGroup>
+                                        <Form.Control type="date" value={this.state.date} className={this.state.validationErrors.includes("datetimeBefore") ? 'border-danger' : ''} onChange={(e) => this.changeEventProp("date", e)} />
+                                        <Form.Control type="time" value={this.state.time} className={this.state.validationErrors.includes("datetimeBefore") ? 'border-danger' : ''} onChange={(e) => this.changeEventProp("time", e)} />
+                                    </InputGroup>
                                 </Form.Group>
-                                <Form.Group as={Col} xs={12} sm={6} lg={5}>
+                                <Form.Group as={Col} xs={12} sm={4} lg={4}>
                                     <Form.Label className="w-100">Duration<span className="float-right text-danger">{this.state.validationErrors.includes("durationMin") ? 'Must be at least 5 mins' : (this.state.validationErrors.includes("durationMax") ? 'Must be at most 12 hours' : '')}</span></Form.Label>
                                     <InputGroup>
                                         <Form.Control type="number" min="5" max={60 * 12} className={(this.state.validationErrors.includes("durationMin") || this.state.validationErrors.includes("durationMax")) ? 'border-danger' : ''} value={this.state.duration} onChange={(e) => this.changeEventProp("duration", e)} />
@@ -218,10 +240,16 @@ export default class CreateEventView extends React.Component {
      */
     submit(e) {
         let newValidationErrors = [];
-        let startTime = this.state.datetime;
-        if (!(startTime instanceof Date)) {
-            startTime = new Date(startTime);
+        let startTime = Date.parse(this.state.date);
+        if (!startTime) {
+            newValidationErrors.push("datetimeBefore");
+            this.setState({
+                validationErrors: newValidationErrors
+            })
+            return;
         }
+        startTime = new Date(startTime);
+        startTime.setHours(this.state.time.substr(0, 2), this.state.time.substr(3, 2));
         // Ensures the time is still in the future
         let d = new Date();
         if (d > startTime) {
@@ -229,7 +257,7 @@ export default class CreateEventView extends React.Component {
             this.setState({
                 validationErrors: newValidationErrors
             })
-        } else{
+        } else {
             startTime = startTime.getTime();
             let objToSend = {
                 title: this.state.title,
@@ -489,7 +517,7 @@ export default class CreateEventView extends React.Component {
         this.validateChoiceQuestion(question);
         this.setState(this.state);
     }
-    
+
     /**
      * Delets  a specific choice of a choice question
      * 
