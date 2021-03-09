@@ -43,8 +43,8 @@ class App extends React.Component {
                     <div className="clearfix">
                         <Switch>
                             <Route exact path="/">
-                                <Link key="new_event_btn" to="/event/new" className="btn btn-success m-1"><FontAwesomeIcon icon={faPlus} /> New Event</Link>
-                                <Link key="my_events_btn" to="/events" className="btn btn-secondary m-1"><FontAwesomeIcon icon={faList} /> My Events</Link>
+                                <Link key="new_event_btn" to="/event/new" className="btn btn-success m-1"><FontAwesomeIcon className="d-none d-sm-inline-block" icon={faPlus} /> New Event</Link>
+                                <Link key="my_events_btn" to="/events" className="btn btn-secondary m-1"><FontAwesomeIcon className="d-none d-sm-inline-block" icon={faList} /> My Events</Link>
                             </Route>
                             <Route exact path="/event/:id/edit" render={(props) => {
                                 let url = `/event/${props.match.params.id}`;
