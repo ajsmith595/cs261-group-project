@@ -215,16 +215,16 @@ export default class HostView extends React.Component {
         };
         //#endregion Chart JS Configuration
         return (
-            <Col className="p-3 border border-secondary" sm={12} lg={6}>
+            <Col className="p-3 border border-secondary rounded" sm={12} lg={6}>
                 <Row>
                     <Col className="d-xs-none" sm={1}></Col>
                     <Col xs={12} sm={2} className="">
                         <Row>
-                            <Col className="border py-2 px-1">
+                            <Col className="border py-2 px-1 rounded">
                                 <h4 className="mb-0">{question.stats.maxValue}</h4>
                                 <small>BEST</small>
                             </Col>
-                            <Col className="border py-2 px-1">
+                            <Col className="border py-2 px-1 rounded">
                                 <h4 className="mb-0">{question.stats.minValue}</h4>
                                 <small>WORST</small>
                             </Col>
@@ -235,11 +235,11 @@ export default class HostView extends React.Component {
                     </Col>
                     <Col xs={12} sm={2}>
                         <Row>
-                            <Col className="border py-2 px-1">
+                            <Col className="border py-2 px-1 rounded">
                                 <h4 className="mb-0">{question.stats.overallAverage?.toFixed(2)}</h4>
                                 <small>OVERALL</small>
                             </Col>
-                            <Col className="border py-2 px-1">
+                            <Col className="border py-2 px-1 rounded">
                                 <h4 className="mb-0">{question.stats.currentValue.toFixed(2)}</h4>
                                 <small>CURRENT</small>
                             </Col>
@@ -297,11 +297,11 @@ export default class HostView extends React.Component {
                 let interp = (mood+1)/2;
                 let colour = "hsl(" + Math.round(interp * 128) + ", 75%, 50%)"; // interpolate between red -> yellow -> green
                 return (
-                    <Col className="p-2 border border-secondary d-flex flex-column" sm={12} lg={6}>
+                    <Col className="p-2 border border-secondary d-flex flex-column rounded" sm={12} lg={6}>
                         <h3>{question.title}</h3>
                         <Row className="flex-grow-1">
                             <Col xs={12} lg={4}>
-                                <div className="h-100 p-1 border d-flex flex-column">
+                                <div className="h-100 p-1 border d-flex flex-column rounded">
                                     <h4>Recent Responses</h4>
                                     <hr className="w-100" />
                                     <div className="text-left flex-grow-1 position-relative overflow-hidden" style={{ minHeight: "100px" }} >
@@ -312,7 +312,7 @@ export default class HostView extends React.Component {
                                 </div>
                             </Col>
                             <Col xs={12} lg={4}>
-                                <div className="h-100 p-1 border mt-1 mt-sm-0 d-flex flex-column">
+                                <div className="h-100 p-1 border mt-1 mt-sm-0 d-flex flex-column rounded">
                                     <h4>Trends</h4>
                                     <hr className="w-100" />
                                     <Row className="flex-grow-1" style={{ overflowX: 'hidden' }}>
@@ -321,7 +321,7 @@ export default class HostView extends React.Component {
                                 </div>
                             </Col>
                             <Col xs={12} lg={4}>
-                                <div className="h-100 p-1 border mt-2 mt-sm-0 d-flex flex-column">
+                                <div className="h-100 p-1 border mt-2 mt-sm-0 d-flex flex-column rounded">
                                     <h4>Current Mood</h4>
                                     <hr className="w-100" />
                                     <div className="flex-grow-1">
@@ -393,9 +393,9 @@ export default class HostView extends React.Component {
         };
 
         return (
-            <Col className="p-3 border border-secondary" sm={12} lg={6}>
+            <Col className="p-3 border border-secondary rounded" sm={12} lg={6}>
                 <h3>{question.title}</h3>
-                <Bar data={data} options={options} width={100} height={30}></Bar>
+                <Bar data={data} options={options} width={100} height={30}/>
             </Col>
         );
     }
@@ -426,13 +426,13 @@ export default class HostView extends React.Component {
             let timeLeftDisplay;
             if (this.props.data.duration < this.state.stats.minsLeft || !this.state.stats) {
                 timeLeftDisplay = (
-                    <Col xs={12} lg={2} className="border">
+                    <Col xs={12} lg={2} className="border rounded-right">
                         <h1 className="font-weight-bold lead h-100 d-flex justify-content-center align-items-center">THIS EVENT HAS NOT STARTED</h1>
                     </Col>
                 );
             } else if (this.state.stats.minsLeft <= 0) {
                 timeLeftDisplay = (
-                    <Col xs={12} lg={2} className="border">
+                    <Col xs={12} lg={2} className="border rounded-right">
                         <h1 className="font-weight-bold lead h-100 d-flex justify-content-center align-items-center">THIS EVENT HAS ENDED</h1>
                     </Col>
                 );
@@ -446,7 +446,7 @@ export default class HostView extends React.Component {
                 }
 
                 timeLeftDisplay = (
-                    <Col xs={12} lg={2} className="border">
+                    <Col xs={12} lg={2} className="border rounded">
                         {time}
                         <small>TIME LEFT</small>
                     </Col>
@@ -455,19 +455,23 @@ export default class HostView extends React.Component {
             return (
                 <div className="text-center p-3">
                     <Row className="mb-2">
-                        <Col xs={12} lg={2} className="border">
+                        <Col xs={12} lg={2} className="border rounded">
                             <h2 className="mb-0">{this.props.eventID}</h2>
                             <small>EVENT CODE</small>
                         </Col>
+                        <span className="d-none d-lg-block">&nbsp;</span>
                         {timeLeftDisplay}
-                        <Col lg={4}>
+
+                        <Col>
                             <h1>{this.state.title || this.props.data.title || "Unknown Event"}</h1>
                         </Col>
-                        <Col lg={2} className="border">
+
+                        <Col lg={2} className="border rounded">
                             <h2 className="mb-0">{this.state.stats?.totalUsers}</h2>
                             <small>ATTENDEES</small>
                         </Col>
-                        <Col lg={2} className="border">
+                        <span className="d-none d-lg-block">&nbsp;</span>
+                        <Col lg={2} className="border rounded">
                             <h2 className="mb-0">{this.state.stats?.totalResponses}</h2>
                             <small>RESPONSES</small>
                         </Col>
