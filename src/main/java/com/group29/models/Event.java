@@ -254,6 +254,10 @@ public class Event {
         }
     }
 
+    public void uninitialiseEvent() {
+        this.aggregator = null;
+    }
+
     /**
      * Generates the new WebSocket data for the event
      * 

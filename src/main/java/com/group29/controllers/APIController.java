@@ -371,7 +371,7 @@ public class APIController {
 
             // Attempts to parse the feedback as well as the id of the event
             Feedback feedback = gson.fromJson(req.body(), Feedback.class);
-            if (feedback.getResponses() == null || feedback.getResponses().size() == 0) {
+            if (feedback == null || feedback.getResponses() == null || feedback.getResponses().size() == 0) {
                 return APIResponse.error("Feedback is empty!");
             }
             Template template = DatabaseManager.getDatabaseManager().getTemplate(event.getTemplateID());
