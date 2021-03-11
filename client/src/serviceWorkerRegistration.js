@@ -113,7 +113,7 @@ function checkValidServiceWorker(swUrl, config) {
             ) {
                 // No service worker found. Probably a different app. Reload the page.
                 navigator.serviceWorker.ready.then((registration) => {
-                    registration.unregrister().then(() => {
+                    registration.unregister().then(() => {
                         window.location.reload();
                     });
                 });

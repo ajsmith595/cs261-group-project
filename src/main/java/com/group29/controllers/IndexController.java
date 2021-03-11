@@ -47,7 +47,6 @@ public class IndexController {
         get("/event/create", IndexController.getIndex); // event creation view
         get("/event/:id", IndexController.getIndex); // particular event host/attendee view
         get("/event/:id/edit", IndexController.getIndex); // event editing
-
         get("/events", IndexController.getIndex); // list of current user's events
     };
 
