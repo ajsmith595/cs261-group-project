@@ -77,7 +77,7 @@ export default class EventsView extends React.Component {
                 }
                 events.push(
                     <Col sm={12} md={6} lg={4} className="p-1">
-                        <div className="p-4 border event-list-item" onClick={() => this.props.history.push("/event/" + event.eventCode + "?back=events")}>
+                        <div className="p-4 border rounded event-list-item" onClick={() => this.props.history.push("/event/" + event.eventCode + "?back=events")}>
                             <p className="d-flex align-items-center">
                                 <span className="h1 inline-block flex-grow-1">{event.title}</span>{active}
                             </p>
