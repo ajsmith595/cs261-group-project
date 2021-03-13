@@ -81,14 +81,14 @@
                 <excludes>
                     <exclude>service-worker.js</exclude>
                 </excludes>
-                <targetPath>${basedir}/target/classes/client/static</targetPath>
+                <targetPath>${project.build.outputDirectory}/client/static</targetPath>
             </resource>
             <resource>
                 <directory>client/build</directory>
                 <includes>
                     <include>service-worker.js</include>
                 </includes>
-                <targetPath>${basedir}/target/classes/client</targetPath>
+                <targetPath>${project.build.outputDirectory}/client</targetPath>
             </resource>
         </resources>
         <pluginManagement>

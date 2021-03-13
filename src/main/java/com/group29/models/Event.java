@@ -299,8 +299,8 @@ public class Event {
 
             this.generateData(modified || updateFromDB); // If it's been modified, we need to get the new data from
                                                          // the DB
-            this.sendDataToClients();
             modified = false;
+            this.sendDataToClients();
 
         }
     }
