@@ -47,20 +47,26 @@ public class WebSocketController {
      * 
      */
     public static void sendEventData(boolean force) {
-        ArrayList<String> emptyEvents = new ArrayList<>(); // Represents events which can be 'closed'
         eventMapLock.lock();
         try {
+            ArrayList<String> emptyEvents = new ArrayList<>(); // Represents events which can be 'closed'
             for (Event e : eventMap.values()) {
                 e.sendData(force);
-                if (e.getNumberOfClients() == 0)
+                if (e.getNumberOfClients() == 0) {
+                    e.uninitialiseEvent();
                     emptyEvents.add(e.getEventCode());
+                }
             }
             for (String e : emptyEvents) {
                 eventMap.remove(e); // Cleanup unused events.
             }
+            if (emptyEvents.size() > 0) {
+                System.gc();
+            }
         } finally {
             eventMapLock.unlock();
         }
+
     }
 
     /**

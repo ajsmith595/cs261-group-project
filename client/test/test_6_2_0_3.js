@@ -73,6 +73,7 @@ module.exports = async function test_6_2_0_3(users) {
     for (let i = 0; i < 2000; i++) {
         requests = [];
         for (let j = 0; j < 50; j++) {
+            // Do them in batches otherwise we run out of memory
             requests.push(
                 fetch(`${SERVER_HOST}/api/events`, {
                     method: "POST",

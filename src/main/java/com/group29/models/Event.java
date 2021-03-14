@@ -254,6 +254,10 @@ public class Event {
         }
     }
 
+    public void uninitialiseEvent() {
+        this.aggregator = null;
+    }
+
     /**
      * Generates the new WebSocket data for the event
      * 
@@ -295,8 +299,8 @@ public class Event {
 
             this.generateData(modified || updateFromDB); // If it's been modified, we need to get the new data from
                                                          // the DB
-            this.sendDataToClients();
             modified = false;
+            this.sendDataToClients();
 
         }
     }

@@ -24,8 +24,8 @@ public class DatabaseManager {
     // Instance of the database manager
     private static final DatabaseManager dbManager = new DatabaseManager();
 
-    private final MongoClient mongoClient;
-    private final MongoDatabase mongoDB;
+    private MongoClient mongoClient;
+    private MongoDatabase mongoDB;
 
     /**
      * Gets the singleton instance of the database manager
@@ -40,6 +40,9 @@ public class DatabaseManager {
      * Constructor for the database
      */
     private DatabaseManager() {
+    }
+
+    public void init(String databaseHost) {
         // Gets the default codecs and an instance of the model codecs
         CodecRegistry defaultCodecReg = MongoClient.getDefaultCodecRegistry();
         Event.EventCodec eventCodec = new Event.EventCodec();
@@ -56,7 +59,7 @@ public class DatabaseManager {
 
         // Creates a connection to the client with the custom codecs and access the
         // database
-        mongoClient = new MongoClient("localhost:27017", options);
+        mongoClient = new MongoClient(databaseHost, options);
         mongoDB = mongoClient.getDatabase("App");
         boolean hasEvents = false;
         for (String name : mongoDB.listCollectionNames()) {

@@ -14,6 +14,7 @@ import com.group29.controllers.APIController;
 import com.group29.controllers.IndexController;
 import com.group29.controllers.WebSocketController;
 import com.group29.models.APIResponse;
+import com.group29.models.DatabaseManager;
 
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -98,7 +99,16 @@ public class Program {
     // #endregion 404 FIX
 
     public static void main(String[] args) {
+        try {
 
+            // Read the properties file
+            PropertiesReader pr = new PropertiesReader("server.properties");
+            port(Integer.parseInt(pr.getProperty("port")));
+            DatabaseManager.getDatabaseManager().init(pr.getProperty("databaseHost"));
+        } catch (Exception e) {
+            System.out.println("Invalid or missing server.properties file!");
+            return;
+        }
         // WebSockets must come before HTTP routes
         staticFiles.location("/client");
         // Static Files must come before HTTP routes
